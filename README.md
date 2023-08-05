@@ -50,11 +50,30 @@ npm run lint-fix
 npm run build
 ```
 
-### Start the process to upate the price data regularly
+## Price data
+
+The program needs historic price data to function properly.
+You need to sync the price date completely once. Afterwards start the job to 
+periodically update the price data. The data is stored in files under server/res/quotes for now.
+
+### Fetch all price data and store it in files
+
+This process will take a while!
+
+```bash
+npm run fetch-quotes-full-sync
+```
+
+
+### Start the process to update the price data regularly
+
+This job will check for newest price data and update the files storing the price data.
+Please make sure to fetch all price data once before staring this job.
 
 ```bash
 npm run fetch-quotes-periodically
 ```
 
 ## Prerequisites
-To run the server locally you must provide an api key as environment variable named "SUBTRATE_API_KEY"
+To run the server locally you must provide a subscan api key as environment variable named "SUBSCAN_API_KEY".
+It will read environment variables from a file .env placed under /server.
