@@ -1,4 +1,3 @@
-import {Parachain} from "../model/parachain";
 import {StakingRewardsService} from "../service/staking-rewards.service";
 import {BlockTimeService} from "../service/block-time.service";
 import {CurrencyService} from "../service/currency.service";
@@ -6,12 +5,13 @@ import Joi from "joi";
 import {RouteOptions} from "fastify/types/route";
 import {HttpError} from "../error/HttpError";
 import {PriceService} from "../service/price.service";
-import * as parachains from "../../res/parachains.json";
 import {CoingeckoService} from "../coingecko-api/coingecko.service";
 import {SubscanService} from "../subscan-api/subscan.service";
 import {PriceHistoryService} from "../service/price-history.service";
+import {SubstrateChain} from "../model/substrate-chain";
+import * as substrateChains from "../../res/substrate-chains.json"
 
-const fetchRewards = async (chain: Parachain, address: string, currency: string, startDay: Date, endDay?: Date) => {
+const fetchRewards = async (chain: SubstrateChain, address: string, currency: string, startDay: Date, endDay?: Date) => {
     const priceService = new PriceService(new CoingeckoService())
     const priceHistoryService = new PriceHistoryService(new CoingeckoService())
     const currencyService = new CurrencyService(priceHistoryService)
@@ -31,7 +31,7 @@ export const rewardsEndpoint: RouteOptions = {
     schema: {
         params: Joi.object({
             chain: Joi.string().custom((value) => {
-                const result = parachains.chains.find(p => p.name === value.toLowerCase())
+                const result = substrateChains.chains.find(p => p.name === value.toLowerCase())
                 if (!result) {
                     throw new HttpError(400, "Chain " + value + " not found")
                 }

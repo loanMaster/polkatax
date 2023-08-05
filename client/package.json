@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "description": "A tool to show the accumulated staking rewards on substrate",
   "productName": "PolkaTax",
-  "author": "n <bimbo@prince.com>",
-  "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue .",
     "lint-fix": "eslint --ext .js,.ts,.vue . --fix",

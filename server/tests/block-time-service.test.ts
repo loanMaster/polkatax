@@ -1,11 +1,13 @@
 import {describe, expect, test} from '@jest/globals';
 import {BlockTimeService} from "../src/service/block-time.service";
 import {SubscanService} from "../src/subscan-api/subscan.service";
+import dotenv from 'dotenv'
+dotenv.config({ path: __dirname + '/../.env' })
 
 describe('blockTimeService', () => {
     test('estimate block number given timestamp', async () => {
         const blockTimeService = new BlockTimeService(new SubscanService())
-        const time = new Date('2023-02-02').getTime()
+        const time = new Date('2023-02-02T00:00:00.000Z').getTime()
         const { blockMin, blockMax, estBlock } = await blockTimeService.estimateBlockNo('polkadot', time)
         expect(blockMax).toBeGreaterThanOrEqual(estBlock)
         expect(blockMin).toBeLessThan(estBlock)

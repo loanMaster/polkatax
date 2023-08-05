@@ -18,7 +18,9 @@
       />
     </div>
     <div class="text-center q-my-xl" v-if="rewardsStore.rewards">
-      <div class="text-h6">Summary of staking rewards ({{ rewardsStore.rewards.timeFrame }})</div>
+      <div class="text-h6">
+        Summary of staking rewards ({{ rewardsStore.rewards.timeFrame }})
+      </div>
       <table class="q-my-lg q-mx-auto">
         <tr>
           <td class="text-left q-pa-sm">Total rewards:</td>
@@ -57,8 +59,13 @@
       </table>
       <div>
         Verify your rewards here:
-        <a :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`" target="_blank">
-          https://{{rewardsStore.rewards.chain}}.subscan.io/account/{{rewardsStore.rewards.address}}?tab=reward
+        <a
+          :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`"
+          target="_blank"
+        >
+          https://{{ rewardsStore.rewards.chain }}.subscan.io/account/{{
+            rewardsStore.rewards.address
+          }}?tab=reward
         </a>
       </div>
     </div>
@@ -81,8 +88,8 @@
         address. Then press submit.
       </div>
       <div class="text-center q-my-md">
-        This program returns the staking rewards earned as nominator.
-        This software comes without warranty. Please verify the exported results
+        This program returns the staking rewards earned as nominator. This
+        software comes without warranty. Please verify the exported results
       </div>
       <div class="q-mx-auto text-center">
         <img :src="meme" style="max-width: 80%" />
@@ -116,10 +123,12 @@ async function fetchRewards() {
       });
       await rewardsStore.fetchRewards();
     } catch (error: Response) {
-      const message = error.status && error.status === 429 ?
-        'Too many requests. Please try again later' :
-        error.status && error.status === 400 ? 'The data provided is invalid. Please check the wallet address.' :
-        'There was an error fetching your data. Please try again later'
+      const message =
+        error.status && error.status === 429
+          ? 'Too many requests. Please try again later'
+          : error.status && error.status === 400
+          ? 'The data provided is invalid. Please check the wallet address.'
+          : 'There was an error fetching your data. Please try again later';
       $q.dialog({
         title: 'An error occurred',
         message,
@@ -142,11 +151,11 @@ const isDisabled = computed(() => {
 const meme = ref(`img/${Math.floor(Math.random() * 2).toFixed(0)}.jpg`);
 </script>
 <style scoped>
-  .dropdown {
-    width:238px;
-  }
-  .content {
-    max-width: 1600px;
-    min-height: 0!important;
-  }
+.dropdown {
+  width: 238px;
+}
+.content {
+  max-width: 1600px;
+  min-height: 0 !important;
+}
 </style>

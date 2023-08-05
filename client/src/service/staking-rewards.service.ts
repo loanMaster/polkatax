@@ -16,10 +16,10 @@ export class StakingRewardsService {
     url.searchParams.append('currency', currency.toLowerCase());
 
     const result = await fetch(url, {
-      method: 'GET'
+      method: 'GET',
     });
     if (!result.ok) {
-        throw result
+      throw result;
     }
     return result.json();
   }

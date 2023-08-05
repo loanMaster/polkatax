@@ -1,10 +1,10 @@
 import * as fs from 'fs'
-import * as parachains from '../../res/parachains.json'
 import {fetchQuotesLogger} from "../logger/fetch-quotes-logger";
 import {fiatCurrencies} from "../const/fiat-currencies";
 import {CoingeckoService} from "../coingecko-api/coingecko.service";
+import * as substrateChains from "../../res/substrate-chains.json"
 
-interface Quotes {
+export interface Quotes {
     [key: string]: {
         temporary?: boolean
         [key:string]: number | boolean,
@@ -35,10 +35,7 @@ export class PriceHistoryService {
         const quotes: Quotes = fs.existsSync(filePath) ?
             JSON.parse(fs.readFileSync(filePath, 'utf-8')) : {}
         const original = { ...quotes }
-        const date = new Date(beginDate)
-        date.setHours(0)
-        date.setMinutes(0)
-        date.setMilliseconds(0)
+        const date = new Date(beginDate + 'T00:00:00.000Z')
         let errors = 0
         while (date.getTime() < new Date().getTime()) {
             if (errors >= 100) {
@@ -114,7 +111,7 @@ export class PriceHistoryService {
     }
 
     async runInitialSync() {
-        for (let chain of parachains.chains) {
+        for (let chain of substrateChains.chains) {
             if (!fs.existsSync(this.getFilePath(chain.token))) {
                 fetchQuotesLogger.info(`Fetching quotes for ${chain.name} / ${chain.token}`)
                 await this.runInitialSyncForChain(chain.coingeckoId, chain.token)

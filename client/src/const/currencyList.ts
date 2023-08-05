@@ -35,7 +35,6 @@ export const currencyList: Currency[] = [
   { name: 'RUB', flag: '&#127479;&#127482;' },
   { name: 'SEK', flag: '&#127480;&#127466;' },
   { name: 'SGD', flag: '&#127480;&#127468;' },
-  { name: 'SGD', flag: '&#127480;&#127468;' },
   { name: 'THB', flag: '&#127481;&#127469;' },
   { name: 'TRY', flag: '&#127481;&#127479;' },
   { name: 'TWD', flag: '&#127481;&#127484;' },

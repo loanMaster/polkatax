@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { StakingRewardsService } from '../service/staking-rewards.service';
-import {Reward, RewardDto, Rewards} from '../model/rewards';
+import { Reward, RewardDto, Rewards } from '../model/rewards';
 import { TimeFrames } from '../model/time-frames';
 import { tokenList } from '../const/tokenList';
 
@@ -108,19 +108,19 @@ export const useRewardsStore = defineStore('rewards', {
         chain: this.chain,
         token: tokenList.find((t) => t.chain === this.chain)!.symbol,
         currency: this.currency,
-        address: this.address
-      }
+        address: this.address,
+      };
       this.rewards.values = rewardsDto.values.map((v: RewardDto) => {
-        const isoDate = formatDate(v.date * 1000)
+        const isoDate = formatDate(v.date * 1000);
         const reward = {
           ...v,
           isoDate: isoDate,
-          valueNow: v.amount * rewardsDto.currentPrice
-        }
-        this.rewards!.summary.amount += v.amount
-        this.rewards!.summary.value += v.value
-        this.rewards!.summary.valueNow += reward.valueNow
-        return reward as Reward
+          valueNow: v.amount * rewardsDto.currentPrice,
+        };
+        this.rewards!.summary.amount += v.amount;
+        this.rewards!.summary.value += v.value;
+        this.rewards!.summary.valueNow += reward.valueNow;
+        return reward as Reward;
       });
       return this.rewards;
     },

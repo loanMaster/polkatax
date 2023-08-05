@@ -77,3 +77,11 @@ npm run fetch-quotes-periodically
 ## Prerequisites
 To run the server locally you must provide a subscan api key as environment variable named "SUBSCAN_API_KEY".
 It will read environment variables from a file .env placed under /server.
+
+
+## Add a new token
+
+Both the client and server have a list of tokens / chains, which need to be updated
+(substrate-chains.json in the server project, tokenList.ts in the client project).
+In addition to that historical price data for the new token must be provided. 
+You need to run 'fetch-quotes-full-sync' as explained above to fetch all price data.
