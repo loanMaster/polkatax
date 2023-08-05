@@ -1,0 +1,159 @@
+{
+  "chains": [
+    {
+      "name": "polkadot",
+      "token": "dot",
+      "coingeckoId": "polkadot"
+    },
+    {
+      "name": "kusama",
+      "token": "ksm",
+      "coingeckoId": "kusama"
+    },
+    {
+      "name": "moonbeam",
+      "token": "glmr",
+      "coingeckoId": "moonbeam"
+    },
+    {
+      "name": "astar",
+      "token": "astr",
+      "coingeckoId": "astar"
+    },
+    {
+      "name": "phala",
+      "token": "pha",
+      "coingeckoId": "pha"
+    },
+    {
+      "name": "crust",
+      "token": "cru",
+      "coingeckoId": "crust-network"
+    },
+    {
+      "name": "hydradx",
+      "token": "hdx",
+      "coingeckoId": "hydradx"
+    },
+    {
+      "name": "spiritnet",
+      "token": "kilt",
+      "coingeckoId": "kilt-protocol"
+    },
+    {
+      "name": "acala",
+      "token": "aca",
+      "coingeckoId": "acala"
+    },
+    {
+      "name": "bifrost",
+      "token": "bfc",
+      "coingeckoId": "bifrost"
+    },
+    {
+      "name": "centrifuge",
+      "token": "cfg",
+      "coingeckoId": "centrifuge"
+    },
+    {
+      "name": "crust",
+      "token": "cru",
+      "coingeckoId": "crust-network"
+    },
+    {
+      "name": "equilibrium",
+      "token": "eq",
+      "coingeckoId": "equilibrium-token"
+    },
+    {
+      "name": "darwinia",
+      "token": "ring",
+      "coingeckoId": "darwinia-network-native-token"
+    },
+    {
+      "name": "parallel",
+      "token": "para",
+      "coingeckoId": "parallel-finance"
+    },
+    {
+      "name": "polkadex",
+      "token": "pdex",
+      "coingeckoId": "polkadex"
+    },
+    {
+      "name": "zeitgeist",
+      "token": "ztg",
+      "coingeckoId": "zeitgeist"
+    },
+    {
+      "name": "unique",
+      "token": "unq",
+      "coingeckoId": "unique-network"
+    },
+    {
+      "name": "nodle",
+      "token": "nodl",
+      "coingeckoId": "nodle-network"
+    },
+    {
+      "name": "origintrail",
+      "token": "trac",
+      "coingeckoId": "origintrail"
+    },
+    {
+      "name": "interlay",
+      "token": "intr",
+      "coingeckoId": "interlay"
+    },
+    {
+      "name": "calamari",
+      "token": "kma",
+      "coingeckoId": "calamari-network"
+    },
+    {
+      "name": "khala",
+      "token": "pha",
+      "coingeckoId": "pha"
+    },
+    {
+      "name": "moonriver",
+      "token": "movr",
+      "coingeckoId": "moonriver"
+    },
+    {
+      "name": "kintsugi",
+      "token": "kint",
+      "coingeckoId": "kintsugi"
+    },
+    {
+      "name": "robonomics",
+      "token": "xrt",
+      "coingeckoId": "robonomics-network"
+    },
+    {
+      "name": "dbc",
+      "token": "dbc",
+      "coingeckoId": "deepbrain-chain"
+    },
+    {
+      "name": "edgeware",
+      "token": "edg",
+      "coingeckoId": "edgeware"
+    },
+    {
+      "name": "sora",
+      "token": "xor",
+      "coingeckoId": "sora"
+    },
+    {
+      "name": "humanode",
+      "token": "hmnd",
+      "coingeckoId": "humanode"
+    },
+    {
+      "name": "alephzero",
+      "token": "azero",
+      "coingeckoId": "aleph-zero"
+    }
+  ]
+}

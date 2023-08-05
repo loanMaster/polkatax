@@ -1,0 +1,16 @@
+{
+  "name": "polkatax",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "rimraf server/public && cd client && npm run build && cp -r ./dist/spa  ../server/public",
+    "serve": "cd server && npm run serve",
+    "fetch-quotes-full-sync": "cd server && npm run fetch-quotes-full-sync",
+    "fetch-quotes-periodically": "cd server && npm run fetch-quotes-periodically"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rimraf": "^5.0.1"
+  }
+}

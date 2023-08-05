@@ -1,0 +1,22 @@
+.DS_Store
+.thumbs.db
+node_modules
+
+# Quasar core related directories
+.quasar
+/client/dist
+
+# Log files
+*.log*
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+server/public
+server/.env
+
+server/res/quotes/*
