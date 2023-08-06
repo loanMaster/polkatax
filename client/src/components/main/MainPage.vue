@@ -130,7 +130,10 @@ async function fetchRewards() {
           ? 'The data provided is invalid. Please check the wallet address.'
           : 'There was an error fetching your data. Please try again later';
       $q.dialog({
-        title: error.status && error.status === 429 ? 'Request limit exceeded' : 'An error occurred',
+        title:
+          error.status && error.status === 429
+            ? 'Request limit exceeded'
+            : 'An error occurred',
         message,
         persistent: true,
       });

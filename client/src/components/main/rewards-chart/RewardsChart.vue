@@ -8,10 +8,10 @@
   ></GChart>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, Ref, ref } from 'vue';
+import { computed } from 'vue';
 import { useRewardsStore } from '../../../stores/rewards.store';
 import { Reward } from '../../..//model/rewards';
-import { GChart } from 'vue-google-charts'
+import { GChart } from 'vue-google-charts';
 
 const rewardsStore = useRewardsStore();
 
@@ -20,22 +20,21 @@ const props = defineProps({
 });
 
 const hasData = computed(() => {
-  return (rewardsStore.rewards?.values || []).length !== 0
-})
+  return (rewardsStore.rewards?.values || []).length !== 0;
+});
 
 const rewardDataTable = computed(() => {
-  const header = props.currency ? [['date', 'Value', 'Value now']] : [['date', 'Amount']]
+  const header = props.currency
+    ? [['date', 'Value', 'Value now']]
+    : [['date', 'Amount']];
   const data = (rewardsStore.rewards?.values || []).map((r: Reward) => {
     return props.currency
       ? [new Date(r.date * 1000), r.value, r.valueNow]
       : [new Date(r.date * 1000), r.amount];
   });
 
-  return [
-    ...header,
-    ...data
-  ]
-})
+  return [...header, ...data];
+});
 
 const options = computed(() => ({
   title: `Rewards (${
