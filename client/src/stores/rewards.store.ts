@@ -23,10 +23,10 @@ const getStartDate = (timeFrame: string) => {
       temp.setMonth(0);
       break;
     case TimeFrames.lastSevenDays:
-      temp.setDate(temp.getDay() - 7);
+      temp.setDate(temp.getDate() - 7);
       break;
     case TimeFrames.lastThirtyDays:
-      temp.setDate(temp.getDay() - 30);
+      temp.setDate(temp.getDate() - 30);
       break;
     case TimeFrames.lastMonth:
       temp.setDate(1);
