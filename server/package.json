@@ -20,7 +20,7 @@
     "fastify": "^4.21.0",
     "fs": "^0.0.1-security",
     "joi": "^17.9.2",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.6.12",
     "pino-pretty": "^10.2.0"
   },
   "devDependencies": {
