@@ -8,14 +8,7 @@ export class StakingRewardsService {
     beginDate: number,
     endDate: number
   ): Promise<RewardsDto> {
-    const url = new URL(
-      `http://localhost:3000/api/staking-rewards/${chain.toLowerCase()}/${address}`
-    );
-    url.searchParams.append('startdate', String(beginDate));
-    url.searchParams.append('enddate', String(endDate));
-    url.searchParams.append('currency', currency.toLowerCase());
-
-    const result = await fetch(url, {
+    const result = await fetch(`/api/staking-rewards/${chain.toLowerCase()}/${address}?startdate=${beginDate}&enddate=${endDate}&currency=${currency}`, {
       method: 'GET',
     });
     if (!result.ok) {

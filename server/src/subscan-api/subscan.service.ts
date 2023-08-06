@@ -4,8 +4,9 @@ import {Block} from "./block";
 import {BigNumber} from "bignumber.js";
 import {Token} from "./token";
 import {HttpError} from "../error/HttpError";
+import fetch from 'node-fetch';
 
-async function handleError(fetchRequest: Promise<Response>) {
+async function handleError(fetchRequest: Promise<any>) {
     const response = await fetchRequest
     if (!response.ok) {
         throw new HttpError(response.status, await response.text())

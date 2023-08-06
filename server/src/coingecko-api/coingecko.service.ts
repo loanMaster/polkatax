@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import {HttpError} from "../error/HttpError";
 
 export class CoingeckoService {
@@ -10,7 +11,7 @@ export class CoingeckoService {
         if (!response.ok) {
             throw new HttpError(response.status, response.statusText)
         }
-        const responseJson = await response.json()
+        const responseJson = await response.json() as any
         return responseJson?.market_data?.current_price
     }
 
@@ -21,7 +22,7 @@ export class CoingeckoService {
         if (!response.ok) {
             throw new HttpError(response.status, response.statusText)
         }
-        const responseJson = await response.json()
+        const responseJson = await response.json() as any
         return responseJson.prices
     }
 
