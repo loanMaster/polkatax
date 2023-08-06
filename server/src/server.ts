@@ -1,6 +1,5 @@
 import Fastify from 'fastify'
 import {rewardsEndpoint} from "./endpoints/rewards.endoint";
-import cors from '@fastify/cors'
 import path from "path";
 import {logger} from "./logger/logger";
 import dotenv from 'dotenv'
@@ -16,8 +15,6 @@ const init = async () => {
             cert: fs.readFileSync(process.env['SSL_CERT'],'utf8')
         } : undefined
     })
-
-    await fastify.register(cors, {})
 
     await fastify.register(import('@fastify/rate-limit'), { global: false })
 
