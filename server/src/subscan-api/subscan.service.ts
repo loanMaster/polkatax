@@ -55,9 +55,6 @@ export class SubscanService {
             },
             body: JSON.stringify({block_num: blockNum, only_head: true})
         }));
-        if (!response.ok) {
-            throw new HttpError(response.status, response.statusText)
-        }
         const body = await response.json();
         return body.data
     }

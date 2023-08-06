@@ -75,7 +75,7 @@ function formatDate(date: number) {
 export const useRewardsStore = defineStore('rewards', {
   state: () => {
     return {
-      rewards: undefined as Rewards | undefined, // dummyData as any, // {token: 'DOT', currency: 'USD', value: [], summary: {amount: 0, value: 0, currentValue: 0}},
+      rewards: undefined as Rewards | undefined,
       chain: '',
       currency: '',
       address: '',
@@ -91,7 +91,7 @@ export const useRewardsStore = defineStore('rewards', {
     async fetchRewards() {
       const rewardsDto = await new StakingRewardsService().fetchStakingRewards(
         this.chain,
-        this.address,
+        this.address.trim(),
         this.currency,
         getStartDate(this.timeFrame),
         getEndDate(this.timeFrame)

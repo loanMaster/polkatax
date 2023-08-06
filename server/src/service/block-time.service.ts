@@ -1,5 +1,6 @@
 import {Block} from "../subscan-api/block";
 import {SubscanService} from "../subscan-api/subscan.service";
+import {logger} from "../logger/logger";
 
 export class BlockTimeService {
 
@@ -20,6 +21,7 @@ export class BlockTimeService {
             }
         }
         let block: Block
+        let counter = 0
         do {
             const dateSeconds = date / 1000;
             estBlock = Math.max(1, Math.round(estBlock - ((block?.block_timestamp || dateNowSeconds) - dateSeconds) / meta.avgBlockTime))
@@ -27,6 +29,7 @@ export class BlockTimeService {
             if (estBlock === 1) {
                 break
             }
+            counter++
         } while (Math.abs(block.block_timestamp - date / 1000) > TOLERANCE);
 
         return {

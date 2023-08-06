@@ -3,6 +3,7 @@ import { BigNumber } from "bignumber.js";
 import {Reward} from "../subscan-api/reward";
 import {HttpError} from "../error/HttpError";
 import {SubscanService} from "../subscan-api/subscan.service";
+import {logger} from "../logger/logger";
 
 export class StakingRewardsService {
     constructor(private blockTimeService: BlockTimeService, private subscanService: SubscanService) {

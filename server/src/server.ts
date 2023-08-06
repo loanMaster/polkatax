@@ -24,11 +24,11 @@ const init = async () => {
     })
 
     fastify.setErrorHandler( (error, request, reply) => {
-        if (error instanceof HttpError) {
-            logger.info(`Error: Status ${error.statusCode}, Message: ${error.message}`)
+        if (error.statusCode) {
+            logger.info(`Error: Status ${error.statusCode}, Message: ${error.message}`, error)
             reply.status(error.statusCode).send(error.message)
         } else {
-            logger.warn(`Error: ${error.message}`)
+            logger.warn(`Error: ${error.message}`, error)
             reply.status(500).send(error.message)
         }
     })

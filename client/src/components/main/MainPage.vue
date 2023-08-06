@@ -125,12 +125,12 @@ async function fetchRewards() {
     } catch (error: Response) {
       const message =
         error.status && error.status === 429
-          ? 'Too many requests. Please try again later'
+          ? 'Too many requests. Please try again in one minute'
           : error.status && error.status === 400
           ? 'The data provided is invalid. Please check the wallet address.'
           : 'There was an error fetching your data. Please try again later';
       $q.dialog({
-        title: 'An error occurred',
+        title: error.status && error.status === 429 ? 'Request limit exceeded' : 'An error occurred',
         message,
         persistent: true,
       });

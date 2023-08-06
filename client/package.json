@@ -11,13 +11,13 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@google-web-components/google-chart": "^5.0.4",
     "@json2csv/plainjs": "^7.0.1",
     "@quasar/extras": "^1.0.0",
     "file-saver": "^2.0.5",
     "pinia": "^2.1.6",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
+    "vue-google-charts": "^1.1.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {

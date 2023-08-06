@@ -10,6 +10,7 @@ import {SubscanService} from "../subscan-api/subscan.service";
 import {PriceHistoryService} from "../service/price-history.service";
 import {SubstrateChain} from "../model/substrate-chain";
 import * as substrateChains from "../../res/substrate-chains.json"
+import {logger} from "../logger/logger";
 
 const fetchRewards = async (chain: SubstrateChain, address: string, currency: string, startDay: Date, endDay?: Date) => {
     const priceService = new PriceService(new CoingeckoService())
