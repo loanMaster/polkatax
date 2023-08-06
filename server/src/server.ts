@@ -4,6 +4,7 @@ import cors from '@fastify/cors'
 import path from "path";
 import {logger} from "./logger/logger";
 import dotenv from 'dotenv'
+import * as fs from 'fs'
 
 dotenv.config({ path: __dirname + '/../.env' })
 
@@ -11,8 +12,8 @@ const init = async () => {
     const fastify = Fastify({
         logger,
         https: process.env['SSL_KEY'] ? {
-            key: process.env['SSL_KEY'],
-            cert: process.env['SSL_CERT']
+            key: fs.readFileSync(process.env['SSL_KEY'],'utf8'),
+            cert: fs.readFileSync(process.env['SSL_CERT'],'utf8')
         } : undefined
     })
 
