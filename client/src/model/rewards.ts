@@ -9,6 +9,10 @@ export interface RewardSummary {
   valueNow: number;
 }
 
+export interface DailyRewards {
+  [key: string]: { amount: number; value: number; valueNow: number };
+}
+
 export interface Rewards {
   token: string;
   chain: string;
@@ -18,6 +22,7 @@ export interface Rewards {
   timeFrame: string;
   summary: RewardSummary;
   values: Reward[];
+  dailyValues: DailyRewards;
 }
 
 export interface RewardDto {

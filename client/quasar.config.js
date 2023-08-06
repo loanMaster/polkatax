@@ -90,10 +90,10 @@ module.exports = configure(function (/* ctx */) {
           target: 'http://localhost:3000',
           changeOrigin: true,
           pathRewrite: {
-            '^/api': ''
-          }
-        }
-      }
+            '^/api': '',
+          },
+        },
+      },
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

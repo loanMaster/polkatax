@@ -61,6 +61,7 @@
         Verify your rewards here:
         <a
           :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`"
+          style="line-break: anywhere"
           target="_blank"
         >
           https://{{ rewardsStore.rewards.chain }}.subscan.io/account/{{
@@ -70,8 +71,10 @@
       </div>
     </div>
     <div class="justify-around items-center column" v-if="rewardsStore.rewards">
-      <rewards-chart :currency="false" />
-      <rewards-chart :currency="true" />
+      <rewards-chart :currency="false" chartType="ColumnChart" />
+      <rewards-chart :currency="false" chartType="LineChart" />
+      <rewards-chart :currency="true" chartType="ColumnChart" />
+      <rewards-chart :currency="true" chartType="LineChart" />
     </div>
     <div class="table q-my-md" v-if="rewardsStore.rewards">
       <staking-rewards-table />

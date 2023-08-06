@@ -8,7 +8,7 @@
       :pagination="initialPagination"
     >
       <template v-slot:top>
-        <span class="text-h6"
+        <span class="text-h6" style="line-break: anywhere"
           >Rewards ({{ rewardsStore.rewards.chain }}) -
           {{ rewardsStore.rewards.timeFrame }} -
           {{ rewardsStore.rewards.address }}</span

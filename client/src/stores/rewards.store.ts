@@ -23,10 +23,10 @@ const getStartDate = (timeFrame: string) => {
       temp.setMonth(0);
       break;
     case TimeFrames.lastSevenDays:
-      temp.setDate(temp.getDate() - 7);
+      temp.setDate(temp.getDate() - 6);
       break;
     case TimeFrames.lastThirtyDays:
-      temp.setDate(temp.getDate() - 30);
+      temp.setDate(temp.getDate() - 29);
       break;
     case TimeFrames.lastMonth:
       temp.setDate(1);
@@ -61,7 +61,7 @@ const getEndDate = (timeFrame: string) => {
   return temp.getTime();
 };
 
-function formatDate(date: number) {
+export function formatDate(date: number) {
   const d = new Date(date),
     year = d.getFullYear();
   let month = '' + (d.getMonth() + 1),
@@ -70,6 +70,25 @@ function formatDate(date: number) {
   if (month.length < 2) month = '0' + month;
   if (day.length < 2) day = '0' + day;
   return [year, month, day].join('-');
+}
+
+function groupRewardsByDay(rewards: Reward[]) {
+  const groupedByDay: {
+    [key: string]: { amount: number; value: number; valueNow: number };
+  } = {};
+  rewards.forEach((r: Reward) => {
+    if (!groupedByDay[r.isoDate]) {
+      groupedByDay[r.isoDate] = {
+        amount: 0,
+        value: 0,
+        valueNow: 0,
+      };
+    }
+    groupedByDay[r.isoDate].amount += r.amount;
+    groupedByDay[r.isoDate].value += r.value;
+    groupedByDay[r.isoDate].valueNow += r.valueNow || 0;
+  });
+  return groupedByDay;
 }
 
 export const useRewardsStore = defineStore('rewards', {
@@ -109,8 +128,9 @@ export const useRewardsStore = defineStore('rewards', {
         token: tokenList.find((t) => t.chain === this.chain)!.symbol,
         currency: this.currency,
         address: this.address,
+        dailyValues: {},
       };
-      this.rewards.values = rewardsDto.values.map((v: RewardDto) => {
+      this.rewards!.values = rewardsDto.values.map((v: RewardDto) => {
         const isoDate = formatDate(v.date * 1000);
         const reward = {
           ...v,
@@ -122,6 +142,8 @@ export const useRewardsStore = defineStore('rewards', {
         this.rewards!.summary.valueNow += reward.valueNow;
         return reward as Reward;
       });
+      this.rewards!.values.sort((a, b) => (a > b ? 1 : -1));
+      this.rewards!.dailyValues = groupRewardsByDay(this.rewards!.values);
       return this.rewards;
     },
   },
