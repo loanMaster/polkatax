@@ -2,7 +2,6 @@ import Fastify from 'fastify'
 import {rewardsEndpoint} from "./endpoints/rewards.endoint";
 import cors from '@fastify/cors'
 import path from "path";
-import {HttpError} from "./error/HttpError";
 import {logger} from "./logger/logger";
 import dotenv from 'dotenv'
 
@@ -10,7 +9,11 @@ dotenv.config({ path: __dirname + '/../.env' })
 
 const init = async () => {
     const fastify = Fastify({
-        logger
+        logger,
+        https: process.env['SSL_KEY'] ? {
+            key: process.env['SSL_KEY'],
+            cert: process.env['SSL_CERT']
+        } : undefined
     })
 
     await fastify.register(cors, {})
@@ -35,7 +38,7 @@ const init = async () => {
 
     fastify.route(rewardsEndpoint)
 
-    fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
+    fastify.listen({ port: Number(process.env['PORT'] || 3000) , host: '0.0.0.0' }, (err) => {
         if (err) {
             fastify.log.error(err)
             process.exit(1)
