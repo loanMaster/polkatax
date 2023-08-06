@@ -67,6 +67,9 @@ const options = computed(() => ({
   hAxis: {
     title: 'Date',
   },
+  vAxis: {
+    minValue: 0
+  },
   axisTitlesPosition: 'out',
 }));
 </script>
