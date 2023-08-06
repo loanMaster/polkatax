@@ -54,7 +54,7 @@ const columns = computed(() => [
     name: 'block',
     align: 'right',
     label: 'Block',
-    field: 'date',
+    field: 'block',
     sortable: true,
   },
   {
