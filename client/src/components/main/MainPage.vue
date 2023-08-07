@@ -59,7 +59,7 @@
             Current price ({{ rewardsStore.rewards.currency }}):
           </td>
           <td class="text-right q-pa-sm">
-            {{ rewardsStore.rewards.currentPrice }}
+            {{ rewardsStore.rewards.currentPrice > 0 ? rewardsStore.rewards.currentPrice.toFixed(3) : rewardsStore.rewards.currentPrice }}
           </td>
         </tr>
       </table>
@@ -131,7 +131,7 @@ async function fetchRewards() {
         spinnerColor: 'primary',
       });
       await rewardsStore.fetchRewards();
-    } catch (error) {
+    } catch (error: any) {
       const message =
         error.status && error.status === 429
           ? 'Too many requests. Please try again in one minute'
