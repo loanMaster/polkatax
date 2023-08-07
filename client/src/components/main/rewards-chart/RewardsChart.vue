@@ -25,7 +25,7 @@ const hasData = computed(() => {
 
 const rewardDataTable = computed(() => {
   const header = props.currency
-    ? [['date', 'Value', 'Value now']]
+    ? [['date', 'Value at payout time', 'Value now']]
     : [['date', 'Amount']];
   const minDay = rewardsStore.rewards!.values[0].isoDate;
   const maxDay =
@@ -68,7 +68,7 @@ const options = computed(() => ({
     title: 'Date',
   },
   vAxis: {
-    minValue: 0
+    minValue: 0,
   },
   axisTitlesPosition: 'out',
 }));

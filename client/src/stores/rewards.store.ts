@@ -108,12 +108,14 @@ export const useRewardsStore = defineStore('rewards', {
   },
   actions: {
     async fetchRewards() {
+      const startDate = getStartDate(this.timeFrame);
+      const endDate = getEndDate(this.timeFrame);
       const rewardsDto = await new StakingRewardsService().fetchStakingRewards(
         this.chain,
         this.address.trim(),
         this.currency,
-        getStartDate(this.timeFrame),
-        getEndDate(this.timeFrame)
+        startDate,
+        endDate
       );
       this.rewards = {
         values: [],
@@ -124,6 +126,8 @@ export const useRewardsStore = defineStore('rewards', {
         },
         currentPrice: rewardsDto.currentPrice,
         timeFrame: this.timeFrame,
+        startDate,
+        endDate,
         chain: this.chain,
         token: tokenList.find((t) => t.chain === this.chain)!.symbol,
         currency: this.currency,

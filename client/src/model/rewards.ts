@@ -20,6 +20,8 @@ export interface Rewards {
   currency: string;
   currentPrice: number;
   timeFrame: string;
+  startDate: number;
+  endDate: number;
   summary: RewardSummary;
   values: Reward[];
   dailyValues: DailyRewards;

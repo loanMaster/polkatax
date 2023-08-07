@@ -26,10 +26,16 @@
           <td class="text-left q-pa-sm">Total rewards:</td>
           <td class="text-right q-pa-sm">
             {{
-              rewardsStore.rewards.summary.amount +
+              rewardsStore.rewards.summary.amount.toFixed(3) +
               ' ' +
               rewardsStore.rewards.token
             }}
+          </td>
+        </tr>
+        <tr>
+          <td class="text-left q-pa-sm">Average rewards per day:</td>
+          <td class="text-right q-pa-sm">
+            {{ averageDailyRewards + ' ' + rewardsStore.rewards.token }}
           </td>
         </tr>
         <tr>
@@ -125,7 +131,7 @@ async function fetchRewards() {
         spinnerColor: 'primary',
       });
       await rewardsStore.fetchRewards();
-    } catch (error: Response) {
+    } catch (error) {
       const message =
         error.status && error.status === 429
           ? 'Too many requests. Please try again in one minute'
@@ -152,6 +158,20 @@ const isDisabled = computed(() => {
     !rewardsStore.currency ||
     !rewardsStore.chain
   );
+});
+
+const averageDailyRewards = computed(() => {
+  if (!rewardsStore.rewards) {
+    return 0;
+  }
+  return (
+    (rewardsStore.rewards!.summary.amount /
+      (rewardsStore.rewards!.endDate - rewardsStore.rewards!.startDate)) *
+    24 *
+    60 *
+    60 *
+    1000
+  ).toFixed(3);
 });
 
 const meme = ref(`img/${Math.floor(Math.random() * 2).toFixed(0)}.jpg`);

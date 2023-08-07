@@ -20,7 +20,7 @@
     <q-footer reveal>
       <q-toolbar>
         <q-toolbar-title class="flex justify-end"
-          ><a href="https://github.com" class="flex"
+          ><a href="https://github.com/loanMaster/polkatax" class="flex"
             ><img src="img/github.png" /></a
         ></q-toolbar-title>
       </q-toolbar>
