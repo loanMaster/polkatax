@@ -18,67 +18,7 @@
       />
     </div>
     <div class="text-center q-my-xl" v-if="rewardsStore.rewards">
-      <div class="text-h6">
-        Summary of staking rewards ({{ rewardsStore.rewards.timeFrame }})
-      </div>
-      <table class="q-my-lg q-mx-auto">
-        <tr>
-          <td class="text-left q-pa-sm">Total rewards:</td>
-          <td class="text-right q-pa-sm">
-            {{
-              rewardsStore.rewards.summary.amount.toFixed(3) +
-              ' ' +
-              rewardsStore.rewards.token
-            }}
-          </td>
-        </tr>
-        <tr>
-          <td class="text-left q-pa-sm">Average rewards per day:</td>
-          <td class="text-right q-pa-sm">
-            {{ averageDailyRewards + ' ' + rewardsStore.rewards.token }}
-          </td>
-        </tr>
-        <tr>
-          <td class="text-left q-pa-sm">
-            Value at payout time ({{ rewardsStore.rewards.currency }}):
-          </td>
-          <td class="text-right q-pa-sm">
-            {{ rewardsStore.rewards.summary.value.toFixed(2) }}
-          </td>
-        </tr>
-        <tr>
-          <td class="text-left q-pa-sm">
-            Value now ({{ rewardsStore.rewards.currency }}):
-          </td>
-          <td class="text-right q-pa-sm">
-            {{ rewardsStore.rewards.summary.valueNow.toFixed(2) }}
-          </td>
-        </tr>
-        <tr>
-          <td class="text-left q-pa-sm">
-            Current price ({{ rewardsStore.rewards.currency }}):
-          </td>
-          <td class="text-right q-pa-sm">
-            {{
-              rewardsStore.rewards.currentPrice > 1
-                ? rewardsStore.rewards.currentPrice.toFixed(3)
-                : rewardsStore.rewards.currentPrice
-            }}
-          </td>
-        </tr>
-      </table>
-      <div>
-        Verify your rewards here:
-        <a
-          :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`"
-          style="line-break: anywhere"
-          target="_blank"
-        >
-          https://{{ rewardsStore.rewards.chain }}.subscan.io/account/{{
-            rewardsStore.rewards.address
-          }}?tab=reward
-        </a>
-      </div>
+      <reward-summary />
     </div>
     <div class="justify-around items-center column" v-if="rewardsStore.rewards">
       <rewards-chart :currency="false" chartType="ColumnChart" />
@@ -117,6 +57,7 @@ import RewardsChart from './rewards-chart/RewardsChart.vue';
 import CurrencyDropdown from './currency-dropdown/CurrencyDropdown.vue';
 import StakingRewardsTable from './staking-rewards-table/StakingRewardsTable.vue';
 import TimeFrameDropdown from './time-frame-dropdown/TimeFrameDropdown.vue';
+import RewardSummary from './reward-summary/RewardSummary.vue';
 import { useRewardsStore } from '../../stores/rewards.store';
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
@@ -162,20 +103,6 @@ const isDisabled = computed(() => {
     !rewardsStore.currency ||
     !rewardsStore.chain
   );
-});
-
-const averageDailyRewards = computed(() => {
-  if (!rewardsStore.rewards) {
-    return 0;
-  }
-  return (
-    (rewardsStore.rewards!.summary.amount /
-      (rewardsStore.rewards!.endDate - rewardsStore.rewards!.startDate)) *
-    24 *
-    60 *
-    60 *
-    1000
-  ).toFixed(3);
 });
 
 const meme = ref(`img/${Math.floor(Math.random() * 2).toFixed(0)}.jpg`);
