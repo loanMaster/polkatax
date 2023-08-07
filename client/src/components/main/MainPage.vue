@@ -59,7 +59,11 @@
             Current price ({{ rewardsStore.rewards.currency }}):
           </td>
           <td class="text-right q-pa-sm">
-            {{ rewardsStore.rewards.currentPrice > 0 ? rewardsStore.rewards.currentPrice.toFixed(3) : rewardsStore.rewards.currentPrice }}
+            {{
+              rewardsStore.rewards.currentPrice > 0
+                ? rewardsStore.rewards.currentPrice.toFixed(3)
+                : rewardsStore.rewards.currentPrice
+            }}
           </td>
         </tr>
       </table>
