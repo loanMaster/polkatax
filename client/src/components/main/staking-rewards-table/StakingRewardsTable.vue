@@ -62,7 +62,7 @@ const columns = computed(() => [
     align: 'right',
     label: `Reward (${rewardToken.value})`,
     field: 'amount',
-    format: (num: number) => num.toFixed(tokenDigits.value),
+    format: (num: number) => amountFormatter.value.format(num),
     sortable: true,
   },
   {
@@ -70,6 +70,7 @@ const columns = computed(() => [
     align: 'right',
     label: `Price (${rewardsStore?.rewards?.currency})`,
     field: 'price',
+    format: (num: number) => priceFormatter.format(num),
     sortable: true,
   },
   {
@@ -77,7 +78,7 @@ const columns = computed(() => [
     align: 'right',
     label: `Value (${rewardsStore?.rewards?.currency})`,
     field: 'value',
-    format: (num: number) => num?.toFixed(2) || '',
+    format: (num: number) => valueFormatter.format(num),
     sortable: true,
   },
   {
@@ -85,7 +86,7 @@ const columns = computed(() => [
     align: 'right',
     label: `Value now (${rewardsStore?.rewards?.currency})`,
     field: 'valueNow',
-    format: (num: number) => num?.toFixed(2) || '',
+    format: (num: number) => valueFormatter.format(num),
     sortable: true,
   },
 ]);
@@ -97,7 +98,11 @@ const rows = computed(() => {
 const tokenDigits = computed(() => {
   let max = 0;
   rewardsStore?.rewards?.values.forEach((v: Reward) => {
-    const digits = v.amount.toString().split('.')[1].length;
+    const parts = v.amount.toString().split('.');
+    if (parts.length < 2) {
+      return 0;
+    }
+    const digits = parts[1].length;
     if (digits > max) {
       max = digits;
     }
@@ -144,4 +149,20 @@ function exportJson() {
     'staking-rewards.json'
   );
 }
+
+const amountFormatter = computed(() => {
+  return new Intl.NumberFormat(navigator.language || 'en-US', {
+    minimumFractionDigits: tokenDigits.value,
+    maximumFractionDigits: tokenDigits.value,
+  });
+});
+
+const valueFormatter = new Intl.NumberFormat(navigator.language || 'en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const priceFormatter = new Intl.NumberFormat(navigator.language || 'en-US', {
+  maximumSignificantDigits: 4,
+});
 </script>
