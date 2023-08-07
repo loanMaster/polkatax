@@ -60,7 +60,7 @@
           </td>
           <td class="text-right q-pa-sm">
             {{
-              rewardsStore.rewards.currentPrice > 0
+              rewardsStore.rewards.currentPrice > 1
                 ? rewardsStore.rewards.currentPrice.toFixed(3)
                 : rewardsStore.rewards.currentPrice
             }}
