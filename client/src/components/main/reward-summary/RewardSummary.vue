@@ -73,21 +73,21 @@ const averageDailyRewards = computed(() => {
     60 *
     60 *
     1000
-  ).toFixed(3);
+  );
 });
 
 function formatCurrency(value: number) {
   if (isNaN(value)) {
     return '?';
   }
-  return new Intl.NumberFormat(navigator.language, {
+  return new Intl.NumberFormat(navigator.language || 'en-US', {
     style: 'currency',
     currency: rewardsStore.rewards!.currency.toUpperCase(),
   }).format(value);
 }
 
 function formatPrice(value: number) {
-  return new Intl.NumberFormat(navigator.language, {
+  return new Intl.NumberFormat(navigator.language || 'en-US', {
     style: 'currency',
     currency: rewardsStore.rewards!.currency.toUpperCase(),
     maximumSignificantDigits: 4,
@@ -95,7 +95,7 @@ function formatPrice(value: number) {
 }
 
 function formatTokenAmount(value: number) {
-  return new Intl.NumberFormat(navigator.language, {
+  return new Intl.NumberFormat(navigator.language || 'en-US', {
     minimumFractionDigits: 4,
     maximumFractionDigits: 4,
   }).format(value);
