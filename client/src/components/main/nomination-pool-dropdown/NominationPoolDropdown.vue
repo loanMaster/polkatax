@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md flex justify-center relative-position">
     <q-select
       filled
       @filter="filterFn"
@@ -15,6 +15,7 @@
       behavior="dialog"
       :disable="nominationPoolsDisabled || nominationPools.length === 0"
       options-selected-class="text-deep-orange"
+      style="max-width: 100%"
     >
       <template v-slot:option="scope">
         <q-item v-bind="scope.itemProps">
@@ -35,6 +36,13 @@
     >
       Nomination pools are only supported for KSM and DOT
     </q-tooltip>
+    <div
+      class="absolute full-height flex justify-center items-center"
+      style="top: 0"
+      v-if="showLoading"
+    >
+      <q-spinner color="primary" size="3em" :thickness="2" />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -54,15 +62,22 @@ onMounted(() => {
   refreshPools();
 });
 
+const showLoading = ref(false);
+
 async function refreshPools() {
   if (chain.value !== rewardsStore.chain) {
     model.value = undefined;
     onNewValueSelected(model.value);
     if (rewardsStore.chain === 'polkadot' || rewardsStore.chain === 'kusama') {
-      nominationPools.value =
-        await new NominationPoolService().fetchNominationPools(
-          rewardsStore.chain
-        );
+      showLoading.value = true;
+      try {
+        nominationPools.value =
+          await new NominationPoolService().fetchNominationPools(
+            rewardsStore.chain
+          );
+      } finally {
+        showLoading.value = false;
+      }
     } else {
       nominationPools.value = [];
     }
