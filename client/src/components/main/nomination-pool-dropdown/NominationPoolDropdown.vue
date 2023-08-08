@@ -78,7 +78,7 @@ function onNewValueSelected(value: NominationPool | undefined) {
   rewardsStore.nominationPoolId = value?.pool_id || 0;
 }
 
-const nominationPoolsEnabled = computed(() => {
+const nominationPoolsDisabled = computed(() => {
   return rewardsStore.chain !== 'kusama' && rewardsStore.chain !== 'polkadot';
 });
 

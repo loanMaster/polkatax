@@ -23,17 +23,9 @@
     </div>
     <div class="justify-around items-center column" v-if="rewardsStore.rewards">
       <rewards-chart :currency="false" chartType="ColumnChart" />
-      <rewards-chart
-        :currency="false"
-        chartType="LineChart"
-        v-if="!rewardsStore.nominationPoolId"
-      />
+      <rewards-chart :currency="false" chartType="LineChart" />
       <rewards-chart :currency="true" chartType="ColumnChart" />
-      <rewards-chart
-        :currency="true"
-        chartType="LineChart"
-        v-if="!rewardsStore.nominationPoolId"
-      />
+      <rewards-chart :currency="true" chartType="LineChart" />
     </div>
     <div class="table q-my-md" v-if="rewardsStore.rewards">
       <staking-rewards-table />
