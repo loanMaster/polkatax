@@ -13,7 +13,6 @@ export const tokenList: Token[] = [
     chain: 'astar',
     label: 'Astar',
   },
-  { symbol: 'PHA', chain: 'phala', label: 'Phala' },
   {
     symbol: 'CRU',
     chain: 'crust',
@@ -67,7 +66,6 @@ export const tokenList: Token[] = [
     chain: 'calamari',
     label: 'Calamari',
   },
-  { symbol: 'PHA', chain: 'khala', label: 'Khala' },
   {
     symbol: 'MOVR',
     chain: 'moonriver',
