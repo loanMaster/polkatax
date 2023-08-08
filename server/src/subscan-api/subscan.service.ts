@@ -71,17 +71,6 @@ export class SubscanService {
         )
     }
 
-    private async fetchPoolId(chainName: string, address: string): Promise<number | undefined> {
-        const body = JSON.stringify({ address })
-        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/nomination_pool/pool/member/vote`, {
-            method: `post`,
-            headers: this.defaultHeader,
-            body: body
-        }));
-        const jsonBody = await response.json()
-        return jsonBody.data?.pool_id
-    }
-
     private async fetchPoolStakingRewards(chainName: string, address: string, pool_id: number, row: number = 100, page: number = 0): Promise<Reward[]> {
         const body = JSON.stringify({
             row,
