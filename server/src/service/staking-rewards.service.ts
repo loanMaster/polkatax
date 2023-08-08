@@ -3,18 +3,15 @@ import { BigNumber } from "bignumber.js";
 import {Reward} from "../subscan-api/reward";
 import {HttpError} from "../error/HttpError";
 import {SubscanService} from "../subscan-api/subscan.service";
-import {logger} from "../logger/logger";
 
 export class StakingRewardsService {
     constructor(private blockTimeService: BlockTimeService, private subscanService: SubscanService) {
     }
 
-    async fetchStakingRewards(chainName: string, address: string, minDate: number, maxDate?: number): Promise<Reward[]> {
+    private async filterRewards(rewards: Reward[], chainName: string, minDate: number, maxDate: number): Promise<Reward[]> {
         const token = await this.subscanService.fetchToken(chainName)
-        const {blockMin} = await this.blockTimeService.estimateBlockNo(chainName, minDate)
-        const {blockMax} = await this.blockTimeService.estimateBlockNo(chainName, maxDate)
-        const rewardsSlashes = await this.subscanService.fetchAllStakingRewards(chainName, address, blockMin, blockMax)
-        const matchingRewardsSlashes = rewardsSlashes.filter(r =>
+
+        return rewards.filter(r =>
             (!maxDate || r.block_timestamp < maxDate / 1000) && r.block_timestamp >= minDate / 1000
         ).map(r => {
             if (r.event_id === 'Slash') {
@@ -25,6 +22,17 @@ export class StakingRewardsService {
             ...reward,
             amount: BigNumber(reward.amount).dividedBy(Math.pow(10, token.token_decimals)).toNumber()
         }))
-        return matchingRewardsSlashes
+    }
+
+    async fetchStakingRewards(chainName: string, address: string, minDate: number, maxDate?: number): Promise<Reward[]> {
+        const {blockMin} = await this.blockTimeService.estimateBlockNo(chainName, minDate)
+        const {blockMax} = await this.blockTimeService.estimateBlockNo(chainName, maxDate)
+        const rewardsSlashes = await this.subscanService.fetchAllStakingRewards(chainName, address, blockMin, blockMax)
+        return this.filterRewards(rewardsSlashes, chainName, minDate, maxDate)
+    }
+
+    async fetchNominationPoolRewards(chainName: string, address: string, poolId: number, minDate: number, maxDate?: number): Promise<Reward[]> {
+        const rewardsSlashes = await this.subscanService.fetchAllPoolStakingRewards(chainName, address, poolId)
+        return this.filterRewards(rewardsSlashes, chainName, minDate, maxDate)
     }
 }

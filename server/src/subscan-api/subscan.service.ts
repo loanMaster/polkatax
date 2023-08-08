@@ -22,12 +22,18 @@ export class SubscanService {
         }
     }
 
+    get defaultHeader() {
+        return {
+            "Content-Type": "application/json",
+            'x-api-key': process.env['SUBSCAN_API_KEY']
+        }
+    }
+
     async fetchMetadata (chainName: string): Promise<MetaData> {
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/metadata`, {
             method: `post`,
-            headers: {
-                'x-api-key': process.env['SUBSCAN_API_KEY']
-            }
+            headers: this.defaultHeader,
+            body: JSON.stringify({})
         }))
         const meta = (await response.json()).data
         return {avgBlockTime: Number(meta.avgBlockTime) || Number(meta.blockTime), blockNum: Number(meta.blockNum)}
@@ -36,9 +42,8 @@ export class SubscanService {
     async fetchToken (chainName: string): Promise<Token> {
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/token`, {
             method: `post`,
-            headers: {
-                'x-api-key': process.env['SUBSCAN_API_KEY']
-            }
+            headers: this.defaultHeader,
+            body: JSON.stringify({})
         }));
         const data = (await response.json()).data
         const nativeTokenSymbol = Object.keys(data.detail).find(symbol =>
@@ -60,19 +65,62 @@ export class SubscanService {
         return body.data
     }
 
-    async fetchAllStakingRewards(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Reward[]> {
+    async fetchAllPoolStakingRewards(chainName: string, address: string, poolId: number): Promise<Reward[]> {
+        return this.iterateOverPages<Reward>((page, count) =>
+            this.fetchPoolStakingRewards(chainName, address, poolId, count, page)
+        )
+    }
+
+    private async fetchPoolId(chainName: string, address: string): Promise<number | undefined> {
+        const body = JSON.stringify({ address })
+        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/nomination_pool/pool/member/vote`, {
+            method: `post`,
+            headers: this.defaultHeader,
+            body: body
+        }));
+        const jsonBody = await response.json()
+        return jsonBody.data?.pool_id
+    }
+
+    private async fetchPoolStakingRewards(chainName: string, address: string, pool_id: number, row: number = 100, page: number = 0): Promise<Reward[]> {
+        const body = JSON.stringify({
+            row,
+            page,
+            address,
+            pool_id
+        })
+        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/nomination_pool/rewards`, {
+            method: `post`,
+            headers: this.defaultHeader,
+            body: body
+        }));
+        const responseBody = await response.json()
+        return (responseBody.data?.list || []).map(entry => {
+            return {
+                event_id: entry.event_id,
+                amount: BigNumber(entry.amount),
+                block_timestamp: entry.block_timestamp,
+                block_num: entry.extrinsic_index.split('-')[0],
+            }
+        })
+    }
+
+    private async iterateOverPages<T>(fetchRewards: (page, count) => Promise<T[]>): Promise<T[]> {
         let page = 0
         const result = []
         let intermediate = []
-        for (let isStash of [true, false]) {
-            do {
-                // the api does not offer a method to return rewards for "stash" or "no-stash"
-                intermediate = await this.fetchStakingRewards(chainName, address, 100, page, isStash, block_min, block_max)
-                result.push(...intermediate)
-                page++
-            } while (intermediate.length > 99)
-        }
+        do {
+            intermediate = await fetchRewards(page, 100)
+            result.push(...intermediate)
+            page++
+        } while (intermediate.length > 99)
         return result
+    }
+
+    fetchAllStakingRewards(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Reward[]> {
+        return this.iterateOverPages<Reward>((page, count) =>
+            this.fetchStakingRewards(chainName, address, count, page, true, block_min, block_max)
+        )
     }
 
     async fetchStakingRewards(chainName: string, address: string, row: number = 100, page: number = 0, isStash: boolean, block_min?: number, block_max?: number): Promise<Reward[]> {
@@ -85,14 +133,11 @@ export class SubscanService {
         })
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/account/reward_slash`, {
             method: `post`,
-            headers: {
-                "Content-Type": "application/json",
-                'x-api-key': process.env['SUBSCAN_API_KEY']
-            },
+            headers: this.defaultHeader,
             body: body
         }));
         const responseBody = await response.json()
-        const result: Reward[] = (responseBody.data?.list || []).map(entry => {
+        return (responseBody.data?.list || []).map(entry => {
             return {
                 event_id: entry.event_id,
                 amount: BigNumber(entry.amount),
@@ -100,7 +145,6 @@ export class SubscanService {
                 block_num: entry.block_num,
             }
         })
-        return result
     }
 }
 

@@ -3,6 +3,7 @@
     <div class="q-my-md flex justify-between align-center items-center">
       <div class="dropdown"><token-dropdown /></div>
       <div class="dropdown"><currency-dropdown /></div>
+      <div class="dropdown"><nomination-pool-dropdown /></div>
       <time-frame-dropdown />
       <q-input
         filled
@@ -22,9 +23,17 @@
     </div>
     <div class="justify-around items-center column" v-if="rewardsStore.rewards">
       <rewards-chart :currency="false" chartType="ColumnChart" />
-      <rewards-chart :currency="false" chartType="LineChart" />
+      <rewards-chart
+        :currency="false"
+        chartType="LineChart"
+        v-if="!rewardsStore.nominationPoolId"
+      />
       <rewards-chart :currency="true" chartType="ColumnChart" />
-      <rewards-chart :currency="true" chartType="LineChart" />
+      <rewards-chart
+        :currency="true"
+        chartType="LineChart"
+        v-if="!rewardsStore.nominationPoolId"
+      />
     </div>
     <div class="table q-my-md" v-if="rewardsStore.rewards">
       <staking-rewards-table />
@@ -58,6 +67,7 @@ import CurrencyDropdown from './currency-dropdown/CurrencyDropdown.vue';
 import StakingRewardsTable from './staking-rewards-table/StakingRewardsTable.vue';
 import TimeFrameDropdown from './time-frame-dropdown/TimeFrameDropdown.vue';
 import RewardSummary from './reward-summary/RewardSummary.vue';
+import NominationPoolDropdown from './nomination-pool-dropdown/NominationPoolDropdown.vue';
 import { useRewardsStore } from '../../stores/rewards.store';
 import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';

@@ -95,6 +95,7 @@ export const useRewardsStore = defineStore('rewards', {
   state: () => {
     return {
       rewards: undefined as Rewards | undefined,
+      nominationPoolId: 0,
       chain: '',
       currency: '',
       address: '',
@@ -114,6 +115,7 @@ export const useRewardsStore = defineStore('rewards', {
         this.chain,
         this.address.trim(),
         this.currency,
+        this.nominationPoolId,
         startDate,
         endDate
       );
@@ -124,6 +126,7 @@ export const useRewardsStore = defineStore('rewards', {
           value: 0,
           valueNow: 0,
         },
+        nominationPoolId: this.nominationPoolId,
         currentPrice: rewardsDto.currentPrice,
         timeFrame: this.timeFrame,
         startDate,

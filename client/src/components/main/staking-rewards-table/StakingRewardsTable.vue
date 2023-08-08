@@ -129,6 +129,7 @@ function exportCsv() {
     Chain: rewardsStore?.rewards?.chain,
     Currency: rewardsStore?.rewards?.currency,
     'Wallet address': rewardsStore?.rewards?.address,
+    'NominationPool Id': rewardsStore?.rewards?.nominationPoolId || '',
     ...values[0],
     totalAmount: rewardsStore?.rewards?.summary.amount,
     totalValue: rewardsStore?.rewards?.summary.value,

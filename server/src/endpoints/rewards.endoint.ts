@@ -10,15 +10,16 @@ import {SubscanService} from "../subscan-api/subscan.service";
 import {PriceHistoryService} from "../service/price-history.service";
 import {SubstrateChain} from "../model/substrate-chain";
 import * as substrateChains from "../../res/substrate-chains.json"
-import {logger} from "../logger/logger";
 
-const fetchRewards = async (chain: SubstrateChain, address: string, currency: string, startDay: Date, endDay?: Date) => {
+const fetchRewards = async (chain: SubstrateChain, address: string, currency: string, poolId: number, startDay: Date, endDay?: Date) => {
     const priceService = new PriceService(new CoingeckoService())
     const priceHistoryService = new PriceHistoryService(new CoingeckoService())
     const currencyService = new CurrencyService(priceHistoryService)
     const subscanService = new SubscanService()
-    const rewards = await new StakingRewardsService(new BlockTimeService(subscanService), subscanService)
-        .fetchStakingRewards(chain.name.toLowerCase(), address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
+    const stakingRewardsService = await new StakingRewardsService(new BlockTimeService(subscanService), subscanService)
+    const rewards = poolId > 0 ?
+        await stakingRewardsService.fetchNominationPoolRewards(chain.name.toLowerCase(), address, poolId, startDay.getTime(), endDay ? endDay.getTime() : undefined) :
+        await stakingRewardsService.fetchStakingRewards(chain.name.toLowerCase(), address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
     const currentPrice = await priceService.fetchCurrentPrice(chain.coingeckoId, currency)
     return {
         values: await currencyService.addFiatValues(rewards, chain.token, currency.toLowerCase(), currentPrice),
@@ -43,7 +44,8 @@ export const rewardsEndpoint: RouteOptions = {
         querystring: Joi.object({
             currency: Joi.string().min(1).max(5).default('usd'),
             startdate: Joi.date(),
-            enddate: Joi.date()
+            enddate: Joi.date(),
+            poolid: Joi.number().default(0)
         })
     },
     validatorCompiler: ({schema, method, url, httpPart}) => {
@@ -54,6 +56,7 @@ export const rewardsEndpoint: RouteOptions = {
             request.params['chain'],
             request.params['address'],
             request.query['currency'],
+            request.query['poolid'],
             request.query['startdate'],
             request.query['enddate']
         )
