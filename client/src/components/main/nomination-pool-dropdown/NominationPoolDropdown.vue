@@ -13,7 +13,7 @@
       @update:model-value="onNewValueSelected"
       clearable
       behavior="dialog"
-      :disable="nominationPoolsDisabled"
+      :disable="nominationPoolsDisabled || nominationPools.length === 0"
       options-selected-class="text-deep-orange"
     >
       <template v-slot:option="scope">
