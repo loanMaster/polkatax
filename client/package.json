@@ -1,7 +1,7 @@
 {
   "name": "substrate-staking-rewards-client",
   "version": "0.0.1",
-  "description": "A tool to show the accumulated staking rewards on substrate",
+  "description": "A tool to display and export staking rewards on Polkadot and other substrate chains",
   "productName": "PolkaTax",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue .",
