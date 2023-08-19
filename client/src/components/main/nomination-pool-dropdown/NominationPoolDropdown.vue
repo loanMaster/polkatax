@@ -123,3 +123,10 @@ const label = computed(() => {
   }
 });
 </script>
+<style scoped>
+@media (max-width: 1439px) {
+  label {
+    width: 100%;
+  }
+}
+</style>

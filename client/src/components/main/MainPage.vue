@@ -1,12 +1,15 @@
 <template>
   <q-page class="q-px-sm q-mx-auto content">
-    <div class="q-my-md flex justify-between align-center items-center">
+    <div
+      class="q-my-md flex justify-between align-center items-center column-md row-lg row-xl column-xs column-sm"
+    >
       <div class="dropdown"><token-dropdown /></div>
       <div class="dropdown"><currency-dropdown /></div>
       <div class="dropdown"><nomination-pool-dropdown /></div>
       <time-frame-dropdown />
       <q-input
         filled
+        class="q-pa-md"
         v-model="rewardsStore.address"
         label="Wallet address"
         @keyup.enter="fetchRewards"
@@ -110,8 +113,15 @@ const isDisabled = computed(() => {
 const meme = ref(`img/${Math.floor(Math.random() * 2).toFixed(0)}.jpg`);
 </script>
 <style scoped>
-.dropdown {
-  width: 238px;
+@media (min-width: 1440px) {
+  .dropdown {
+    width: 238px;
+  }
+}
+@media (max-width: 1439px) {
+  .dropdown {
+    width: 100%;
+  }
 }
 .content {
   max-width: 1600px;
