@@ -63,6 +63,11 @@ const init = async () => {
     fastify.route(stakingRewardsEndpoint)
     fastify.route(paymentsEndpoint)
 
+    fastify.setNotFoundHandler((request, reply) => { // TODO: implement better solution
+        reply.header('Content-Type', 'text/html')
+        reply.send(fs.readFileSync(staticFilesFolder + '/index.html', 'utf-8')).status(200)
+    })
+
     fastify.listen({ port: Number(process.env['PORT'] || 3001) , host: '0.0.0.0' }, (err) => {
         if (err) {
             fastify.log.error(err)
