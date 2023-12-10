@@ -1,9 +1,17 @@
-# PolkaTax (substrate-staking-rewards)
+# PolkaTax
 
-PolkaTax is a tool to show and export accumulated staking rewards on substrate.
-PolkaTax supports multiple substrate chains and fiat currencies.
+PolkaTax is a tool to show and export 
 
-Rewards can be shown as graph and table and can be exported in CSV and JSON format.
+- accumulated staking rewards 
+- transfers 
+- trades
+
+PolkaTax supports multiple substrate chains, Ethereum chains (L1 and L2s) and fiat currencies.
+
+Data can be shown as graph and table and can be exported in CSV and JSON format.
+
+This project does NOT offer a one-click solution to taxation of crypto currencies.
+Rather, the user is encouraged to export the data to CSV for further processing.
 
 ## Install the dependencies
 
@@ -50,38 +58,31 @@ npm run lint-fix
 npm run build
 ```
 
-## Price data
 
-The program needs historic price data to function properly.
-You need to sync the price date completely once. Afterwards start the job to 
-periodically update the price data. The data is stored in files under server/res/quotes for now.
-
-### Fetch all price data and store it in files
-
-This process will take a while!
-
-```bash
-npm run fetch-quotes-full-sync
-```
-
-
-### Start the process to update the price data regularly
-
-This job will check for newest price data and update the files storing the price data.
-Please make sure to fetch all price data once before staring this job.
-
-```bash
-npm run fetch-quotes-periodically
-```
 
 ## Prerequisites
-To run the server locally you must provide a subscan api key as environment variable named "SUBSCAN_API_KEY".
-It will read environment variables from a file .env placed under /server.
+To run the server locally you should provide multiple API keys as environment variables.
+
+
+| API   |      Environment variable name      |  Required for |
+|----------|:-------------:|:-------------:|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY | all functions |
+| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+| etherscan |    ETHERSCAN_API_KEY   | transactions / trades on Ethereum |
+| moonscan | MOONSCAN_API_KEY |  transactions / trades on Moonbeam |
+| arbiscan | ARBISCAN_API_KEY |  transactions / trades on Arbitrum One |
+| optiscan | OPTIMISM_API_KEY |  transactions / trades on Optimism |
+| polyscan | POLYSCAN_API_KEY |  transactions / trades on Polygon |
 
 
 ## Add a new token
 
 Both the client and server have a list of tokens / chains, which need to be updated
 (substrate-chains.json in the server project, tokenList.ts in the client project).
-In addition to that historical price data for the new token must be provided. 
-You need to run 'fetch-quotes-full-sync' as explained above to fetch all price data.
+
+## coingecko
+
+The current implementation uses coingecko, however without API key.
+The reason are the relatively high costs of purchasing a coingecko API key.
+The consequence is that you might encounter errors with code 429 from coingecko if too many
+requests are many, especially when you just started the application.

@@ -10,5 +10,9 @@ export default route(function (/* { store, ssrContext } */) {
     history: createWebHistory(),
   });
 
+  Router.beforeEach((to, from, next) => {
+    next();
+  });
+
   return Router;
 });

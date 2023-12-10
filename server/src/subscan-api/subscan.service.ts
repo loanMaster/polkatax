@@ -1,10 +1,14 @@
 import {MetaData} from "./meta-data";
-import {Reward} from "./reward";
 import {Block} from "./block";
 import {BigNumber} from "bignumber.js";
 import {Token} from "./token";
 import {HttpError} from "../error/HttpError";
 import fetch from 'node-fetch';
+import {Transfers} from "./transfer";
+import {logger} from "../logger/logger";
+import {Transaction} from "./transaction";
+import {mergeListElements} from "../util/merge-list";
+import {StakingReward} from "./staking-reward";
 
 async function handleError(fetchRequest: Promise<any>) {
     const response = await fetchRequest
@@ -29,7 +33,7 @@ export class SubscanService {
         }
     }
 
-    async fetchMetadata (chainName: string): Promise<MetaData> {
+    async fetchMetadata(chainName: string): Promise<MetaData> {
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/metadata`, {
             method: `post`,
             headers: this.defaultHeader,
@@ -39,7 +43,7 @@ export class SubscanService {
         return {avgBlockTime: Number(meta.avgBlockTime) || Number(meta.blockTime), blockNum: Number(meta.blockNum)}
     }
 
-    async fetchToken (chainName: string): Promise<Token> {
+    async fetchToken(chainName: string): Promise<Token> {
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/token`, {
             method: `post`,
             headers: this.defaultHeader,
@@ -65,13 +69,13 @@ export class SubscanService {
         return body.data
     }
 
-    async fetchAllPoolStakingRewards(chainName: string, address: string, poolId: number): Promise<Reward[]> {
-        return this.iterateOverPages<Reward>((page, count) =>
+    async fetchAllPoolStakingRewards(chainName: string, address: string, poolId: number): Promise<StakingReward[]> {
+        return this.iterateOverPages<StakingReward>((page, count) =>
             this.fetchPoolStakingRewards(chainName, address, poolId, count, page)
         )
     }
 
-    private async fetchPoolStakingRewards(chainName: string, address: string, pool_id: number, row: number = 100, page: number = 0): Promise<Reward[]> {
+    private async fetchPoolStakingRewards(chainName: string, address: string, pool_id: number, row: number = 100, page: number = 0): Promise<{ list: StakingReward[], hasNext: boolean }> {
         const body = JSON.stringify({
             row,
             page,
@@ -84,35 +88,39 @@ export class SubscanService {
             body: body
         }));
         const responseBody = await response.json()
-        return (responseBody.data?.list || []).map(entry => {
-            return {
-                event_id: entry.event_id,
-                amount: BigNumber(entry.amount),
-                block_timestamp: entry.block_timestamp,
-                block_num: entry.extrinsic_index.split('-')[0],
-            }
-        })
+        return {
+            list: (responseBody.data?.list || []).map(entry => {
+                return {
+                    event_id: entry.event_id,
+                    amount: BigNumber(entry.amount),
+                    block_timestamp: entry.block_timestamp,
+                    block_num: entry.extrinsic_index.split('-')[0],
+                }
+            }), hasNext: (responseBody.data?.list || []).length >= row
+        }
     }
 
-    private async iterateOverPages<T>(fetchRewards: (page, count) => Promise<T[]>): Promise<T[]> {
+    private async iterateOverPages<T>(fetchPage: (page, count) => Promise<{ list: T[], hasNext: boolean }>): Promise<T[]> {
         let page = 0
+        const count = 100
         const result = []
-        let intermediate = []
+        let intermediate: { list: T[], hasNext: boolean } = {list: [], hasNext: false}
         do {
-            intermediate = await fetchRewards(page, 100)
-            result.push(...intermediate)
+            intermediate = await fetchPage(page, count)
+            result.push(...intermediate.list)
             page++
-        } while (intermediate.length > 99)
+        } while (intermediate.hasNext)
         return result
     }
 
-    fetchAllStakingRewards(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Reward[]> {
-        return this.iterateOverPages<Reward>((page, count) =>
+    fetchAllStakingRewards(chainName: string, address: string, block_min?: number, block_max?: number): Promise<StakingReward[]> {
+        logger.info(`fetchAllStakingRewards for ${chainName}, address ${address}, from ${block_min} to ${block_max}`)
+        return this.iterateOverPages<StakingReward>((page, count) =>
             this.fetchStakingRewards(chainName, address, count, page, true, block_min, block_max)
         )
     }
 
-    async fetchStakingRewards(chainName: string, address: string, row: number = 100, page: number = 0, isStash: boolean, block_min?: number, block_max?: number): Promise<Reward[]> {
+    async fetchStakingRewards(chainName: string, address: string, row: number = 100, page: number = 0, isStash: boolean, block_min?: number, block_max?: number): Promise<{ list: StakingReward[], hasNext: boolean }> {
         const body = JSON.stringify({
             row,
             page,
@@ -126,14 +134,113 @@ export class SubscanService {
             body: body
         }));
         const responseBody = await response.json()
-        return (responseBody.data?.list || []).map(entry => {
+        return {
+            list: (responseBody.data?.list || []).map(entry => {
+                return {
+                    event_id: entry.event_id,
+                    amount: BigNumber(entry.amount),
+                    block_timestamp: entry.block_timestamp,
+                    block_num: entry.block_num,
+                }
+            }), hasNext: (responseBody.data?.list || []).length >= row
+        }
+    }
+
+    fetchAllExtrinsics(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Transaction[]> {
+        const fetchExtrinsics = async (chainName: string, address: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transaction[], hasNext: boolean }> => {
+            const body = JSON.stringify({
+                row,
+                page,
+                address,
+                success: true,
+                block_range: block_min !== undefined && block_max !== undefined ? `${block_min}-${block_max}` : undefined
+            })
+            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`, {
+                method: `post`,
+                headers: this.defaultHeader,
+                body: body
+            }));
+            const responseBody = await response.json()
             return {
-                event_id: entry.event_id,
-                amount: BigNumber(entry.amount),
-                block_timestamp: entry.block_timestamp,
-                block_num: entry.block_num,
+                list: (responseBody.data?.extrinsics || []).map(entry => {
+                    return {
+                        hash: entry.extrinsic_hash,
+                        account: entry.account_display.address,
+                        block_timestamp: entry.block_timestamp,
+                        block_num: entry.block_num,
+                        functionName: entry.call_module_function,
+                        callModule: entry.call_module
+                    }
+                }), hasNext: (responseBody.data?.extrinsics || []).length >= row
             }
+        }
+        return this.iterateOverPages<Transaction>((page, count) =>
+                fetchExtrinsics(chainName, address, count, page, block_min, block_max))
+    }
+
+    async fetchAccounts(address: string, chainName: string): Promise<string[]> {
+        const body = JSON.stringify({
+            address: [address],
+            row: 100
         })
+        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/accounts`, {
+            method: `post`,
+            headers: this.defaultHeader,
+            body: body
+        }));
+        const json = await response.json()
+        return (json.data.list || []).map(entry => entry.address)
+    }
+
+    async fetchAllTransfers(chainName: string, account: string, block_min?: number, block_max?: number): Promise<Transfers> {
+        const addresses = await this.fetchAccounts(account, chainName)
+        const isMyAccount = (address: string) => addresses.indexOf(address) > -1
+        const fetchTransfers = async (chainName: string, account: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transfers[], hasNext: boolean }> => {
+            const body = JSON.stringify({
+                row,
+                page,
+                address: account,
+                success: true,
+                block_range: block_min !== undefined && block_max !== undefined ? `${block_min}-${block_max}` : undefined
+            })
+            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/transfers`, {
+                method: `post`,
+                headers: this.defaultHeader,
+                body: body
+            }));
+            const responseBody = await response.json()
+            const transfers: any = {};
+            (responseBody.data?.transfers || []).forEach(entry => {
+                const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from
+                if (!transfers[entry.hash]) {
+                    transfers[entry.hash] = {}
+                }
+                if (!transfers[entry.hash][entry.asset_symbol]) {
+                    transfers[entry.hash][entry.asset_symbol] = { amount: 0 }
+                }
+                transfers[entry.hash][entry.asset_symbol].functionName = entry.module
+                if (isMyAccount(entry.to)) {
+                    transfers[entry.hash][entry.asset_symbol].amount += Number(entry.amount)
+                } else if (isMyAccount(entry.from)) {
+                    transfers[entry.hash][entry.asset_symbol].amount -= Number(entry.amount)
+                } else {
+                    console.warn('no match for transfer!')
+                }
+                if (transfers[entry.hash][entry.asset_symbol].amount > 0) {
+                    transfers[entry.hash][entry.asset_symbol].to = account
+                    transfers[entry.hash][entry.asset_symbol].from = otherAddress
+                } else {
+                    transfers[entry.hash][entry.asset_symbol].from = account
+                    transfers[entry.hash][entry.asset_symbol].to = otherAddress
+                }
+                transfers[entry.hash][entry.asset_symbol].block = entry.block_num
+                transfers[entry.hash][entry.asset_symbol].timestamp = entry.block_timestamp
+                transfers[entry.hash][entry.asset_symbol].hash = entry.hash
+            })
+            return {list: [transfers], hasNext: (responseBody.data?.transfers || []).length >= row}
+        }
+        return mergeListElements(await this.iterateOverPages<any>((page, count) =>
+                fetchTransfers(chainName, account, count, page, block_min, block_max)))
     }
 }
 

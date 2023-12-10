@@ -21,6 +21,11 @@
       "coingeckoId": "astar"
     },
     {
+      "name": "astar_evm",
+      "token": "astr",
+      "coingeckoId": "astar"
+    },
+    {
       "name": "phala",
       "token": "pha",
       "coingeckoId": "pha"
@@ -154,6 +159,11 @@
       "name": "alephzero",
       "token": "azero",
       "coingeckoId": "aleph-zero"
+    },
+    {
+      "name": "picasso",
+      "token": "pica",
+      "coingeckoId": "picasso"
     }
   ]
 }

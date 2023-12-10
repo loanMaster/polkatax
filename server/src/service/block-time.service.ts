@@ -1,6 +1,5 @@
 import {Block} from "../subscan-api/block";
 import {SubscanService} from "../subscan-api/subscan.service";
-import {logger} from "../logger/logger";
 
 export class BlockTimeService {
 

@@ -5,12 +5,30 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('src/layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/components/main/MainPage.vue') },
+      {
+        path: '',
+        redirect: 'staking-rewards',
+      },
+      {
+        path: 'transfers',
+        component: () =>
+          import('src/transfers-module/components/TransfersAndSwaps.vue'),
+      },
+      {
+        path: 'staking-rewards',
+        component: () =>
+          import('src/staking-rewards-module/components/StakingRewards.vue'),
+      },
+      {
+        path: 'trades',
+        component: () => import('src/swap-module/components/TokenSwaps.vue'),
+      },
     ],
   },
   {
     path: '/:catchAll(.*)*',
-    component: () => import('src/components/error/ErrorNotFound.vue'),
+    component: () =>
+      import('src/shared-module/components/error/ErrorNotFound.vue'),
   },
 ];
 

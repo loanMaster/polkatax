@@ -15,7 +15,7 @@ node_modules
 *.ntvs*
 *.njsproj
 *.sln
-
+*.iml
 server/public
 server/.env
 

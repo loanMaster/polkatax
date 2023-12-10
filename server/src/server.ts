@@ -1,13 +1,27 @@
 import Fastify from 'fastify'
-import {rewardsEndpoint} from "./endpoints/rewards.endoint";
 import path from "path";
 import {logger} from "./logger/logger";
 import dotenv from 'dotenv'
-import * as fs from 'fs'
-
 dotenv.config({ path: __dirname + '/../.env' })
 
+import * as fs from 'fs'
+import {CurrencyExchangeRateService} from "./service/currency-exchange-rate.service";
+import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
+import {paymentsEndpoint} from "./endpoints/payments.endpoint";
+import {TokenPriceHistoryService} from "./service/token-price-history.service";
+import {CoingeckoService} from "./coingecko-api/coingecko.service";
+
+
 const init = async () => {
+
+    try {
+        await new CurrencyExchangeRateService().init()
+    } catch (error) {
+        logger.error(error)
+    }
+
+    new TokenPriceHistoryService(new CoingeckoService()).init()
+
     const fastify = Fastify({
         logger,
         https: process.env['SSL_KEY'] ? {
@@ -19,6 +33,15 @@ const init = async () => {
     await fastify.register(import('@fastify/rate-limit'), { global: false })
 
     const staticFilesFolder = path.join(process.cwd(), 'public')
+
+    fastify.addHook('onRequest', (request, reply, done) => {
+        if (JSON.parse(fs.readFileSync(__dirname + '/../res/realtime-config.json', 'utf-8')).maintenanceMode && request.url.indexOf('/maintenance') == -1) {
+            reply.header('Content-Type', 'text/html')
+            reply.send(fs.readFileSync(__dirname + '/../public/maintenance.html', 'utf-8')).status(200)
+        }
+        done()
+    })
+
     fastify.log.info("Static files are served from folder " + staticFilesFolder)
     await fastify.register(import('@fastify/static'), {
         root: staticFilesFolder
@@ -30,18 +53,23 @@ const init = async () => {
             reply.status(error.statusCode).send(error.message)
         } else {
             logger.warn(`Error: ${error.message}`, error)
+            if (error.stack) {
+                logger.error(error.stack)
+            }
             reply.status(500).send(error.message)
         }
     })
 
-    fastify.route(rewardsEndpoint)
+    fastify.route(stakingRewardsEndpoint)
+    fastify.route(paymentsEndpoint)
 
-    fastify.listen({ port: Number(process.env['PORT'] || 3000) , host: '0.0.0.0' }, (err) => {
+    fastify.listen({ port: Number(process.env['PORT'] || 3001) , host: '0.0.0.0' }, (err) => {
         if (err) {
             fastify.log.error(err)
             process.exit(1)
         }
     })
+
 }
 
 init()

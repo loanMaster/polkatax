@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "serve": "ts-node src/server.ts",
-    "fetch-quotes-full-sync": "ts-node src/fetch-quotes-full-sync.ts",
-    "fetch-quotes-periodically": "ts-node src/fetch-quotes-periodically.ts",
-    "test": "jest --coverage"
+    "serve": "ts-node src/server.ts"
   },
   "author": "",
   "license": "ISC",
