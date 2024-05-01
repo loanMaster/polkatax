@@ -1,7 +1,7 @@
 import {CoingeckoService} from "../coingecko-api/coingecko.service";
 import {findCoingeckoToken} from "../util/find-coingecko-token-id";
 
-const MAX_AGE = 2 * 60 * 60 * 1000
+const MAX_AGE = 6 * 60 * 60 * 1000
 
 export class TokenPriceService {
     private static quotes: { [tokenId: string]: { [currency: string]: { price: number, timestamp: number } } } = {}
@@ -11,7 +11,7 @@ export class TokenPriceService {
 
     private hasAllQuotes(tokens: { id: string }[], currency: string) {
         return tokens.every(token => {
-            return TokenPriceService.quotes[token.id]?.[currency.toLowerCase()]
+            return TokenPriceService.quotes[token.id]?.[currency.toLowerCase()]?.price !== undefined
                 && new Date().getTime() - TokenPriceService.quotes[token.id]?.[currency.toLowerCase()].timestamp < MAX_AGE
         })
     }

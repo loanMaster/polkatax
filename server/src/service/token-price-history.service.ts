@@ -1,8 +1,7 @@
-import {CoingeckoService} from "../coingecko-api/coingecko.service";
 import {logger} from "../logger/logger";
-import {formatDate} from "../util/format-date";
-import {findCoingeckoTokenId} from "../util/find-coingecko-token-id";
 import * as fs from 'fs';
+import {formatDate} from "../util/format-date";
+import {CryptoCompareService} from "../cryptocompare/cryptocompare.api";
 
 export interface Quotes {
     [isoDate:string]: number;
@@ -10,21 +9,31 @@ export interface Quotes {
     latest: number;
 }
 
-const MAX_AGE = 2 * 60 * 60 * 1000
+const MAX_AGE = 4 * 60 * 60 * 1000
 
 export class TokenPriceHistoryService {
     private static cachedPrices: { [tokenId: string]: Quotes } = {}
     private static timer
 
-    constructor(private coingeckoService: CoingeckoService) {
+    constructor(private cryptoCompareService: CryptoCompareService) {
     }
 
     public init() {
 
         if (!TokenPriceHistoryService.timer) {
-            TokenPriceHistoryService.timer = setInterval(() => this.sync(), 20 * 1000)
+            TokenPriceHistoryService.timer = setInterval(() => this.sync(), 60 * 1000)
         }
         this.sync()
+    }
+
+    async getQuotes(symbol: string, chain: string, currency: string = 'usd'): Promise<Quotes> {
+        symbol = symbol.toLowerCase()
+        if (this.synonyms[symbol]) {
+            symbol = this.synonyms[symbol]
+        }
+        const result = this.fetchQuotesForSymbol(symbol, currency)
+        this.addTokenToSyncList(symbol)
+        return result
     }
 
     private getTokensToSync() {
@@ -33,76 +42,64 @@ export class TokenPriceHistoryService {
         } else {
             return {
                 tokens: [
-                    "optimism",
-                    "ethereum",
-                    "velodrome-finance",
-                    "wrapped-steth",
-                    "weth",
-                    "balancer",
-                    "usd-coin",
-                    "matic-network",
-                    "wombat-exchange",
-                    "lido-dao",
-                    "smooth-love-potion",
-                    "sushi",
-                    "archi-token",
-                    "bridged-usd-coin-optimism",
-                    "kyber-network-crystal",
-                    "tether",
-                    "dai",
-                    "usd-coin-ethereum-bridged",
-                    "rocket-pool-eth",
-                    "bridged-usdc-polygon-pos-bridge",
-                    "chainflip",
-                    "xcdot",
-                    "wrapped-bitcoin",
-                    "frax",
-                    "moonwell-artemis",
-                    "stellaswap",
-                    "wrapped-moonbeam",
-                    "interlay",
-                    "bullperks",
-                    "moonbeam",
-                    "instadapp-usdc",
-                    "picasso",
-                    "kintsugi",
-                    "kintsugi-btc",
-                    "kusama",
-                    "beamswap",
-                    "interbtc",
-                    "acala-dollar-acala",
+                    "glmr",
+                    "intr",
+                    "glmr",
+                    "kint",
+                    "ksm",
                     "pha",
-                    "voucher-dot",
-                    "bifrost-native-coin",
-                    "orbit-bridge-klaytn-ethereum",
-                    "orbit-bridge-klaytn-usdc",
-                    "voucher-glmr",
-                    "voucher-ethereum-2-0",
-                    "chainlink",
-                    "bridged-rocket-pool-eth-manta-pacific",
-                    "acala",
-                    "polkadot"
+                    "bnc",
+                    "link",
+                    "aca",
+                    "op",
+                    "eth",
+                    "velo",
+                    "bal",
+                    "usdc",
+                    "matic",
+                    "wom",
+                    "ldo",
+                    "sushi",
+                    "usdt",
+                    "dai",
+                    "dot",
+                    "wbtc",
+                    "frax",
+                    "well"
                 ]
             }
         }
     }
 
+    private synonyms = {
+        'wglmr': 'glmr',
+        'weth': 'eth',
+        'wsteth': 'steth',
+        'ibtc': 'btc',
+        'kbtc': 'btc'
+    }
+
     private async sync() {
         logger.debug('TokenPriceHistoryService syncing')
         const tokensToSync = this.getTokensToSync()
-        for (let tokenId of tokensToSync.tokens) {
+        for (let symbol of tokensToSync.tokens) {
             try {
-                if (!this.informationUpToDate(tokenId)) {
-                    await this.fetchQuotesForTokenId(tokenId)
-                    logger.info(`TokenPriceHistoryService syncing done for token ${tokenId}`)
+                if (!TokenPriceHistoryService.cachedPrices[symbol]) {
+                    this.fetchStoredQuotes(symbol)
+                }
+                if (!this.informationUpToDate(symbol)) {
+                    await this.fetchQuotesForSymbol(symbol)
+                    logger.info(`TokenPriceHistoryService syncing done for token ${symbol}`)
                     break;
+                } else {
+                    logger.info(`TokenPriceHistoryService values for ${symbol} are up to date.`)
                 }
             } catch (error) {
                 if (error.statusCode === 404) {
-                    tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === tokenId), 1)
+                    tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
                 }
-                logger.error(`Error syncing token ${tokenId}`, error)
-                break;
+                logger.error(`Error syncing token ${symbol}`, error)
+                continue;
             }
         }
         if (tokensToSync.tokens.every(tokenId => this.informationUpToDate(tokenId))) {
@@ -110,30 +107,28 @@ export class TokenPriceHistoryService {
         }
     }
 
-    private addTokenToSyncList(tokenId: string) {
+    private addTokenToSyncList(symbol: string) {
+
         const tokensToSync = this.getTokensToSync()
-        if (tokensToSync.tokens.indexOf(tokenId) === -1) {
-            tokensToSync.tokens.push(tokenId)
+        if (tokensToSync.tokens.indexOf(symbol) === -1) {
+            tokensToSync.tokens.push(symbol)
             fs.writeFileSync(__dirname + '/../../res/quotes/tokens-to-sync.json', JSON.stringify(tokensToSync), 'utf-8')
         }
     }
 
     private informationUpToDate(tokenId: string) {
-        return (TokenPriceHistoryService.cachedPrices[tokenId] && new Date().getTime() - TokenPriceHistoryService.cachedPrices[tokenId].timestamp < MAX_AGE)
+        const yesterday = new Date()
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        return TokenPriceHistoryService.cachedPrices[tokenId]
+            && (TokenPriceHistoryService.cachedPrices[tokenId][formatDate(yesterday)]
+            || new Date().getTime() - TokenPriceHistoryService.cachedPrices[tokenId].timestamp < MAX_AGE)
     }
 
-    async getQuotes(symbol: string, chain: string, currency: string = 'usd'): Promise<Quotes> {
-        const coingeckoId = findCoingeckoTokenId(symbol, chain)
-        if (!coingeckoId) {
-            return undefined
-        }
-        this.addTokenToSyncList(coingeckoId)
-        return this.fetchQuotesForTokenId(coingeckoId, currency)
-    }
 
-    private async fetchQuotesForTokenId(tokenId: string, currency: string = 'usd') {
-        if (this.informationUpToDate(tokenId)) {
-            return TokenPriceHistoryService.cachedPrices[tokenId]
+    private async fetchQuotesForSymbol(symbol: string, currency: string = 'usd') {
+        if (this.informationUpToDate(symbol)) {
+            return TokenPriceHistoryService.cachedPrices[symbol]
         }
         const minDate = new Date()
         minDate.setFullYear(minDate.getFullYear() - 1)
@@ -143,18 +138,33 @@ export class TokenPriceHistoryService {
         minDate.setMinutes(0)
         minDate.setSeconds(0)
         minDate.setDate(minDate.getDate() - 1)
-        const history = await this.coingeckoService.fetchHistoryRange(tokenId, currency, minDate.getTime() / 1000, new Date().getTime() / 1000)
+        const history = await this.cryptoCompareService.fetchHistoryRange(symbol, currency, formatDate(minDate))
         const quotes: Quotes = { timestamp: new Date().getTime(), latest: undefined }
-        let latest = undefined
+        quotes.latest = history[history.length - 1].close
         history.forEach(entry => {
-            if (!latest || entry[0] > latest) {
-                latest = entry[0]
-                quotes.latest = entry[1]
-            }
-            quotes[formatDate(new Date(entry[0]))] = entry[1]
+            quotes[formatDate(new Date(entry.time * 1000))] = entry.close
         })
-        TokenPriceHistoryService.cachedPrices[tokenId] = quotes
-        return TokenPriceHistoryService.cachedPrices[tokenId]
+        this.storeQuotes(symbol, quotes)
+        TokenPriceHistoryService.cachedPrices[symbol] = quotes
+        return TokenPriceHistoryService.cachedPrices[symbol]
+    }
+
+    private storeQuotes(symbol: string, quotes: any) {
+        const filename = __dirname + `/../../res/quotes/${symbol.toLowerCase()}.json`
+        const existingQuotes = fs.existsSync(filename) ?
+            JSON.parse(fs.readFileSync(filename, 'utf-8')) : {}
+        const updatedQuotes = {
+            ...quotes,
+            ...existingQuotes
+        }
+        fs.writeFileSync(filename, JSON.stringify(updatedQuotes), 'utf-8')
+    }
+
+    private fetchStoredQuotes(symbol: string) {
+        const filename = __dirname + `/../../res/quotes/${symbol.toLowerCase()}.json`
+        if (fs.existsSync(filename)) {
+            TokenPriceHistoryService.cachedPrices[symbol] = JSON.parse(fs.readFileSync(filename, 'utf-8'))
+        }
     }
 
 }
