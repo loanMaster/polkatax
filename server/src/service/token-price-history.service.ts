@@ -91,8 +91,6 @@ export class TokenPriceHistoryService {
                     await this.fetchQuotesForSymbol(symbol)
                     logger.info(`TokenPriceHistoryService syncing done for token ${symbol}`)
                     break;
-                } else {
-                    logger.info(`TokenPriceHistoryService values for ${symbol} are up to date.`)
                 }
             } catch (error) {
                 if (error.statusCode === 404) {
