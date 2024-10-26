@@ -97,6 +97,9 @@ export class TokenPriceHistoryService {
                     tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
                 }
                 logger.error(`Error syncing token ${symbol}`, error)
+                logger.error(error)
+                logger.info('Pausing for one minute')
+                await new Promise(resolve => setTimeout(resolve, 60000))
                 continue;
             }
         }

@@ -1,4 +1,5 @@
 import { PaymentsListDto } from 'src/transfers-module/model/payments';
+import { endpoint } from '../../shared-module/const/endpoint';
 
 export class PaymentsService {
   async fetchTokenRewards(
@@ -9,7 +10,7 @@ export class PaymentsService {
     endDate: number
   ): Promise<PaymentsListDto> {
     const result = await fetch(
-      `/api/payments/${chain.toLowerCase()}/${address}?startdate=${beginDate}&enddate=${endDate}&currency=${currency}`,
+      `${endpoint}/api/payments/${chain.toLowerCase()}/${address}?startdate=${beginDate}&enddate=${endDate}&currency=${currency}`,
       {
         method: 'GET',
       }
