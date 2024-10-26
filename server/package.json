@@ -8,7 +8,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fastify/cors": "^10.0.1",
     "@fastify/rate-limit": "^8.0.3",
     "@fastify/static": "^6.10.2",
     "@polkadot/api": "^10.7.1",

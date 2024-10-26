@@ -1,4 +1,3 @@
-import { endpoint } from '../../shared-module/const/endpoint';
 import { RewardsDto } from '../model/rewards';
 
 export class StakingRewardsService {
@@ -11,7 +10,7 @@ export class StakingRewardsService {
     endDate: number
   ): Promise<RewardsDto> {
     const result = await fetch(
-      `${endpoint}/api/staking-rewards/${chain.toLowerCase()}/${address}?startdate=${beginDate}&enddate=${endDate}&currency=${currency}&poolid=${poolId}`,
+      `/api/staking-rewards/${chain.toLowerCase()}/${address}?startdate=${beginDate}&enddate=${endDate}&currency=${currency}&poolid=${poolId}`,
       {
         method: 'GET',
       }

@@ -10,7 +10,7 @@ import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
 import {paymentsEndpoint} from "./endpoints/payments.endpoint";
 import {TokenPriceHistoryService} from "./service/token-price-history.service";
 import {CryptoCompareService} from "./cryptocompare/cryptocompare.api";
-import cors from '@fastify/cors';
+
 
 const init = async () => {
 
@@ -29,8 +29,10 @@ const init = async () => {
             cert: fs.readFileSync(process.env['SSL_CERT'],'utf8')
         } : undefined
     })
-    await fastify.register(cors, {})
+
     await fastify.register(import('@fastify/rate-limit'), { global: false })
+
+    const staticFilesFolder = path.join(process.cwd(), 'public')
 
     fastify.addHook('onRequest', (request, reply, done) => {
         if (JSON.parse(fs.readFileSync(__dirname + '/../res/realtime-config.json', 'utf-8')).maintenanceMode && request.url.indexOf('/maintenance') == -1) {
@@ -38,6 +40,11 @@ const init = async () => {
             reply.send(fs.readFileSync(__dirname + '/../public/maintenance.html', 'utf-8')).status(200)
         }
         done()
+    })
+
+    fastify.log.info("Static files are served from folder " + staticFilesFolder)
+    await fastify.register(import('@fastify/static'), {
+        root: staticFilesFolder
     })
 
     fastify.setErrorHandler( (error, request, reply) => {
@@ -55,6 +62,11 @@ const init = async () => {
 
     fastify.route(stakingRewardsEndpoint)
     fastify.route(paymentsEndpoint)
+
+    fastify.setNotFoundHandler((request, reply) => { // TODO: implement better solution
+        reply.header('Content-Type', 'text/html')
+        reply.send(fs.readFileSync(staticFilesFolder + '/index.html', 'utf-8')).status(200)
+    })
 
     fastify.listen({ port: Number(process.env['PORT'] || 3001) , host: '0.0.0.0' }, (err) => {
         if (err) {
