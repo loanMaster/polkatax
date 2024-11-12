@@ -1,6 +1,11 @@
 import { Token } from '../model/token';
 
 export const tokenList: Token[] = [
+  {
+    symbol: 'AJUN',
+    chain: 'ajuna',
+    label: 'Ajuna',
+  },
   { symbol: 'DOT', chain: 'polkadot', label: 'Polkadot' },
   {
     symbol: 'KSM',

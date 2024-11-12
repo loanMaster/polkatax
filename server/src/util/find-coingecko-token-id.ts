@@ -2,10 +2,6 @@ import * as coingeckoTokens from "../../res/coingecko-tokens.json";
 import {logger} from "../logger/logger";
 import * as substrateChains from "../../res/substrate-chains.json";
 
-export const findCoingeckoTokenId = (symbol: string, chain?: string): string | undefined => {
-    return findCoingeckoToken(symbol, chain)?.id
-}
-
 export const findCoingeckoToken = (symbol: string, chain: string): { id: string, symbol: string } | undefined => {
     const isSubtrateChain = substrateChains.chains.some(p => p.name === chain)
     const platform = isSubtrateChain ? 'polkadot' : chain

@@ -1,7 +1,8 @@
 import {logger} from "../logger/logger";
 import * as fs from 'fs';
 import {formatDate} from "../util/format-date";
-import {CryptoCompareService} from "../cryptocompare/cryptocompare.api";
+import { CoingeckoService } from "../coingecko-api/coingecko.service";
+import { findCoingeckoToken } from "../util/find-coingecko-token-id";
 
 export interface Quotes {
     [isoDate:string]: number;
@@ -15,7 +16,7 @@ export class TokenPriceHistoryService {
     private static cachedPrices: { [tokenId: string]: Quotes } = {}
     private static timer
 
-    constructor(private cryptoCompareService: CryptoCompareService) {
+    constructor(private coingeckoService: CoingeckoService) {
     }
 
     public init() {
@@ -139,12 +140,8 @@ export class TokenPriceHistoryService {
         minDate.setMinutes(0)
         minDate.setSeconds(0)
         minDate.setDate(minDate.getDate() - 1)
-        const history = await this.cryptoCompareService.fetchHistoryRange(symbol, currency, formatDate(minDate))
-        const quotes: Quotes = { timestamp: new Date().getTime(), latest: undefined }
-        quotes.latest = history[history.length - 1].close
-        history.forEach(entry => {
-            quotes[formatDate(new Date(entry.time * 1000))] = entry.close
-        })
+        const token = findCoingeckoToken(symbol, 'polkadot')
+        const quotes: Quotes = await this.coingeckoService.fetchHistoricalData(token.id, currency)
         this.storeQuotes(symbol, quotes)
         TokenPriceHistoryService.cachedPrices[symbol] = quotes
         return TokenPriceHistoryService.cachedPrices[symbol]

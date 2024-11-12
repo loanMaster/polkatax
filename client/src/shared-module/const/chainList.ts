@@ -1,6 +1,10 @@
 import { Chain } from 'src/shared-module/model/chain';
 
 export const chainList: Chain[] = [
+  {
+    chain: 'ajuna',
+    label: 'Ajuna',
+  },
   { chain: 'polkadot', label: 'Polkadot' },
   {
     chain: 'ethereum',

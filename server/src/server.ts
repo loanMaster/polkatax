@@ -9,8 +9,7 @@ import {CurrencyExchangeRateService} from "./service/currency-exchange-rate.serv
 import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
 import {paymentsEndpoint} from "./endpoints/payments.endpoint";
 import {TokenPriceHistoryService} from "./service/token-price-history.service";
-import {CryptoCompareService} from "./cryptocompare/cryptocompare.api";
-
+import { CoingeckoService } from './coingecko-api/coingecko.service';
 
 const init = async () => {
 
@@ -20,7 +19,7 @@ const init = async () => {
         logger.error(error)
     }
 
-    new TokenPriceHistoryService(new CryptoCompareService()).init()
+    new TokenPriceHistoryService(new CoingeckoService()).init()
 
     const fastify = Fastify({
         logger,
@@ -74,7 +73,6 @@ const init = async () => {
             process.exit(1)
         }
     })
-
 }
 
 init()

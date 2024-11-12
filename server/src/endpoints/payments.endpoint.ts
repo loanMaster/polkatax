@@ -18,7 +18,6 @@ import {
     evmChainConfigs,
     fetchSwapsAndPayments
 } from "../service/etherscan/fetch-evm-transfers";
-import {CryptoCompareService} from "../cryptocompare/cryptocompare.api";
 
 
 const fetchRewards = async (chainName: string, address: string, currency: string, startDay: Date, endDay: Date) => {
@@ -34,7 +33,7 @@ const fetchRewards = async (chainName: string, address: string, currency: string
         await tokenRewardsService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
     const listOfTransfers: { [symbol: string]: { values: Transfer[], currentPrice: number } } = {}
 
-    const currencyService = new FiatCurrencyService(new TokenPriceHistoryService(new CryptoCompareService()), new CurrencyExchangeRateService())
+    const currencyService = new FiatCurrencyService(new TokenPriceHistoryService(new CoingeckoService()), new CurrencyExchangeRateService())
 
     const tokens = currencyService.getTokens(swaps)
     tokens.push(...Object.keys(payments))

@@ -3103,6 +3103,11 @@
       }
     },
     {
+      "id": "ajuna-network-2",
+      "symbol": "ajun",
+      "name": "Ajuna Protocol"
+    },
+    {
       "id": "ajna-protocol",
       "symbol": "ajna",
       "name": "Ajna Protocol",
@@ -18645,6 +18650,7 @@
         "ethereum": "0x6400b5522f8d448c0803e6245436dd1c81df09ce"
       }
     },
+    {"id":"mnet-continuum","symbol":"nuum","name":"MNet Continuum"},
     {
       "id": "continuum-finance",
       "symbol": "ctn",

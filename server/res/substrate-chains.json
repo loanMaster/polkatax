@@ -1,6 +1,16 @@
 {
   "chains": [
     {
+      "name": "Continuum",
+      "token": "nuum",
+      "coingeckoId": "mnet-continuum"
+    },
+    {
+      "name": "ajuna",
+      "token": "ajun",
+      "coingeckoId": "ajuna-network-2"
+    },
+    {
       "name": "polkadot",
       "token": "dot",
       "coingeckoId": "polkadot"

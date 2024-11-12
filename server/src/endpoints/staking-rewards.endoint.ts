@@ -11,11 +11,10 @@ import {TokenPriceHistoryService} from "../service/token-price-history.service";
 import {CurrencyExchangeRateService} from "../service/currency-exchange-rate.service";
 import {FiatCurrencyService} from "../service/fiat-currency.service";
 import {ChainInfo} from "../model/chain-info";
-import {CryptoCompareService} from "../cryptocompare/cryptocompare.api";
 
 const fetchRewards = async (chain: ChainInfo, address: string, currency: string, poolId: number, startDay: Date, endDay?: Date) => {
     const priceService = new TokenPriceService(new CoingeckoService())
-    const priceHistoryService = new TokenPriceHistoryService(new CryptoCompareService())
+    const priceHistoryService = new TokenPriceHistoryService(new CoingeckoService())
     const currencyService = new FiatCurrencyService(priceHistoryService, new CurrencyExchangeRateService())
     const subscanService = new SubscanService()
     const stakingRewardsService = new StakingRewardsService(new BlockTimeService(subscanService), subscanService)

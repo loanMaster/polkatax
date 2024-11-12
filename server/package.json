@@ -15,9 +15,12 @@
     "dotenv": "^16.3.1",
     "fastify": "^4.21.0",
     "fs": "^0.0.1-security",
+    "g": "^2.0.1",
     "joi": "^17.9.2",
     "node-fetch": "^2.6.12",
-    "pino-pretty": "^10.2.0"
+    "node-html-parser": "^6.1.13",
+    "pino-pretty": "^10.2.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.6.2",
