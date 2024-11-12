@@ -10,31 +10,36 @@ export interface Quotes {
     latest: number;
 }
 
+export interface CurrencyQuotes {
+    currency: string;
+    quotes: Quotes
+}
+
 const MAX_AGE = 4 * 60 * 60 * 1000
 
 export class TokenPriceHistoryService {
-    private static cachedPrices: { [tokenId: string]: Quotes } = {}
+    private static cachedPrices: { [tokenIdCurrency: string]: Quotes } = {}
     private static timer
 
     constructor(private coingeckoService: CoingeckoService) {
     }
 
     public init() {
-
+        logger.info('Initalizing TokenPriceHistoryService')
         if (!TokenPriceHistoryService.timer) {
-            TokenPriceHistoryService.timer = setInterval(() => this.sync(), 60 * 1000)
+            TokenPriceHistoryService.timer = setInterval(() => this.sync(), 3 * 60 * 1000)
         }
         this.sync()
     }
 
-    async getQuotes(symbol: string, chain: string, currency: string = 'usd'): Promise<Quotes> {
+    async getQuotes(symbol: string, chain: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
         symbol = symbol.toLowerCase()
         if (this.synonyms[symbol]) {
             symbol = this.synonyms[symbol]
         }
-        const result = this.fetchQuotesForSymbol(symbol, currency)
+        const result = await this.fetchQuotesForSymbol(symbol, currency)
         this.addTokenToSyncList(symbol)
-        return result
+        return { quotes: result, currency }
     }
 
     private getTokensToSync() {
@@ -72,6 +77,8 @@ export class TokenPriceHistoryService {
         }
     }
 
+    private currenciesToSync = ['usd', 'eur', 'chf']
+
     private synonyms = {
         'wglmr': 'glmr',
         'weth': 'eth',
@@ -83,28 +90,31 @@ export class TokenPriceHistoryService {
     private async sync() {
         logger.debug('TokenPriceHistoryService syncing')
         const tokensToSync = this.getTokensToSync()
-        for (let symbol of tokensToSync.tokens) {
-            try {
-                if (!TokenPriceHistoryService.cachedPrices[symbol]) {
-                    this.fetchStoredQuotes(symbol)
-                }
-                if (!this.informationUpToDate(symbol)) {
-                    await this.fetchQuotesForSymbol(symbol)
-                    logger.info(`TokenPriceHistoryService syncing done for token ${symbol}`)
+        for (let currency of this.currenciesToSync) {
+            for (let symbol of tokensToSync.tokens) {
+                const symbolCurr = symbol + '_' + currency
+                try {
+                    if (!TokenPriceHistoryService.cachedPrices[symbolCurr]) {
+                        this.fetchStoredQuotes(symbolCurr)
+                    }
+                    if (!this.informationUpToDate(symbolCurr)) {
+                        await this.fetchQuotesForSymbol(symbol, currency)
+                        logger.debug(`TokenPriceHistoryService syncing done for token ${symbol} and currency ${currency}`)
+                        break;
+                    }
+                } catch (error) {
+                    if (error.statusCode === 404) {
+                        tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
+                    }
+                    logger.error(`Error syncing token ${symbol} for currency ${currency}`, error)
+                    logger.error(error)
                     break;
                 }
-            } catch (error) {
-                if (error.statusCode === 404) {
-                    tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
-                }
-                logger.error(`Error syncing token ${symbol}`, error)
-                logger.error(error)
-                logger.info('Pausing for one minute')
-                await new Promise(resolve => setTimeout(resolve, 60000))
-                continue;
             }
         }
-        if (tokensToSync.tokens.every(tokenId => this.informationUpToDate(tokenId))) {
+        if (tokensToSync.tokens.every(tokenId => 
+            this.currenciesToSync.every(currency => this.informationUpToDate(tokenId + '_' + currency))
+        )) {
             logger.debug(`TokenPriceHistoryService syncing completed!`)
         }
     }
@@ -118,13 +128,13 @@ export class TokenPriceHistoryService {
         }
     }
 
-    private informationUpToDate(tokenId: string) {
+    private informationUpToDate(tokenIdCurrency: string) {
         const yesterday = new Date()
         yesterday.setDate(yesterday.getDate() - 1);
 
-        return TokenPriceHistoryService.cachedPrices[tokenId]
-            && (TokenPriceHistoryService.cachedPrices[tokenId][formatDate(yesterday)]
-            || new Date().getTime() - TokenPriceHistoryService.cachedPrices[tokenId].timestamp < MAX_AGE)
+        return TokenPriceHistoryService.cachedPrices[tokenIdCurrency]
+            && (TokenPriceHistoryService.cachedPrices[tokenIdCurrency][formatDate(yesterday)]
+            || new Date().getTime() - TokenPriceHistoryService.cachedPrices[tokenIdCurrency].timestamp < MAX_AGE)
     }
 
 
@@ -142,26 +152,27 @@ export class TokenPriceHistoryService {
         minDate.setDate(minDate.getDate() - 1)
         const token = findCoingeckoToken(symbol, 'polkadot')
         const quotes: Quotes = await this.coingeckoService.fetchHistoricalData(token.id, currency)
-        this.storeQuotes(symbol, quotes)
-        TokenPriceHistoryService.cachedPrices[symbol] = quotes
-        return TokenPriceHistoryService.cachedPrices[symbol]
+        const symbolCurr = symbol + '_' + currency
+        this.storeQuotes(symbolCurr, quotes)
+        TokenPriceHistoryService.cachedPrices[symbolCurr] = quotes
+        return TokenPriceHistoryService.cachedPrices[symbolCurr]
     }
 
-    private storeQuotes(symbol: string, quotes: any) {
-        const filename = __dirname + `/../../res/quotes/${symbol.toLowerCase()}.json`
+    private storeQuotes(symbolCurr: string, quotes: any) {
+        const filename = __dirname + `/../../res/quotes/${symbolCurr.toLowerCase()}.json`
         const existingQuotes = fs.existsSync(filename) ?
             JSON.parse(fs.readFileSync(filename, 'utf-8')) : {}
         const updatedQuotes = {
+            ...existingQuotes,
             ...quotes,
-            ...existingQuotes
         }
         fs.writeFileSync(filename, JSON.stringify(updatedQuotes), 'utf-8')
     }
 
-    private fetchStoredQuotes(symbol: string) {
-        const filename = __dirname + `/../../res/quotes/${symbol.toLowerCase()}.json`
+    private fetchStoredQuotes(symbolCurrency: string) {
+        const filename = __dirname + `/../../res/quotes/${symbolCurrency.toLowerCase()}.json`
         if (fs.existsSync(filename)) {
-            TokenPriceHistoryService.cachedPrices[symbol] = JSON.parse(fs.readFileSync(filename, 'utf-8'))
+            TokenPriceHistoryService.cachedPrices[symbolCurrency] = JSON.parse(fs.readFileSync(filename, 'utf-8'))
         }
     }
 

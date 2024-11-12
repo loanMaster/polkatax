@@ -40,7 +40,9 @@ const fetchRewards = async (chainName: string, address: string, currency: string
     const supportedTokens = tokens.filter(symbol => coingeckoSupportsToken(symbol, chainName))
     const currentPrices = await new TokenPriceService(new CoingeckoService()).fetchCurrentPrices(supportedTokens, chainName, currency)
 
-    const quotes = await currencyService.getQuotesForTokens(supportedTokens, chainName)
+    const quoteCurrencies = ['usd', 'chf', 'eur']
+    const quoteCurrency = quoteCurrencies.indexOf(currency.toLocaleLowerCase()) > -1 ? currency : 'usd'
+    const quotes = await currencyService.getQuotesForTokens(supportedTokens, chainName, quoteCurrency.toLowerCase())
 
     for (let token of Object.keys(payments)) {
         const transfers = payments[token]

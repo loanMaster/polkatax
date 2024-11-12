@@ -1,18 +1,22 @@
 import {logger} from "../logger/logger";
 import {CurrencyExchangeRateService} from "./currency-exchange-rate.service";
-import {Quotes, TokenPriceHistoryService} from "./token-price-history.service";
+import {CurrencyQuotes, Quotes, TokenPriceHistoryService} from "./token-price-history.service";
 import {Transfer} from "../model/transfer";
 import {formatDate} from "../util/format-date";
 import {Swap} from "../model/swap";
 
 export class FiatCurrencyService {
 
+    private supportedQuoteCurrencies = ["usd", "eur", "chf"]
+
     constructor(private tokenPriceHistoryService: TokenPriceHistoryService, private currencyExchangeRateService: CurrencyExchangeRateService) {
     }
 
-    async addFiatValues(values: Transfer[], fromSymbol: string, chain: string, toSymbol: string, currentPrice: number, quotesIn?: Quotes): Promise<Transfer[]> {
+    async addFiatValues(values: Transfer[], fromSymbol: string, chain: string, toCurrency: string, currentPrice: number, quotesIn?: CurrencyQuotes): Promise<Transfer[]> {
         try {
-            const quotes = quotesIn ? quotesIn : await this.tokenPriceHistoryService.getQuotes(fromSymbol, chain)
+            toCurrency = toCurrency.toUpperCase()
+            const quotesCurrency = this.supportedQuoteCurrencies.indexOf(toCurrency.toLowerCase()) > -1 ? toCurrency : 'usd'
+            const quotes = quotesIn ? quotesIn : await this.tokenPriceHistoryService.getQuotes(fromSymbol, chain, quotesCurrency.toLowerCase())
             const currencyExchangeRates = await this.currencyExchangeRateService.getExchangeRates()
             const currentIsoDate = formatDate(new Date())
 
@@ -21,12 +25,12 @@ export class FiatCurrencyService {
                 if (isoDate === currentIsoDate) {
                     d.price = currentPrice
                     d.value = d.amount * currentPrice
-                } else if (quotes?.[isoDate] && (toSymbol.toUpperCase() === 'USD' || currencyExchangeRates[isoDate]?.[toSymbol.toUpperCase()])) {
-                    d.price = quotes[isoDate] * (toSymbol.toUpperCase() === 'USD' ? 1 : currencyExchangeRates[isoDate][toSymbol.toUpperCase()])
+                } else if (quotes.quotes?.[isoDate] && (quotes.currency.toUpperCase() === toCurrency || currencyExchangeRates[isoDate]?.[toCurrency])) {
+                    d.price = quotes.quotes[isoDate] * (quotes.currency.toUpperCase() === toCurrency ? 1 : currencyExchangeRates[isoDate][toCurrency])
                     d.value = d.amount * d.price
                 } else if (isoDate !== currentIsoDate) {
                     logger.warn(`No quote found for ${fromSymbol} for date ${isoDate}`)
-                }
+                } 
             }
             return values
         } catch (e) {
@@ -48,11 +52,11 @@ export class FiatCurrencyService {
         return tokens
     }
 
-    public async getQuotesForTokens(tokens: string[], chain: string): Promise<{ [token: string]: Quotes }> {
+    public async getQuotesForTokens(tokens: string[], chain: string, currency: string): Promise<{ [token: string]: CurrencyQuotes }> {
         const result = {}
         for (let i = 0; i < tokens.length; i++) {
             try {
-                result[tokens[i]] = await this.tokenPriceHistoryService.getQuotes(tokens[i], chain)
+                result[tokens[i]] = await this.tokenPriceHistoryService.getQuotes(tokens[i], chain, currency)
             } catch (e) {
                 logger.error("Failed to fetch quotes for token " + tokens[i])
                 logger.error(e)
@@ -63,20 +67,23 @@ export class FiatCurrencyService {
 
     async addFiatValuesToSwaps(swaps: Swap[], toCurrency: string, chain:  string, currentPrices: { [token: string]: number }): Promise<Swap[]> {
         const tokens = this.getTokens(swaps)
-        const quotes = await this.getQuotesForTokens(tokens, chain)
+        toCurrency = toCurrency.toUpperCase()
+        const quotesCurrency = this.supportedQuoteCurrencies.indexOf(toCurrency.toLowerCase()) > -1 ? toCurrency : 'usd'
+        const quotes = await this.getQuotesForTokens(tokens, chain, quotesCurrency.toLowerCase())
         for (let idx = 0; idx < swaps.length; idx++) {
             const swap = swaps[idx]
             const currencyExchangeRates = await this.currencyExchangeRateService.getExchangeRates()
             const currentIsoDate = formatDate(new Date())
             const isoDate = formatDate(new Date(swap.date * 1000))
             for (const token of Object.keys(swap.tokens)) {
+                const tokenQuotes = quotes[token]
                 if (isoDate === currentIsoDate) {
                     swap.tokens[token].price = currentPrices?.[token]
                     swap.tokens[token].value = swap.tokens[token].amount * swap.tokens[token].price
-                } else if (quotes[token]?.[isoDate] && (toCurrency.toUpperCase() === 'USD' || currencyExchangeRates[isoDate]?.[toCurrency.toUpperCase()])) {
-                    swap.tokens[token].price = quotes[token][isoDate] * (toCurrency.toUpperCase() === 'USD' ? 1 : currencyExchangeRates[isoDate][toCurrency.toUpperCase()])
+                } else if (tokenQuotes && tokenQuotes.quotes[isoDate] && (quotesCurrency === toCurrency || currencyExchangeRates[isoDate]?.[toCurrency])) {
+                    swap.tokens[token].price = tokenQuotes[isoDate] * (quotesCurrency === toCurrency ? 1 : currencyExchangeRates[isoDate][toCurrency])
                     swap.tokens[token].value = swap.tokens[token].amount * swap.tokens[token].price
-                } else if (isoDate !== currentIsoDate && quotes[token]) {
+                } else if (isoDate !== currentIsoDate && tokenQuotes) {
                     logger.warn(`No quote found for ${token} for date ${isoDate}`)
                 }
             }

@@ -8,11 +8,14 @@
       :pagination="initialPagination"
     >
       <template v-slot:top>
-        <span class="text-h6" style="line-break: anywhere"
-          >Rewards ({{ rewardsStore.rewards.chain }}) -
-          {{ rewardsStore.rewards.timeFrame }} -
-          {{ rewardsStore.rewards.address }}</span
-        >
+        <div>
+          <span class="text-h6" style="line-break: anywhere"
+            >Rewards ({{ rewardsStore.rewards!.chain }}) - {{ timeFrame }}</span
+          ><br />
+          <span class="text-h6" style="line-break: anywhere"
+            >Address {{ rewardsStore.rewards!.address }}</span
+          >
+        </div>
         <q-space />
         <q-btn color="primary" class="q-mr-sm" @click="exportCsv"
           >Export CSV
@@ -32,6 +35,7 @@ import {
   tokenAmountFormatter,
   valueFormatter,
 } from '../../../shared-module/util/number-formatters';
+import { formatTimeFrame } from '../../../shared-module/util/date-utils';
 
 interface RewardsTableHeader extends Reward {
   'Reward token': string;
@@ -44,6 +48,12 @@ interface RewardsTableHeader extends Reward {
 }
 
 const rewardsStore = useStakingRewardsStore();
+
+const timeFrame = computed(() => {
+  return rewardsStore.rewards
+    ? formatTimeFrame(rewardsStore.rewards!.timeFrame)
+    : '';
+});
 
 const columns = computed(() => [
   {

@@ -77,3 +77,10 @@ export function formatDate(date: number) {
   if (day.length < 2) day = '0' + day;
   return [year, month, day].join('-');
 }
+
+export const formatTimeFrame = (timeFrame: string) => {
+  const start = getStartDate(timeFrame);
+  const end = new Date(getEndDate(timeFrame));
+  end.setDate(end.getDate() - 1);
+  return formatDate(start) + ' until ' + formatDate(end.getTime());
+};

@@ -1,15 +1,13 @@
 <template>
-  <div class="text-h6">
-    Summary of staking rewards ({{ rewardsStore.rewards.timeFrame }})
-  </div>
+  <div class="text-h6">Summary of staking rewards ({{ timeFrame }})</div>
   <table class="q-my-lg q-mx-auto">
     <tr>
       <td class="text-left q-pa-sm">Total rewards:</td>
       <td class="text-right q-pa-sm">
         {{
-          formatTokenAmount(rewardsStore.rewards.summary.amount) +
+          formatTokenAmount(rewardsStore.rewards!.summary.amount) +
           ' ' +
-          rewardsStore.rewards.token
+          rewardsStore.rewards!.token
         }}
       </td>
     </tr>
@@ -19,26 +17,26 @@
         {{
           formatTokenAmount(averageDailyRewards) +
           ' ' +
-          rewardsStore.rewards.token
+          rewardsStore.rewards!.token
         }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value at payout time:</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(rewardsStore.rewards.summary.value) }}
+        {{ formatCurrency(rewardsStore.rewards!.summary.value) }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value now:</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(rewardsStore.rewards.summary.valueNow) }}
+        {{ formatCurrency(rewardsStore.rewards!.summary.valueNow) }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Current price:</td>
       <td class="text-right q-pa-sm">
-        {{ formatPrice(rewardsStore.rewards.currentPrice) }}
+        {{ formatPrice(rewardsStore.rewards!.currentPrice) }}
       </td>
     </tr>
   </table>
@@ -49,8 +47,8 @@
       style="line-break: anywhere"
       target="_blank"
     >
-      https://{{ rewardsStore.rewards.chain }}.subscan.io/account/{{
-        rewardsStore.rewards.address
+      https://{{ rewardsStore.rewards!.chain }}.subscan.io/account/{{
+        rewardsStore.rewards!.address
       }}?tab=reward
     </a>
   </div>
@@ -59,6 +57,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
+import { formatTimeFrame } from '../../../shared-module/util/date-utils';
 
 const rewardsStore = useStakingRewardsStore();
 
@@ -74,6 +73,12 @@ const averageDailyRewards = computed(() => {
     60 *
     1000
   );
+});
+
+const timeFrame = computed(() => {
+  return rewardsStore.rewards
+    ? formatTimeFrame(rewardsStore.rewards!.timeFrame)
+    : '';
 });
 
 function formatCurrency(value: number) {
