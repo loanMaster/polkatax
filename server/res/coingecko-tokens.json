@@ -20450,7 +20450,6 @@
   { "id": "venus-busd", "symbol": "vbusd", "name": "Venus BUSD" },
   { "id": "venus-dai", "symbol": "vdai", "name": "Venus DAI" },
   { "id": "venus-doge", "symbol": "vdoge", "name": "Venus DOGE" },
-  { "id": "venus-dot", "symbol": "vdot", "name": "Venus DOT" },
   { "id": "venus-eth", "symbol": "veth", "name": "Venus ETH" },
   { "id": "venus-fil", "symbol": "vfil", "name": "Venus FIL" },
   { "id": "venus-link", "symbol": "vlink", "name": "Venus LINK" },

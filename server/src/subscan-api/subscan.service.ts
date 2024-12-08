@@ -33,6 +33,19 @@ export class SubscanService {
         }
     }
 
+    async mapToSubstrateAccount(chainName: string, account: string): Promise<string> {
+        logger.info(`Enter mapToSubstrateAccount for chain ${chainName} and account ${account}`)
+        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/search`, {
+            method: `post`,
+            headers: this.defaultHeader,
+            body: JSON.stringify({ key: account })
+        }))
+        const info = (await response.json()).data
+        const address = info?.account?.substrate_account?.address
+        logger.info(`Exit mapToSubstrateAccount with address ${address}`)
+        return address
+    }
+
     async fetchMetadata(chainName: string): Promise<MetaData> {
         const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/scan/metadata`, {
             method: `post`,

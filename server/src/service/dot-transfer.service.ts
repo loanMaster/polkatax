@@ -93,6 +93,10 @@ export class DotTransferService {
 
     async fetchSwapsAndTransfers(chainName: string, address: string, minDate: Date, maxDate?: Date): Promise<{ swaps: Swap[], payments: TokenTransfers }> {
         logger.info(`Enter fetchSwapAndTransfers for ${chainName}`)
+        const isEvmAddress = address.length <= 42
+        if (isEvmAddress) {
+            address = await this.subscanService.mapToSubstrateAccount(chainName, address)
+        }
         const {transfers, transactions} = await this.fetchTxAndTransfers(chainName, address, minDate, maxDate)
         const swaps = this._extractSwaps(transactions, transfers)
         const payments = this._extractPayments(transactions, transfers)
