@@ -2,8 +2,76 @@ import { Chain } from 'src/shared-module/model/chain';
 
 export const chainList: Chain[] = [
   {
-    chain: 'ajuna',
-    label: 'Ajuna',
+    chain: 'joystream',
+    label: 'Joystream',
+  },
+  {
+    chain: 'enjin',
+    label: 'Enjin',
+  },
+  {
+    chain: 'vara',
+    label: 'Vara',
+  },
+  {
+    chain: 'polymesh',
+    label: 'Polymesh',
+  },
+  {
+    chain: 'dock',
+    label: 'Dock',
+  },
+  {
+    chain: 'creditcoin',
+    label: 'Creditcoin',
+  },
+  {
+    chain: 'cc-enterprise',
+    label: 'CC-Enterprise',
+  },
+  {
+    chain: 'avail',
+    label: 'Avail',
+  },
+  {
+    chain: 'turing',
+    label: 'Turing',
+  },
+  {
+    chain: 'krest',
+    label: 'Krest',
+  },
+  {
+    chain: 'khala',
+    label: 'Khala',
+  },
+  {
+    chain: 'integritee',
+    label: 'Integritee',
+  },
+  {
+    chain: 'pendulum',
+    label: 'Pendulum',
+  },
+  {
+    chain: 'neuroweb',
+    label: 'Neuroweb',
+  },
+  {
+    chain: 'mythos',
+    label: 'Mythos',
+  },
+  {
+    chain: 'manta',
+    label: 'Manta',
+  },
+  {
+    chain: 'continuum',
+    label: 'Continuum',
+  },
+  {
+    chain: 'energywebx',
+    label: 'EnergywebX',
   },
   { chain: 'polkadot', label: 'Polkadot' },
   {
@@ -50,7 +118,7 @@ export const chainList: Chain[] = [
     chain: 'crust',
     label: 'Crust',
   },
-  { chain: 'hydradx', label: 'Hydradx' },
+  { chain: 'hydration', label: 'Hydration' },
   {
     chain: 'spiritnet',
     label: 'Spiritnet',
@@ -65,7 +133,6 @@ export const chainList: Chain[] = [
     chain: 'crust',
     label: 'Crust',
   },
-  { chain: 'equilibrium', label: 'Equilibrium' },
   {
     chain: 'darwinia',
     label: 'Darwinia',
@@ -86,10 +153,6 @@ export const chainList: Chain[] = [
     label: 'Origintrail',
   },
   { chain: 'interlay', label: 'Interlay' },
-  {
-    chain: 'calamari',
-    label: 'Calamari',
-  },
   { chain: 'khala', label: 'Khala' },
   {
     chain: 'moonriver',

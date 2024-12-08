@@ -2,6 +2,96 @@ import { Token } from '../model/token';
 
 export const tokenList: Token[] = [
   {
+    symbol: 'JOY',
+    chain: 'joystream',
+    label: 'Joystream',
+  },
+  {
+    symbol: 'ENJ',
+    chain: 'enjin',
+    label: 'Enjin',
+  },
+  {
+    symbol: 'VARA',
+    chain: 'vara',
+    label: 'Vara',
+  },
+  {
+    symbol: 'POLYX',
+    chain: 'polymesh',
+    label: 'Polymesh',
+  },
+  {
+    symbol: 'DOCK',
+    chain: 'dock',
+    label: 'Dock',
+  },
+  {
+    symbol: 'CTC',
+    chain: 'creditcoin',
+    label: 'Creditcoin',
+  },
+  {
+    symbol: 'CTC',
+    chain: 'cc-enterprise',
+    label: 'CC-Enterprise',
+  },
+  {
+    symbol: 'AVAIL',
+    chain: 'avail',
+    label: 'Avail',
+  },
+  {
+    symbol: 'TUR',
+    chain: 'turing',
+    label: 'Turing',
+  },
+  {
+    symbol: 'KREST',
+    chain: 'krest',
+    label: 'Krest',
+  },
+  {
+    symbol: 'KAR',
+    chain: 'karura',
+    label: 'Karura',
+  },
+  {
+    symbol: 'TER',
+    chain: 'integritee',
+    label: 'Integritee',
+  },
+  {
+    symbol: 'PEN',
+    chain: 'pendulum',
+    label: 'Pendulum',
+  },
+  {
+    symbol: 'NEURO',
+    chain: 'neuroweb',
+    label: 'Neuroweb',
+  },
+  {
+    symbol: 'MYTH',
+    chain: 'mythos',
+    label: 'Mythos',
+  },
+  {
+    symbol: 'MANTA',
+    chain: 'manta',
+    label: 'Manta',
+  },
+  {
+    symbol: 'NUUM',
+    chain: 'continuum',
+    label: 'Continuum',
+  },
+  {
+    symbol: 'EWT',
+    chain: 'energywebx',
+    label: 'EnergywebX',
+  },
+  {
     symbol: 'AJUN',
     chain: 'ajuna',
     label: 'Ajuna',
@@ -24,7 +114,7 @@ export const tokenList: Token[] = [
     chain: 'crust',
     label: 'Crust',
   },
-  { symbol: 'HDX', chain: 'hydradx', label: 'Hydradx' },
+  { symbol: 'HDX', chain: 'hydration', label: 'Hydration' },
   {
     symbol: 'KILT',
     chain: 'spiritnet',
@@ -32,7 +122,7 @@ export const tokenList: Token[] = [
   },
   { symbol: 'ACA', chain: 'acala', label: 'Acala' },
   {
-    symbol: 'BFC',
+    symbol: 'BNC',
     chain: 'bifrost',
     label: 'Bifrost',
   },
@@ -42,13 +132,11 @@ export const tokenList: Token[] = [
     chain: 'crust',
     label: 'Crust',
   },
-  { symbol: 'EQ', chain: 'equilibrium', label: 'Equilibrium' },
   {
     symbol: 'RING',
     chain: 'darwinia',
     label: 'Darwinia',
   },
-  { symbol: 'PARA', chain: 'parallel', label: 'Parallel' },
   {
     symbol: 'PDEX',
     chain: 'polkadex',
@@ -67,11 +155,6 @@ export const tokenList: Token[] = [
     label: 'Origintrail',
   },
   { symbol: 'INTR', chain: 'interlay', label: 'Interlay' },
-  {
-    symbol: 'KMA',
-    chain: 'calamari',
-    label: 'Calamari',
-  },
   { symbol: 'PHA', chain: 'khala', label: 'Khala' },
   {
     symbol: 'MOVR',

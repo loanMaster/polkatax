@@ -147,6 +147,7 @@ export class SubscanService {
     }
 
     fetchAllExtrinsics(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Transaction[]> {
+        logger.info(`fetchAllExtrinsics for ${chainName} and address ${address}`)
         const fetchExtrinsics = async (chainName: string, address: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transaction[], hasNext: boolean }> => {
             const body = JSON.stringify({
                 row,
@@ -174,8 +175,10 @@ export class SubscanService {
                 }), hasNext: (responseBody.data?.extrinsics || []).length >= row
             }
         }
-        return this.iterateOverPages<Transaction>((page, count) =>
+        const result = this.iterateOverPages<Transaction>((page, count) =>
                 fetchExtrinsics(chainName, address, count, page, block_min, block_max))
+        logger.info(`Exit fetchAllExtrinsics for ${chainName} and address ${address}`)
+        return result
     }
 
     async fetchAccounts(address: string, chainName: string): Promise<string[]> {
@@ -193,6 +196,7 @@ export class SubscanService {
     }
 
     async fetchAllTransfers(chainName: string, account: string, block_min?: number, block_max?: number): Promise<Transfers> {
+        logger.info(`fetchAllTransfers for ${chainName} and account ${account}`)
         const addresses = await this.fetchAccounts(account, chainName)
         const isMyAccount = (address: string) => addresses.indexOf(address) > -1
         const fetchTransfers = async (chainName: string, account: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transfers[], hasNext: boolean }> => {
@@ -239,8 +243,10 @@ export class SubscanService {
             })
             return {list: [transfers], hasNext: (responseBody.data?.transfers || []).length >= row}
         }
-        return mergeListElements(await this.iterateOverPages<any>((page, count) =>
+        const result = mergeListElements(await this.iterateOverPages<any>((page, count) =>
                 fetchTransfers(chainName, account, count, page, block_min, block_max)))
+        logger.info(`Exit fetchAllTransfers for ${chainName} and account ${account}`)
+        return result
     }
 }
 
