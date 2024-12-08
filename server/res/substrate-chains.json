@@ -1,9 +1,119 @@
 {
   "chains": [
     {
-      "name": "Continuum",
+      "name": "joystream",
+      "token": "joy",
+      "coingeckoId": "joystream"
+    },
+    {
+      "name": "enjin",
+      "token": "enj",
+      "coingeckoId": "enjincoin"
+    },
+    {
+      "name": "vara",
+      "token": "vara",
+      "coingeckoId": "vara-network"
+    },
+    {
+      "name": "polymesh",
+      "token": "polyx",
+      "coingeckoId": "polymesh"
+    },
+    {
+      "name": "dock",
+      "token": "dock",
+      "coingeckoId": "dock"
+    },
+    {
+      "name": "creditcoin",
+      "token": "ctc",
+      "coingeckoId": "creditcoin-2"
+    },
+    {
+      "name": "cc-enterprise",
+      "token": "ctc",
+      "coingeckoId": "creditcoin-2"
+    },
+    {
+      "name": "avail",
+      "token": "avail",
+      "coingeckoId": "avail"
+    },
+    {
+      "name": "turing",
+      "token": "tur",
+      "coingeckoId": "turing-network"
+    },
+    {
+      "name": "krest",
+      "token": "krest",
+      "coingeckoId": "krest"
+    },
+    {
+      "name": "khala",
+      "token": "pha",
+      "coingeckoId": "pha"
+    },
+    {
+      "name": "karura",
+      "token": "kar",
+      "coingeckoId": "karura"
+    },
+    {
+      "name": "integritee",
+      "token": "teer",
+      "coingeckoId": "integritee"
+    },
+    {
+      "name": "shadow",
+      "token": "csm",
+      "coingeckoId": "crust-storage-market"
+    },
+    {
+      "name": "basilisk",
+      "token": "bsx",
+      "coingeckoId": "basilisk"
+    },
+    {
+      "name": "bajun",
+      "token": "baju",
+      "coingeckoId": "ajuna-network"
+    },
+    {
+      "name": "pendulum",
+      "token": "pen",
+      "coingeckoId": "pendulum-chain"
+    },
+    {
+      "name": "neuroweb",
+      "token": "neuro",
+      "coingeckoId": "neurowebai"
+    },
+    {
+      "name": "mythos",
+      "token": "myth",
+      "coingeckoId": "mythos"
+    },
+    {
+      "name": "manta",
+      "token": "manta",
+      "coingeckoId": "manta-network"
+    },
+    {
+      "name": "continuum",
       "token": "nuum",
       "coingeckoId": "mnet-continuum"
+    },
+    {
+      "name": "energywebx",
+      "token": "ewt",
+      "coingeckoId": "energy-web-token"
+    },
+    {
+      "name": "composable",
+      "token": "layr",
+      "coingeckoId": ""
     },
     {
       "name": "ajuna",
@@ -46,7 +156,7 @@
       "coingeckoId": "crust-network"
     },
     {
-      "name": "hydradx",
+      "name": "hydration",
       "token": "hdx",
       "coingeckoId": "hydradx"
     },
@@ -62,7 +172,7 @@
     },
     {
       "name": "bifrost",
-      "token": "bfc",
+      "token": "bnc",
       "coingeckoId": "bifrost"
     },
     {
@@ -119,11 +229,6 @@
       "name": "interlay",
       "token": "intr",
       "coingeckoId": "interlay"
-    },
-    {
-      "name": "calamari",
-      "token": "kma",
-      "coingeckoId": "calamari-network"
     },
     {
       "name": "khala",
