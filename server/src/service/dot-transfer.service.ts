@@ -62,18 +62,20 @@ export class DotTransferService {
 
     _extractSwaps(transactions: Transaction[], transfers: Transfers): Swap[] {
         const swaps: any = []
-        transactions.forEach(tx => {
-            const transfer: Transfer = transfers[tx.hash]
+        Object.keys(transfers).forEach(hash => {
+            const tx = transactions.find(tx => tx.hash === hash)
+            const transfer: Transfer = transfers[hash]
             if (transfer && !this.isRewardOrPayment(transfer)) {
-                const next = {
-                    hash: tx.hash,
-                    block: tx.block_num,
-                    date: tx.block_timestamp,
-                    functionName: processFunctionName(tx.functionName),
-                    contract: undefined,
-                    tokens: {}
-                }
+                let next = undefined
                 Object.keys(transfer).forEach(token => {
+                    next = next || {
+                        hash: hash,
+                        block: transfer[token].block,
+                        date: transfer[token].timestamp,
+                        functionName: processFunctionName(transfer[token].functionName),
+                        contract: undefined,
+                        tokens: {}
+                    }
                     const tokenLower = token.toLowerCase()
                     if (transfer[token].amount !== 0) {
                         next.tokens[tokenLower] = {
@@ -82,7 +84,7 @@ export class DotTransferService {
                         }
                     }
                     if (transfer[token].amount > 0 && !next.contract) {
-                        next.contract = tx.callModule || ''
+                        next.contract = tx?.callModule || ''
                     }
                 })
                 swaps.push(next)

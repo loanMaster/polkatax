@@ -18,6 +18,10 @@ const fetchRewards = async (chain: ChainInfo, address: string, currency: string,
     const currencyService = new FiatCurrencyService(priceHistoryService, new CurrencyExchangeRateService())
     const subscanService = new SubscanService()
     const stakingRewardsService = new StakingRewardsService(new BlockTimeService(subscanService), subscanService)
+    const isEvmAddress = address.length <= 42
+    if (isEvmAddress) {
+        address = await subscanService.mapToSubstrateAccount(chain.name, address)
+    }
     const rewardsPromise = poolId > 0 ?
         stakingRewardsService.fetchNominationPoolRewards(chain.name.toLowerCase(), address, poolId, startDay.getTime(), endDay ? endDay.getTime() : undefined) :
         stakingRewardsService.fetchStakingRewards(chain.name.toLowerCase(), address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
