@@ -88,7 +88,7 @@ export class TokenPriceHistoryService {
     }
 
     private async sync() {
-        logger.debug('TokenPriceHistoryService syncing')
+        logger.info('TokenPriceHistoryService syncing')
         const tokensToSync = this.getTokensToSync()
         for (let currency of this.currenciesToSync) {
             for (let symbol of tokensToSync.tokens) {
@@ -99,7 +99,7 @@ export class TokenPriceHistoryService {
                     }
                     if (!this.informationUpToDate(symbolCurr)) {
                         await this.fetchQuotesForSymbol(symbol, currency)
-                        logger.debug(`TokenPriceHistoryService syncing done for token ${symbol} and currency ${currency}`)
+                        logger.info(`TokenPriceHistoryService syncing done for token ${symbol} and currency ${currency}`)
                         break;
                     }
                 } catch (error) {
@@ -115,7 +115,7 @@ export class TokenPriceHistoryService {
         if (tokensToSync.tokens.every(tokenId => 
             this.currenciesToSync.every(currency => this.informationUpToDate(tokenId + '_' + currency))
         )) {
-            logger.debug(`TokenPriceHistoryService syncing completed!`)
+            logger.info(`TokenPriceHistoryService syncing completed!`)
         }
     }
 
