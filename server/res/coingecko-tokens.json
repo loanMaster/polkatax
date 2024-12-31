@@ -119690,14 +119690,6 @@
     }
   },
   {
-    "id": "venus-dot",
-    "symbol": "vdot",
-    "name": "Venus DOT",
-    "platforms": {
-      "binance-smart-chain": "0x1610bc33319e9398de5f57b33a5b184c806ad217"
-    }
-  },
-  {
     "id": "venus-eth",
     "symbol": "veth",
     "name": "Venus ETH",
