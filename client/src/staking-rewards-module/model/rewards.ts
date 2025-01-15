@@ -1,5 +1,5 @@
 export interface Reward extends RewardDto {
-  isoDate: string;
+  date: number;
   valueNow?: number;
 }
 

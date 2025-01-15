@@ -1,5 +1,5 @@
 export interface Payment extends PaymentDto {
-  isoDate: string;
+  date: number;
   valueNow?: number;
 }
 

@@ -51,13 +51,15 @@
 import { computed, ref } from 'vue';
 import { saveAs } from 'file-saver';
 import { Parser } from '@json2csv/plainjs';
-import { Payment } from '../../model/payments';
 import {
   formatValue,
   tokenAmountFormatter,
 } from '../../../shared-module/util/number-formatters';
 import { usePaymentsStore } from '../../store/payments.store';
 import { getTxLink } from 'src/shared-module/util/tx-link';
+import { Swap } from 'src/src/swap-module/model/swaps';
+import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
+import { Payment } from 'src/transfers-module/model/payments';
 
 const store = usePaymentsStore();
 const sortAmounts = (value1: number, value2: number) =>
@@ -69,7 +71,7 @@ const columns = computed(() => [
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Payment) => row.isoDate,
+    field: (row: Swap) => formatDate(row.date * 1000),
     sortable: true,
   },
   {
@@ -166,9 +168,14 @@ const initialPagination = ref({
 function exportCsv() {
   const parser = new Parser();
   const excludedHashes = store.excludedEntries.map((e) => e.hash);
-  const values = [...(store.paymentsCurrentToken?.values || [])].filter(
-    (v) => excludedHashes.indexOf(v.hash) === -1
-  );
+  const values = [...(store.paymentsCurrentToken?.values || [])]
+    .filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .map((v) => {
+      return {
+        ...v,
+        date: formatDateUTC(v.date * 1000),
+      };
+    });
   values[0] = {
     Token: store.selectedToken,
     Chain: store.paymentList?.chain,
@@ -185,9 +192,16 @@ function exportCsv() {
 
 function exportJson() {
   const excludedHashes = store.excludedEntries.map((e) => e.hash);
-  const filteredPayments = store.paymentsCurrentToken!.values.filter(
-    (v) => excludedHashes.indexOf(v.hash) === -1
-  );
+  const filteredPayments = store
+    .paymentsCurrentToken!.values.filter(
+      (v) => excludedHashes.indexOf(v.hash) === -1
+    )
+    .map((p: Payment) => {
+      return {
+        ...p,
+        date: formatDateUTC(p.date * 1000),
+      };
+    });
 
   saveAs(
     new Blob(

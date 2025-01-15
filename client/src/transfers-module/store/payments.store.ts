@@ -184,7 +184,7 @@ export const usePaymentsStore = defineStore('payments', {
       endDate.setHours(23);
       endDate.setMinutes(59);
       endDate.setSeconds(59);
-      const temp = {
+      const metadata = {
         chain: this.chain,
         address: this.address,
         startDate: formatDate(startDate),
@@ -199,7 +199,7 @@ export const usePaymentsStore = defineStore('payments', {
         endDate.getTime()
       );
       this.paymentList = {
-        ...temp,
+        ...metadata,
         tokens: {},
       };
       const transfers = result.transfers;
@@ -209,7 +209,6 @@ export const usePaymentsStore = defineStore('payments', {
           v.valueNow = isNaN(v.amount * payments.currentPrice)
             ? undefined
             : v.amount * payments.currentPrice;
-          v.isoDate = formatDate(v.date * 1000);
         });
         payments.summary = createSummary(payments);
         this.paymentList.tokens[token] = payments;
@@ -220,7 +219,7 @@ export const usePaymentsStore = defineStore('payments', {
 
       preprocess(result);
       this.swaps = {
-        ...temp,
+        ...metadata,
         swaps: result.swaps,
         currentPrices: result.currentPrices,
       };

@@ -36,6 +36,8 @@ import {
   valueFormatter,
 } from '../../../shared-module/util/number-formatters';
 import { formatTimeFrame } from '../../../shared-module/util/date-utils';
+import { Swap } from 'app/client/src/swap-module/model/swaps';
+import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
 
 interface RewardsTableHeader extends Reward {
   'Reward token': string;
@@ -57,11 +59,11 @@ const timeFrame = computed(() => {
 
 const columns = computed(() => [
   {
-    name: 'Date',
+    name: 'date',
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Reward) => row.isoDate,
+    field: (row: Swap) => formatDate(row.date * 1000),
     sortable: true,
   },
   {
@@ -137,7 +139,12 @@ const initialPagination = ref({
 
 function exportCsv() {
   const parser = new Parser();
-  const values = [...(rewardsStore?.rewards?.values || [])];
+  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+    return {
+      ...v,
+      date: formatDateUTC(v.date * 1000),
+    };
+  });
   values[0] = {
     'Reward token': rewardsStore?.rewards?.token,
     Chain: rewardsStore?.rewards?.chain,
@@ -157,8 +164,14 @@ function exportCsv() {
 }
 
 function exportJson() {
+  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+    return {
+      ...v,
+      date: formatDateUTC(v.date * 1000),
+    };
+  });
   saveAs(
-    new Blob([JSON.stringify(rewardsStore.rewards)], {
+    new Blob([JSON.stringify({ ...rewardsStore.rewards, values: values })], {
       type: 'text/plain;charset=utf-8',
     }),
     'staking-rewards.json'

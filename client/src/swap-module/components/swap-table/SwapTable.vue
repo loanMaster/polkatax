@@ -103,7 +103,7 @@ import {
 } from '../../../shared-module/util/number-formatters';
 import { usePaymentsStore } from 'src/transfers-module/store/payments.store';
 import { Swap, SwappedTokens } from 'app/client/src/swap-module/model/swaps';
-import { formatDate } from 'src/shared-module/util/date-utils';
+import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
 import { getTxLink } from 'src/shared-module/util/tx-link';
 
 const store = usePaymentsStore();
@@ -280,7 +280,7 @@ function exportCsv() {
   store.filteredSwaps.forEach((swap: Swap) => {
     const first: any = {
       ...swap,
-      date: formatDate(swap.date * 1000),
+      date: formatDateUTC(swap.date * 1000),
     };
     const nextTokens: any = [];
     let temp: any = {};
@@ -341,12 +341,18 @@ function exportCsv() {
 }
 
 function exportJson() {
+  const swapsWithDateCol = store.filteredSwaps.map((s: Swap) => {
+    return {
+      ...s,
+      date: formatDateUTC(s.date * 1000),
+    };
+  });
   saveAs(
     new Blob(
       [
         JSON.stringify({
           ...store.swaps,
-          swaps: store.filteredSwaps,
+          swaps: swapsWithDateCol,
         }),
       ],
       {
