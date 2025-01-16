@@ -38,10 +38,10 @@ export const getStartDate = (timeFrame: string) => {
       temp.setDate(1);
       temp.setMonth(temp.getMonth() - 1);
       break;
-    case TimeFrames.lastYear:
+    default:
       temp.setDate(1);
       temp.setMonth(0);
-      temp.setFullYear(temp.getFullYear() - 1);
+      temp.setFullYear(Number(timeFrame));
       break;
   }
   return temp.getTime();
@@ -59,9 +59,10 @@ export const getEndDate = (timeFrame: string) => {
     case TimeFrames.lastMonth:
       temp.setDate(1);
       break;
-    case TimeFrames.lastYear:
+    default:
       temp.setDate(1);
       temp.setMonth(0);
+      temp.setFullYear(Number(timeFrame) + 1);
       break;
   }
   return temp.getTime();

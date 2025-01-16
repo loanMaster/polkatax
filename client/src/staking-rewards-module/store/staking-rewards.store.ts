@@ -4,63 +4,7 @@ import { Reward, RewardDto, Rewards } from '../model/rewards';
 import { TimeFrames } from '../../shared-module/model/time-frames';
 import { tokenList } from '../../shared-module/const/tokenList';
 import { formatDate } from 'src/shared-module/util/date-utils';
-
-const getStartOfCurrentDay = () => {
-  const temp = new Date();
-  temp.setMilliseconds(0);
-  temp.setMinutes(0);
-  temp.setHours(0);
-  return temp;
-};
-
-const getStartDate = (timeFrame: string) => {
-  const temp = getStartOfCurrentDay();
-  switch (timeFrame) {
-    case TimeFrames.currentMonth:
-      temp.setDate(1);
-      break;
-    case TimeFrames.currentYear:
-      temp.setDate(1);
-      temp.setMonth(0);
-      break;
-    case TimeFrames.lastSevenDays:
-      temp.setDate(temp.getDate() - 6);
-      break;
-    case TimeFrames.lastThirtyDays:
-      temp.setDate(temp.getDate() - 29);
-      break;
-    case TimeFrames.lastMonth:
-      temp.setDate(1);
-      temp.setMonth(temp.getMonth() - 1);
-      break;
-    case TimeFrames.lastYear:
-      temp.setDate(1);
-      temp.setMonth(0);
-      temp.setFullYear(temp.getFullYear() - 1);
-      break;
-  }
-  return temp.getTime();
-};
-
-const getEndDate = (timeFrame: string) => {
-  const temp = getStartOfCurrentDay();
-  switch (timeFrame) {
-    case TimeFrames.currentMonth:
-    case TimeFrames.currentYear:
-    case TimeFrames.lastSevenDays:
-    case TimeFrames.lastThirtyDays:
-      temp.setDate(temp.getDate() + 1);
-      break;
-    case TimeFrames.lastMonth:
-      temp.setDate(1);
-      break;
-    case TimeFrames.lastYear:
-      temp.setDate(1);
-      temp.setMonth(0);
-      break;
-  }
-  return temp.getTime();
-};
+import { getEndDate, getStartDate } from 'src/shared-module/util/date-utils';
 
 function groupRewardsByDay(rewards: Reward[]) {
   const groupedByDay: {

@@ -43,7 +43,7 @@ function onNewValueSelected(date: string) {
 }
 
 const minYearMonth = computed(() => {
-  return `${new Date().getFullYear() - 2}/01`;
+  return `${new Date().getFullYear() - 10}/01`;
 });
 
 const maxYearMonth = computed(() => {
