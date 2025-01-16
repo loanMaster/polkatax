@@ -142,14 +142,6 @@ export class TokenPriceHistoryService {
         if (this.informationUpToDate(symbol)) {
             return TokenPriceHistoryService.cachedPrices[symbol]
         }
-        const minDate = new Date()
-        minDate.setFullYear(minDate.getFullYear() - 1)
-        minDate.setMonth(0)
-        minDate.setDate(1)
-        minDate.setHours(0)
-        minDate.setMinutes(0)
-        minDate.setSeconds(0)
-        minDate.setDate(minDate.getDate() - 1)
         const token = findCoingeckoToken(symbol, 'polkadot')
         const quotes: Quotes = await this.coingeckoService.fetchHistoricalData(token.id, currency)
         const symbolCurr = symbol + '_' + currency

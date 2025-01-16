@@ -30,9 +30,11 @@ export class CurrencyExchangeRateService {
     private async sync() {
         logger.info('CurrencyExchangeRateService syncing')
         const exchangeRatesService = new ExchangeRateService()
-        const years = [new Date().getFullYear(), new Date().getFullYear() - 1]
-        let results: ExchangeRates = {}
-        for (let year of years) {
+        let results: ExchangeRates = this.getExchangeRates()
+        // fetch data from 10 years back if it hasn't been stored yet. otherwise fetch current and last year
+        const yearsToLookPast = Object.keys(results).length === 0 ? 10 : 1
+        for (let yearInPast = 0; yearInPast  <= yearsToLookPast; yearInPast++) {
+            let year = new Date().getFullYear() - yearInPast
             results = {
                 ...results,
                 ...(await exchangeRatesService.fetchTimeSeries(`${year}-01-01`, this.endOfYearOrNow(year)))
@@ -42,6 +44,10 @@ export class CurrencyExchangeRateService {
     }
 
     getExchangeRates(): ExchangeRates {
-        return JSON.parse(fs.readFileSync(__dirname + '/../../res/quotes/currency-exchange.rates.json', 'utf8'))
+        if (fs.existsSync(__dirname + '/../../res/quotes/currency-exchange.rates.json')) {
+            return JSON.parse(fs.readFileSync(__dirname + '/../../res/quotes/currency-exchange.rates.json', 'utf8'))
+        } else {
+            return {}
+        }
     }
 }
