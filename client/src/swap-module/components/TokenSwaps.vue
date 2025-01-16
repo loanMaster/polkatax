@@ -46,7 +46,7 @@ const totalSales = computed(() => {
   return formatCurrency(
     store.swapSummary.reduce(
       (acc: number, item: TradingSummary) =>
-        (acc += isNaN(item.sold.valueNow) ? 0 : item.sold.valueNow),
+        acc + (isNaN(item.sold.valueNow) ? 0 : item.sold.valueNow),
       0
     ),
     store.swaps.currency
@@ -56,7 +56,7 @@ const totalBuys = computed(() => {
   return formatCurrency(
     store.swapSummary.reduce(
       (acc: number, item: TradingSummary) =>
-        (acc += isNaN(item.bought.valueNow) ? 0 : item.bought.valueNow),
+        acc + (isNaN(item.bought.valueNow) ? 0 : item.bought.valueNow),
       0
     ),
     store.swaps.currency
@@ -66,7 +66,8 @@ const totalGain = computed(() => {
   return formatCurrency(
     store.swapSummary.reduce(
       (acc: number, item: TradingSummary) =>
-        (acc += isNaN(item.bought.valueNow)
+        acc +
+        (isNaN(item.bought.valueNow)
           ? 0
           : item.bought.valueNow - item.sold.valueNow),
       0

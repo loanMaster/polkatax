@@ -53,7 +53,7 @@ const fetchRewards = async (chainName: string, address: string, currency: string
             listOfTransfers[token] = { values: await currencyService.addFiatValues(transfers, token, chainName, currency, currentPrices[token], quotes[token]), currentPrice: currentPrices[token] }
         }
     }
-    const swapsExtended = await currencyService.addFiatValuesToSwaps(swaps, 'CHF', chainName, currentPrices)
+    const swapsExtended = await currencyService.addFiatValuesToSwaps(swaps, currency, chainName, currentPrices)
     return { currentPrices, swaps: swapsExtended, transfers: listOfTransfers }
 }
 

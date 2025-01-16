@@ -81,7 +81,7 @@ export class FiatCurrencyService {
                     swap.tokens[token].price = currentPrices?.[token]
                     swap.tokens[token].value = swap.tokens[token].amount * swap.tokens[token].price
                 } else if (tokenQuotes && tokenQuotes.quotes[isoDate] && (quotesCurrency === toCurrency || currencyExchangeRates[isoDate]?.[toCurrency])) {
-                    swap.tokens[token].price = tokenQuotes[isoDate] * (quotesCurrency === toCurrency ? 1 : currencyExchangeRates[isoDate][toCurrency])
+                    swap.tokens[token].price = tokenQuotes.quotes[isoDate] * (quotesCurrency === toCurrency ? 1 : currencyExchangeRates[isoDate][toCurrency])
                     swap.tokens[token].value = swap.tokens[token].amount * swap.tokens[token].price
                 } else if (isoDate !== currentIsoDate && tokenQuotes) {
                     logger.warn(`No quote found for ${token} for date ${isoDate}`)

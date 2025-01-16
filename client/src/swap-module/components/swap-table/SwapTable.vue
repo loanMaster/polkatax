@@ -118,16 +118,16 @@ const getBuys = (tokens: SwappedTokens) => filterSwappedTokens(tokens, false);
 
 const calculateValue = (tokens: SwappedTokens) => {
   let value = getSales(tokens).reduce(
-    (acc, token) => (acc += tokens[token].value),
+    (acc, token) => acc + tokens[token].value,
     0
   );
   if (isNaN(value)) {
     value = getBuys(tokens).reduce(
-      (acc, token) => (acc += tokens[token].value),
+      (acc, token) => acc + tokens[token].value,
       0
     );
   }
-  return formatValue(value);
+  return value;
 };
 
 const sortAmounts = (value1: number[], value2: number[]) =>
@@ -251,15 +251,13 @@ const rows = computed(() => {
       amountSold: getSales(swap.tokens).map(
         (token) => swap.tokens[token].amount
       ),
-      priceSold: getSales(swap.tokens).map(
-        (token) => store.swaps.currentPrices[token]
-      ),
+      priceSold: getSales(swap.tokens).map((token) => swap.tokens[token].price),
       tokensBought: getBuys(swap.tokens).map((t) => t.toUpperCase()),
       amountBought: getBuys(swap.tokens).map(
         (token) => swap.tokens[token].amount
       ),
       priceBought: getBuys(swap.tokens).map(
-        (token) => store.swaps.currentPrices[token]
+        (token) => swap.tokens[token].price
       ),
       value: calculateValue(swap.tokens),
     });
