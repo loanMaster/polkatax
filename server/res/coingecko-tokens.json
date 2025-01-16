@@ -13754,15 +13754,6 @@
     }
   },
   {
-    "id": "bifrost",
-    "symbol": "bfc",
-    "name": "Bifrost",
-    "platforms": {
-      "ethereum": "0x0c7d5ae016f806603cb1782bea29ac69471cab9c",
-      "fantom": "0x84c882a4d8eb448ce086ea19418ca0f32f106117"
-    }
-  },
-  {
     "id": "bifrost-bridged-bnb-bifrost",
     "symbol": "bnb",
     "name": "Bifrost Bridged BNB (Bifrost)",

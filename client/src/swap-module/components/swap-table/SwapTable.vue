@@ -16,6 +16,9 @@
         <q-btn color="primary" class="q-mr-sm" @click="exportCsv"
           >Export CSV
         </q-btn>
+        <q-btn color="primary" class="q-mr-sm" @click="exportKoinlyCsv"
+          >Koinly-friendly CSV
+        </q-btn>
         <q-btn color="primary" @click="exportJson">Export JSON</q-btn>
       </template>
 
@@ -272,66 +275,101 @@ const initialPagination = ref({
   rowsPerPage: 10,
 });
 
+function extractRowForCSVExport(swap: Swap) {
+  const firstTokenPair: any = {
+    ...swap,
+    date: formatDateUTC(swap.date * 1000),
+  };
+  const otherTokens: any = [];
+  let temp: any = {};
+  Object.keys(swap.tokens).forEach((t) => {
+    const tokenInfo = swap.tokens[t];
+    if (tokenInfo.type === 'sell') {
+      if (!firstTokenPair.sold_token) {
+        firstTokenPair.sold_token = t.toUpperCase();
+        firstTokenPair.sold_amount = tokenInfo.amount;
+        firstTokenPair.sale_price = tokenInfo.price;
+        firstTokenPair.sale_value = tokenInfo.value;
+      } else {
+        if (temp.sold_token) {
+          otherTokens.push(temp);
+          temp = {};
+        }
+        temp.sold_token = t.toUpperCase();
+        temp.sold_amount = tokenInfo.amount;
+        temp.sale_price = tokenInfo.price;
+        temp.sale_value = tokenInfo.value;
+      }
+    }
+
+    if (tokenInfo.type === 'buy') {
+      if (!firstTokenPair.bought_token) {
+        firstTokenPair.bought_token = t.toUpperCase();
+        firstTokenPair.bought_amount = tokenInfo.amount;
+        firstTokenPair.purchase_price = tokenInfo.price;
+        firstTokenPair.purchase_value = tokenInfo.value;
+      } else {
+        if (temp.bought_token) {
+          otherTokens.push(temp);
+          temp = {};
+        }
+        temp.bought_token = t.toUpperCase();
+        temp.bought_amount = tokenInfo.amount;
+        temp.purchase_price = tokenInfo.price;
+        temp.purchase_value = tokenInfo.value;
+      }
+    }
+  });
+  if (temp.bought_token || temp.sold_token) {
+    otherTokens.push(temp);
+  }
+  delete firstTokenPair.tokens;
+  return [firstTokenPair, otherTokens];
+}
+
 function exportCsv() {
   const parser = new Parser();
   const flattened: any[] = [];
   store.filteredSwaps.forEach((swap: Swap) => {
-    const first: any = {
-      ...swap,
-      date: formatDateUTC(swap.date * 1000),
-    };
-    const nextTokens: any = [];
-    let temp: any = {};
-    Object.keys(swap.tokens).forEach((t) => {
-      const tokenInfo = swap.tokens[t];
-      if (tokenInfo.type === 'sell') {
-        if (!first.sold_token) {
-          first.sold_token = t.toUpperCase();
-          first.sold_amount = tokenInfo.amount;
-          first.sale_price = tokenInfo.price;
-          first.sale_value = tokenInfo.value;
-        } else {
-          if (temp.sold_token) {
-            nextTokens.push(temp);
-            temp = {};
-          }
-          temp.sold_token = t.toUpperCase();
-          temp.sold_amount = tokenInfo.amount;
-          temp.sale_price = tokenInfo.price;
-          temp.sale_value = tokenInfo.value;
-        }
-      }
-
-      if (tokenInfo.type === 'buy') {
-        if (!first.bought_token) {
-          first.bought_token = t.toUpperCase();
-          first.bought_amount = tokenInfo.amount;
-          first.purchase_price = tokenInfo.price;
-          first.purchase_value = tokenInfo.value;
-        } else {
-          if (temp.bought_token) {
-            nextTokens.push(temp);
-            temp = {};
-          }
-          temp.bought_token = t.toUpperCase();
-          temp.bought_amount = tokenInfo.amount;
-          temp.purchase_price = tokenInfo.price;
-          temp.purchase_value = tokenInfo.value;
-        }
-      }
-    });
-    delete first.tokens;
-    flattened.push(first);
-    nextTokens.forEach((t: any) => flattened.push(t));
-    if (temp.bought_token || temp.sold_token) {
-      flattened.push(temp);
-    }
+    const [firstTokenPair, otherTokens] = extractRowForCSVExport(swap);
+    flattened.push(firstTokenPair);
+    otherTokens.forEach((t: any) => flattened.push(t));
   });
   const values = [...flattened];
   values[0] = {
     Chain: store.swaps.chain,
     Currency: store.swaps.currency,
     'Wallet address': store.swaps.address,
+    ...values[0],
+  } as any;
+  const csv = parser.parse(values);
+  saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'swaps.csv');
+}
+
+function exportKoinlyCsv() {
+  const parser = new Parser();
+  const flattened: any[] = [];
+  store.filteredSwaps.forEach((swap: Swap) => {
+    const [firstTokenPair, otherTokens] = extractRowForCSVExport(swap);
+    flattened.push({
+      Date: firstTokenPair.date,
+      'Sent Amount': firstTokenPair.sold_amount,
+      'Sent Currency': firstTokenPair.sold_token,
+      'Received Amount': firstTokenPair.bought_amount,
+      'Received Currency': firstTokenPair.bought_token,
+      TxHash: firstTokenPair.hash,
+    });
+    otherTokens.forEach((t: any) =>
+      flattened.push({
+        'Sent Amount': t.sold_amount,
+        'Sent Currency': t.sold_token,
+        'Received Amount': t.bought_amount,
+        'Received Currency': t.bought_token,
+      })
+    );
+  });
+  const values = [...flattened];
+  values[0] = {
     ...values[0],
   } as any;
   const csv = parser.parse(values);

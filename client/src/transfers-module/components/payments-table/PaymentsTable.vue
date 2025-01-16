@@ -27,6 +27,9 @@
         <q-btn color="primary" class="q-mr-sm" @click="exportCsv"
           >Export CSV
         </q-btn>
+        <q-btn color="primary" class="q-mr-sm" @click="exportKoinlyCsv"
+          >Koinly-friendly CSV
+        </q-btn>
         <q-btn color="primary" @click="exportJson">Export JSON</q-btn>
       </template>
 
@@ -165,6 +168,25 @@ const initialPagination = ref({
   rowsPerPage: 10,
 });
 
+function exportKoinlyCsv() {
+  const parser = new Parser();
+  const excludedHashes = store.excludedEntries.map((e) => e.hash);
+  const values = [...(store.paymentsCurrentToken?.values || [])]
+    .filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .map((v) => {
+      return {
+        Date: formatDateUTC(v.date * 1000),
+        'Sent Amount': v.amount < 0 ? -v.amount : undefined,
+        'Sent Currency': v.amount < 0 ? store.selectedToken : undefined,
+        'Received Amount': v.amount >= 0 ? v.amount : undefined,
+        'Received Currency': v.amount >= 0 ? store.selectedToken : undefined,
+        TxHash: v.hash,
+      };
+    });
+  const csv = parser.parse(values);
+  saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'payments.csv');
+}
+
 function exportCsv() {
   const parser = new Parser();
   const excludedHashes = store.excludedEntries.map((e) => e.hash);
@@ -182,8 +204,8 @@ function exportCsv() {
     Currency: store.paymentList?.currency,
     'Wallet address': store.paymentList?.address,
     ...values[0],
-    totalAmount: store.paymentsCurrentToken?.summary.amount,
-    totalValue: store.paymentsCurrentToken?.summary.value,
+    totalAmount: store.paymentsCurrentToken?.summary!.amount,
+    totalValue: store.paymentsCurrentToken?.summary!.value,
     totalValueNow: store.paymentsCurrentToken?.summary?.valueNow,
   } as any;
   const csv = parser.parse(values);
