@@ -179,7 +179,7 @@ function exportKoinlyCsv() {
   const csv = parser.parse(values);
   saveAs(
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    'staking-rewards.json'
+    'staking-rewards.csv'
   );
 }
 

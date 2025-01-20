@@ -137,7 +137,6 @@ export const chainList: Chain[] = [
     chain: 'darwinia',
     label: 'Darwinia',
   },
-  { chain: 'parallel', label: 'Parallel' },
   {
     chain: 'polkadex',
     label: 'Polkadex',
@@ -147,7 +146,6 @@ export const chainList: Chain[] = [
     chain: 'unique',
     label: 'Unique',
   },
-  { chain: 'nodle', label: 'Nodle' },
   {
     chain: 'origintrail',
     label: 'Origintrail',
