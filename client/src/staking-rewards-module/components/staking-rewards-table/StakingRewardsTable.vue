@@ -20,6 +20,9 @@
         <q-btn color="primary" class="q-mr-sm" @click="exportCsv"
           >Export CSV
         </q-btn>
+        <q-btn color="primary" class="q-mr-sm" @click="exportKoinlyCsv"
+          >Koinly-friendly CSV
+        </q-btn>
         <q-btn color="primary" @click="exportJson">Export JSON</q-btn>
       </template>
     </q-table>
@@ -160,6 +163,23 @@ function exportCsv() {
   saveAs(
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
     'staking-rewards.csv'
+  );
+}
+
+function exportKoinlyCsv() {
+  const parser = new Parser();
+  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+    return {
+      'Koinly Date': formatDateUTC(v.date * 1000),
+      Amount: v.amount,
+      Currency: rewardsStore?.rewards?.token,
+      TxHash: v.hash,
+    };
+  });
+  const csv = parser.parse(values);
+  saveAs(
+    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
+    'staking-rewards.json'
   );
 }
 

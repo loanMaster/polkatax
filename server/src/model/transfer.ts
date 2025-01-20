@@ -4,4 +4,5 @@ export interface Transfer {
     block: number
     value?: number;
     price?: number;
+    hash?: string;
 }

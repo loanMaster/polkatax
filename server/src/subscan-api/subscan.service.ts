@@ -108,6 +108,7 @@ export class SubscanService {
                     amount: BigNumber(entry.amount),
                     block_timestamp: entry.block_timestamp,
                     block_num: entry.extrinsic_index.split('-')[0],
+                    hash: entry.extrinsic_hash
                 }
             }), hasNext: (responseBody.data?.list || []).length >= row
         }
@@ -154,6 +155,7 @@ export class SubscanService {
                     amount: BigNumber(entry.amount),
                     block_timestamp: entry.block_timestamp,
                     block_num: entry.block_num,
+                    hash: entry.extrinsic_hash
                 }
             }), hasNext: (responseBody.data?.list || []).length >= row
         }

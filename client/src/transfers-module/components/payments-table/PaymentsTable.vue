@@ -175,11 +175,9 @@ function exportKoinlyCsv() {
     .filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((v) => {
       return {
-        Date: formatDateUTC(v.date * 1000),
-        'Sent Amount': v.amount < 0 ? -v.amount : undefined,
-        'Sent Currency': v.amount < 0 ? store.selectedToken : undefined,
-        'Received Amount': v.amount >= 0 ? v.amount : undefined,
-        'Received Currency': v.amount >= 0 ? store.selectedToken : undefined,
+        'Koinly Date': formatDateUTC(v.date * 1000),
+        Amount: v.amount,
+        Currency: store.selectedToken,
         TxHash: v.hash,
       };
     });

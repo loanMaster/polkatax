@@ -34,6 +34,7 @@ export interface RewardDto {
   amount: number;
   value: number;
   price?: number;
+  hash: string;
 }
 
 export interface RewardsDto {
