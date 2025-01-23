@@ -93,8 +93,8 @@ const extractPotentialRewards = (transactions: EVMTx[], transfers: EVMTransfer[]
         const transfer = transfersObj[hash]
         const matchingTx = transactions.filter(tx => tx.hash === hash)
         matchingTx.filter(tx => Number(tx.value) !== 0 && transfer).forEach(tx => {
-            transfer[nativeToken] = transfer[nativeToken] || 0
-            transfer[nativeToken] += (tx.from === walletAddress ? -1 : 1)
+            transfer.tokens[nativeToken] = transfer.tokens[nativeToken] ? transfer.tokens[nativeToken] : 0
+            transfer.tokens[nativeToken] += (tx.from === walletAddress ? -1 : 1)
                 * new BigNumber(tx.value).dividedBy(new BigNumber(10).exponentiatedBy(18)).toNumber()
         })
         if (transfer && isRewardOrPayment(transfer)) {
@@ -147,8 +147,8 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
         if (transfer) {
             const matchingTx = transactions.filter(t => t.hash === tx.hash)
             matchingTx.filter(t => Number(t.value) !== 0).forEach(t => {
-                transfer[nativeToken] = transfer[nativeToken] === undefined || 0
-                transfer[nativeToken] += (t.from === walletAddress ? -1 : 1)
+                transfer.tokens[nativeToken] = transfer.tokens[nativeToken] === undefined ? 0 : transfer.tokens[nativeToken]
+                transfer.tokens[nativeToken] += (t.from === walletAddress ? -1 : 1)
                     * new BigNumber(t.value).dividedBy(new BigNumber(10).exponentiatedBy(18)).toNumber()
             })
         }
