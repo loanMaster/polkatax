@@ -80,12 +80,12 @@ const mergeTransfersOfSameTx = (transfers: EVMTransfer[], walletAddress: string)
             }
         }
         transfersObj[t.hash].tokens[tokenSymbol] =
-            transfersObj[t.hash][tokenSymbol] === undefined ? valueUpdate : transfersObj[t.hash][tokenSymbol] + valueUpdate
+            transfersObj[t.hash].tokens[tokenSymbol] === undefined ? valueUpdate : transfersObj[t.hash].tokens[tokenSymbol] + valueUpdate
     })
     return transfersObj
 }
 
-const extractPotentialRewards = (transactions: EVMTx[], transfers: EVMTransfer[], walletAddress: string, nativeToken: string): TokenTransfers => {
+const extractPayments = (transactions: EVMTx[], transfers: EVMTransfer[], walletAddress: string, nativeToken: string): TokenTransfers => {
     const transfersObj = mergeTransfersOfSameTx(transfers, walletAddress)
     const rewardsAndPayments: TokenTransfers = {}
 
@@ -140,12 +140,14 @@ const extractPotentialRewards = (transactions: EVMTx[], transfers: EVMTransfer[]
 const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAddress: string, nativeToken: string): Swap[] => {
     const transfersObj = mergeTransfersOfSameTx(transfers, walletAddress)
     const swaps: Swap[] = []
+    const txHashes = Array.from(new Set(transactions.map(tx => tx.hash)))
 
-    transactions.forEach(tx => {
-        const transfer = transfersObj[tx.hash]
+    txHashes.forEach(hash => {
+        const transfer = transfersObj[hash]
+        const matchingTx = transactions.filter(t => t.hash === hash)
+        const tx = matchingTx.length > 0 ? matchingTx[0] : {blockNumber: 0, timeStamp: 0, to: '', functionName: ''}
 
         if (transfer) {
-            const matchingTx = transactions.filter(t => t.hash === tx.hash)
             matchingTx.filter(t => Number(t.value) !== 0).forEach(t => {
                 transfer.tokens[nativeToken] = transfer.tokens[nativeToken] === undefined ? 0 : transfer.tokens[nativeToken]
                 transfer.tokens[nativeToken] += (t.from === walletAddress ? -1 : 1)
@@ -154,10 +156,10 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
         }
 
         if (transfer && !isRewardOrPayment(transfer)) {
-            const next: Swap = {
+            const swap: Swap = {
                 block: Number(tx.blockNumber),
                 date: Number(tx.timeStamp),
-                hash: tx.hash,
+                hash: hash,
                 contract: tx.to,
                 functionName: processFunctionName(tx.functionName),
                 tokens: {}
@@ -165,13 +167,13 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
             Object.keys(transfer.tokens).forEach(token => {
                 token = normalizeTokenName(token)
                 if (transfer.tokens[token] !== undefined && transfer.tokens[token] !== 0) {
-                    next.tokens[token] = {
+                    swap.tokens[token] = {
                         amount: Math.abs(transfer.tokens[token]),
                         type: transfer.tokens[token] > 0 ? 'buy' : 'sell'
                     }
                 }
             })
-            swaps.push(next)
+            swaps.push(swap)
         }
     })
     return swaps
@@ -216,7 +218,7 @@ export const evmChainConfigs = {
     }
 }
 
-export const fetchTxAndTransfers = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ tx: EVMTx[], transfers: EVMTransfer[],  }> => {
+export const fetchTxAndTransfers = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ tx: EVMTx[], transfers: EVMTransfer[], }> => {
     const config = evmChainConfigs[network]
     const endpoint = config.endpoint
     const apiKey = config.apiKey
@@ -235,17 +237,24 @@ export const fetchTxAndTransfers = async (network = 'moonbeam', address: string,
     const transactions: EVMTx[] = (await txResponse.json()).result
     const internalTransactions: EVMTx[] = (await internalTxResponse.json()).result
 
-    if (typeof(transfers) === "string" || typeof(transactions) === "string" || typeof(internalTransactions) === "string") {
+
+    if (typeof (transfers) === "string" || typeof (transactions) === "string" || typeof (internalTransactions) === "string") {
         throw new HttpError(400,
-            typeof(transfers) === "string" ? transfers : typeof(transactions) === "string" ? transactions : internalTransactions as any)
+            typeof (transfers) === "string" ? transfers : typeof (transactions) === "string" ? transactions : internalTransactions as any)
     }
 
     let tx = []
     tx.push(...transactions)
-    tx.push(...internalTransactions)
+
+    // the "value" field of internal transactions seems to be meaningless / misleading. it is set to zero here
+    tx.push(...internalTransactions.map(tx => ({
+        ...tx,
+        value: 0
+    })))
+
     tx = tx.filter(t => Number(t.timeStamp) >= startDate.getTime() / 1000 && Number(t.timeStamp) <= endDate.getTime() / 1000)
         .filter(t => t.isError == "0" && (t.txreceipt_status === undefined || t.txreceipt_status == '1'))
-    return { tx, transfers }
+    return {tx, transfers}
 }
 
 export const fetchSwapsAndPayments = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ swaps: Swap[], payments: TokenTransfers }> => {
@@ -257,6 +266,6 @@ export const fetchSwapsAndPayments = async (network = 'moonbeam', address: strin
     logger.info(`Exit fetchSwapsAndPayments for ${network}`)
     return {
         swaps: extractSwaps(tx, transfers, walletAdr, nativeToken),
-        payments: extractPotentialRewards(tx, transfers, walletAdr, nativeToken)
+        payments: extractPayments(tx, transfers, walletAdr, nativeToken)
     }
 }
