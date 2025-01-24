@@ -116,7 +116,7 @@ const extractPotentialRewards = (transactions: EVMTx[], transfers: EVMTransfer[]
             })
         }
     });
-    (transactions || []).filter(t => !transfersObj[t.hash] || Number(t.value) !== 0).forEach(t => {
+    (transactions || []).filter(t => !transfersObj[t.hash]).forEach(t => {
         rewardsAndPayments[nativeToken] = rewardsAndPayments[nativeToken] || []
         let matchingEntry = rewardsAndPayments[nativeToken].find(e => e.hash === t.hash)
         if (!matchingEntry) {
