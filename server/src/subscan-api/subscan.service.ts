@@ -207,7 +207,7 @@ export class SubscanService {
             body: body
         }));
         const json = await response.json()
-        return (json.data.list || []).map(entry => entry.address)
+        return (json.data.list && json.data.list.length > 0 ? json.data.list : [{ address }]).map(entry => entry.address)
     }
 
     async fetchAllTransfers(chainName: string, account: string, block_min?: number, block_max?: number): Promise<Transfers> {
