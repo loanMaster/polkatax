@@ -179,6 +179,7 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
     return swaps
 }
 
+
 const getNearestBlock = async (endpoint: string, apiKey: string, date: Date, closest: 'before' | 'after'): Promise<number> => {
     const response = await fetch(`${endpoint}?module=block&action=getblocknobytime&timestamp=${Math.floor(date.getTime() / 1000)}&closest=${closest}&apikey=${apiKey}`)
     const json = await response.json()
@@ -218,7 +219,7 @@ export const evmChainConfigs = {
     }
 }
 
-export const fetchTxAndTransfers = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ tx: EVMTx[], transfers: EVMTransfer[], }> => {
+export const fetchTxAndTransfers = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ tx: EVMTx[], transfers: EVMTransfer[] }> => {
     const config = evmChainConfigs[network]
     const endpoint = config.endpoint
     const apiKey = config.apiKey

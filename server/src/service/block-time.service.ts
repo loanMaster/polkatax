@@ -1,41 +1,39 @@
 import {Block} from "../subscan-api/block";
 import {SubscanService} from "../subscan-api/subscan.service";
+import {logger} from "../logger/logger";
 
 export class BlockTimeService {
 
     constructor(private subscanService: SubscanService) {
     }
 
-    async estimateBlockNo(chainName: string, date?: number): Promise<{ blockMin: number, estBlock: number, blockTime: number, blockMax: number }> {
-        const TOLERANCE = 24 * 60 * 60;
-        const meta = await this.subscanService.fetchMetadata(chainName);
-        let estBlock = meta.blockNum
-        let dateNowSeconds = new Date().getTime() / 1000;
-        if (!date || date / 1000 >= dateNowSeconds - TOLERANCE) {
-            return {
-                blockMax: estBlock,
-                estBlock: estBlock,
-                blockTime: dateNowSeconds,
-                blockMin: Math.max(estBlock - 2 * TOLERANCE / meta.avgBlockTime),
+    async searchBlockBinary(chainName: string, date: number, maxBlock: number, minBlock = 1, estBlockNum = -1, tolerance = 5 * 24 * 60 * 60): Promise<Block> {
+        if (estBlockNum === -1) {
+            estBlockNum = maxBlock
+        }
+        const block: Block = await this.subscanService.fetchBlock(chainName, estBlockNum)
+        if (Math.abs(block.block_timestamp - date / 1000) > tolerance) {
+            if (block?.block_timestamp * 1000 > date) {
+                return this.searchBlockBinary(chainName, date, estBlockNum, minBlock, Math.round(minBlock + (estBlockNum - minBlock) / 2))
+            } else {
+                return this.searchBlockBinary(chainName, date, maxBlock, estBlockNum, Math.round(maxBlock - (maxBlock - estBlockNum) / 2))
             }
         }
-        let block: Block
-        let counter = 0
-        do {
-            const dateSeconds = date / 1000;
-            estBlock = Math.max(1, Math.round(estBlock - ((block?.block_timestamp || dateNowSeconds) - dateSeconds) / meta.avgBlockTime))
-            block = await this.subscanService.fetchBlock(chainName, estBlock)
-            if (estBlock === 1) {
-                break
-            }
-            counter++
-        } while (Math.abs(block.block_timestamp - date / 1000) > TOLERANCE);
 
+        return block
+    }
+
+    async estimateBlockNo(chainName: string, date?: number): Promise<{ blockMin: number, estBlock: number, blockTime: number, blockMax: number }> {
+        logger.info(`Entry estimateBlockNo for chain ${chainName} and date ${new Date(date).toISOString()}`)
+        const meta = await this.subscanService.fetchMetadata(chainName);
+        const tolerance = 3 * 24 * 60 * 60
+        const block = await this.searchBlockBinary(chainName, date, meta.blockNum, 1, Math.round(meta.blockNum / 2))
+        logger.info(`Exit estimateBlockNo for chain ${chainName} and date ${new Date(date).toISOString()} with block estimate ${block.block_num}`)
         return {
-            blockMax: block.block_num + 2 * TOLERANCE / meta.avgBlockTime,
+            blockMax: block.block_num + 4 * tolerance / meta.avgBlockTime,
             estBlock: block.block_num,
             blockTime: block.block_timestamp,
-            blockMin: Math.max(1, block.block_num - 2 * TOLERANCE / meta.avgBlockTime),
+            blockMin: Math.max(1, block.block_num - 4 * tolerance / meta.avgBlockTime),
         }
     }
 
