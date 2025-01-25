@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import {SubscanService} from "../subscan-api/subscan.service";
 import {Transfer, Transfers} from "../subscan-api/transfer";
 import {BlockTimeService} from "./block-time.service";
-import {TokenTransfers} from "../model/token-transfer";
+import {TokenTransfer, TokenTransfers} from "../model/token-transfer";
 import {Transaction} from "../subscan-api/transaction";
 import {Swap} from "../model/swap";
 import {processFunctionName} from "../util/process-function-name";
@@ -99,10 +99,17 @@ export class DotTransferService {
             address = await this.subscanService.mapToSubstrateAccount(chainName, address)
         }
         const {transfers, transactions} = await this.fetchTxAndTransfers(chainName, address, minDate, maxDate)
-        const swaps = this._extractSwaps(transactions, transfers)
+        const swaps = this._extractSwaps(transactions, transfers).filter(s => (
+            s.date >= minDate.getTime() && (!maxDate || s.date <= maxDate.getTime())
+        ))
         const payments = this._extractPayments(transactions, transfers)
+        Object.keys(payments).forEach(token => {
+            payments[token] = payments[token].filter((transfer: TokenTransfer) => (
+                transfer.date >= minDate.getTime() && (!maxDate || transfer.date <= maxDate.getTime())
+            ))
+        })
         logger.info(`Exit fetchSwapAndTransfers for ${chainName}`)
-        return { swaps, payments }
+        return {swaps, payments}
     }
 }
 
