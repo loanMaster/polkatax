@@ -7,42 +7,36 @@ export class BlockTimeService {
     constructor(private subscanService: SubscanService) {
     }
 
-    async searchBlockBinary(chainName: string, date: number, maxBlock: number, minBlock = 1, estBlockNum = -1, tolerance = 5 * 24 * 60 * 60): Promise<Block> {
-        if (estBlockNum === -1) {
-            estBlockNum = maxBlock
-        }
-        const block: Block = await this.subscanService.fetchBlock(chainName, estBlockNum)
-        if (Math.abs(block.block_timestamp - date / 1000) > tolerance) {
-            if (block?.block_timestamp * 1000 > date) {
-                return this.searchBlockBinary(chainName, date, estBlockNum, minBlock, Math.round(minBlock + (estBlockNum - minBlock) / 2))
+    async searchBlock(chainName: string, date: number, minBlock: Block, maxBlock: Block, tolerance = 3 * 24 * 60 * 60): Promise<number> {
+        const estimate = this.estimateBlockNum(minBlock, maxBlock, date)
+        const currentBlock: Block = await this.subscanService.fetchBlock(chainName, estimate)
+        if (Math.abs(currentBlock.block_timestamp - date / 1000) > tolerance) {
+            if (currentBlock?.block_timestamp * 1000 > date) {
+                return this.searchBlock(chainName, date, minBlock, currentBlock)
             } else {
-                return this.searchBlockBinary(chainName, date, maxBlock, estBlockNum, Math.round(maxBlock - (maxBlock - estBlockNum) / 2))
+                return this.searchBlock(chainName, date, currentBlock, maxBlock)
             }
         }
-
-        return block
+        return currentBlock.block_num
     }
 
-    async estimateBlockNo(chainName: string, date?: number): Promise<{ blockMin: number, estBlock: number, blockTime: number, blockMax: number }> {
-        logger.info(`Entry estimateBlockNo for chain ${chainName} and date ${new Date(date).toISOString()}`)
-        const meta = await this.subscanService.fetchMetadata(chainName);
-        const dateNowSeconds = new Date().getTime() / 1000
+    estimateBlockNum(beforeBlock: Block, afterBlock: Block, date: number): number {
+        const timeDiffRel = (date / 1000 - beforeBlock.block_timestamp) / (afterBlock.block_timestamp - beforeBlock.block_timestamp)
+        return Math.min(afterBlock.block_num, Math.max(1, Math.round(beforeBlock.block_num + (afterBlock.block_num - beforeBlock.block_num) * timeDiffRel)))
+    }
+
+    async getMinMaxBlock(chainName: string, minDate: number, maxDate?: number): Promise<{ blockMin: number, blockMax: number }> {
+        logger.info(`Entry getMinMaxBlock for chain ${chainName} and minDate ${new Date(minDate).toISOString()}, maxDate ${ maxDate ? new Date(maxDate).toISOString() : 'undefined' }`)
         const tolerance = 3 * 24 * 60 * 60
-        if (!date || date / 1000 >= dateNowSeconds - tolerance) {
-            return {
-                blockMax: meta.blockNum,
-                estBlock: meta.blockNum,
-                blockTime: dateNowSeconds,
-                blockMin: Math.max(meta.blockNum - 4 * tolerance / meta.avgBlockTime),
-            }
-        }
-        const block = await this.searchBlockBinary(chainName, date, meta.blockNum, 1, Math.round(meta.blockNum / 2))
-        logger.info(`Exit estimateBlockNo for chain ${chainName} and date ${new Date(date).toISOString()} with block estimate ${block.block_num}`)
+        const meta = await this.subscanService.fetchMetadata(chainName);
+        const firstBlock: Block = await this.subscanService.fetchBlock(chainName, 1)
+        const lastBlock: Block = await this.subscanService.fetchBlock(chainName, meta.blockNum)
+        const blockMin = await this.searchBlock(chainName, Math.max(minDate, firstBlock.block_timestamp * 1000), firstBlock, lastBlock)
+        const blockMax = await this.searchBlock(chainName, Math.min(maxDate || Date.now(), lastBlock.block_timestamp * 1000), firstBlock, lastBlock)
+        logger.info(`Exit getMinMaxBlock for chain ${chainName}`)
         return {
-            blockMax: block.block_num + 4 * tolerance / meta.avgBlockTime,
-            estBlock: block.block_num,
-            blockTime: block.block_timestamp,
-            blockMin: Math.max(1, block.block_num - 4 * tolerance / meta.avgBlockTime),
+            blockMin: Math.max(1, Math.round(blockMin - 3 * tolerance / meta.avgBlockTime )),
+            blockMax: Math.min(meta.blockNum, Math.round(blockMax + 3 * tolerance / meta.avgBlockTime))
         }
     }
 

@@ -22,8 +22,7 @@ export class DotTransferService {
     }
 
     async fetchTxAndTransfers(chainName: string, address: string, minDate: Date, maxDate?: Date): Promise<{ transactions: Transaction[], transfers: Transfers }> {
-        const {blockMin} = await this.blockTimeService.estimateBlockNo(chainName, minDate.getTime())
-        const {blockMax} = await this.blockTimeService.estimateBlockNo(chainName, maxDate ? maxDate.getTime() : undefined)
+        const {blockMin, blockMax} = await this.blockTimeService.getMinMaxBlock(chainName, minDate.getTime(), maxDate ? maxDate.getTime() : undefined)
         const [transactions, transfers] = await Promise.all([
             this.subscanService.fetchAllExtrinsics(chainName, address, blockMin, blockMax),
             this.subscanService.fetchAllTransfers(chainName, address, blockMin, blockMax)

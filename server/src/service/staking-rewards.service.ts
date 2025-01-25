@@ -33,8 +33,7 @@ export class StakingRewardsService {
 
     async fetchStakingRewards(chainName: string, address: string, minDate: number, maxDate?: number): Promise<Transfer[]> {
         logger.info(`Exit fetchStakingRewards for address ${address} and chain ${chainName}`)
-        const {blockMin} = await this.blockTimeService.estimateBlockNo(chainName, minDate)
-        const {blockMax} = await this.blockTimeService.estimateBlockNo(chainName, maxDate)
+        const {blockMin, blockMax} = await this.blockTimeService.getMinMaxBlock(chainName, minDate, maxDate)
         const rewardsSlashes = await this.subscanService.fetchAllStakingRewards(chainName, address, blockMin, blockMax)
         const filtered = await this.filterRewards(rewardsSlashes, chainName, minDate, maxDate)
         logger.info(`Exit fetchStakingRewards with ${filtered.length} elements`)
