@@ -100,12 +100,12 @@ export class DotTransferService {
         }
         const {transfers, transactions} = await this.fetchTxAndTransfers(chainName, address, minDate, maxDate)
         const swaps = this._extractSwaps(transactions, transfers).filter(s => (
-            s.date >= minDate.getTime() && (!maxDate || s.date <= maxDate.getTime())
+            s.date * 1000 >= minDate.getTime() && (!maxDate || s.date * 1000 <= maxDate.getTime())
         ))
         const payments = this._extractPayments(transactions, transfers)
         Object.keys(payments).forEach(token => {
             payments[token] = payments[token].filter((transfer: TokenTransfer) => (
-                transfer.date >= minDate.getTime() && (!maxDate || transfer.date <= maxDate.getTime())
+                transfer.date * 1000 >= minDate.getTime() && (!maxDate || transfer.date * 1000 <= maxDate.getTime())
             ))
         })
         logger.info(`Exit fetchSwapAndTransfers for ${chainName}`)
