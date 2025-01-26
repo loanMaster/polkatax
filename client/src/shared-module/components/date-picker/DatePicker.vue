@@ -5,7 +5,10 @@
       :model-value="props.modelValue"
       @update:model-value="onNewValueSelected"
       mask="date"
-      :rules="['date']"
+      :rules="[
+        'date',
+        (d) => d <= props.maxDate || 'Date must no be in the future',
+      ]"
       :label="props.label"
     >
       <template v-slot:append>
@@ -15,7 +18,7 @@
               :model-value="props.modelValue"
               @update:model-value="onNewValueSelected"
               :navigation-min-year-month="minYearMonth"
-              :navigation-max-year-month="maxYearMonth"
+              :options="dateRangeFn"
             >
               <div class="row items-center justify-end">
                 <q-btn v-close-popup label="Close" color="primary" flat />
@@ -36,6 +39,7 @@ const emits = defineEmits(['update:modelValue']);
 const props = defineProps({
   modelValue: String,
   label: String,
+  maxDate: String,
 });
 
 function onNewValueSelected(date: string) {
@@ -46,12 +50,9 @@ const minYearMonth = computed(() => {
   return `${new Date().getFullYear() - 10}/01`;
 });
 
-const maxYearMonth = computed(() => {
-  const month = String(new Date().getMonth() + 1);
-  return `${new Date().getFullYear()}/${
-    month.length >= 2 ? month : '0' + month
-  }`;
-});
+function dateRangeFn(newDate: string) {
+  return newDate <= props.maxDate!;
+}
 </script>
 
 <style>

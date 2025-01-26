@@ -6,10 +6,14 @@
       <div class="dropdown"><chain-dropdown v-model="store.chain" /></div>
       <div class="dropdown"><currency-dropdown v-model="store.currency" /></div>
       <div class="dropdown">
-        <date-picker v-model="store.startDate" label="Start date" />
+        <date-picker
+          v-model="startDate"
+          label="Start date"
+          :max-date="maxDate"
+        />
       </div>
       <div class="dropdown">
-        <date-picker v-model="store.endDate" label="End date" />
+        <date-picker v-model="endDate" label="End date" :max-date="maxDate" />
       </div>
       <address-input v-model="store.address" />
       <q-btn
@@ -72,7 +76,7 @@ import TokenTransfers from './TokenTransfers.vue';
 import TokenSwaps from '../../swap-module/components/TokenSwaps.vue';
 
 import { computed, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { date, useQuasar } from 'quasar';
 import { usePaymentsStore } from '../store/payments.store';
 const $q = useQuasar();
 
@@ -112,7 +116,44 @@ async function fetchRewards() {
 }
 
 const isDisabled = computed(() => {
-  return store.address.trim() === '' || !store.currency || !store.chain;
+  return (
+    store.address.trim() === '' ||
+    !store.currency ||
+    !store.chain ||
+    store.startDate > maxDate.value ||
+    store.endDate > maxDate.value
+  );
+});
+
+const maxDate = computed(() => {
+  const timeStamp = Date.now();
+  return date.formatDate(timeStamp, 'YYYY/MM/DD');
+});
+
+const startDate = computed({
+  get: () => store.startDate,
+  set: (value) => {
+    store.startDate = value;
+    if (
+      new Date(store.startDate).getTime() > new Date(store.endDate).getTime() &&
+      store.startDate <= maxDate.value
+    ) {
+      store.endDate = `${store.startDate}`;
+    }
+  },
+});
+
+const endDate = computed({
+  get: () => store.endDate,
+  set: (value) => {
+    store.endDate = value;
+    if (
+      new Date(store.startDate).getTime() > new Date(store.endDate).getTime() &&
+      store.startDate <= maxDate.value
+    ) {
+      store.startDate = `${store.endDate}`;
+    }
+  },
 });
 
 const meme = ref(`img/${Math.floor(Math.random() * 3).toFixed(0)}.jpg`);

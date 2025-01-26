@@ -143,6 +143,9 @@ export class TokenPriceHistoryService {
             return TokenPriceHistoryService.cachedPrices[symbol]
         }
         const token = findCoingeckoToken(symbol, 'polkadot')
+        if (!token) {
+            throw new Error("Token " + symbol + " not found in coingecko list.")
+        }
         const quotes: Quotes = await this.coingeckoService.fetchHistoricalData(token.id, currency)
         const symbolCurr = symbol + '_' + currency
         this.storeQuotes(symbolCurr, quotes)

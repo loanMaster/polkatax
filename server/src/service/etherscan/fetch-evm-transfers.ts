@@ -182,7 +182,12 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
 
 const getNearestBlock = async (endpoint: string, apiKey: string, date: Date, closest: 'before' | 'after'): Promise<number> => {
     const response = await fetch(`${endpoint}?module=block&action=getblocknobytime&timestamp=${Math.floor(date.getTime() / 1000)}&closest=${closest}&apikey=${apiKey}`)
-    const json = await response.json()
+    let json = await response.json()
+    if (json.message !== 'OK') { // error -> try to swap before after
+        closest = closest === 'before' ? 'after' : 'before'
+        const response = await fetch(`${endpoint}?module=block&action=getblocknobytime&timestamp=${Math.floor(date.getTime() / 1000)}&closest=${closest}&apikey=${apiKey}`)
+        json = await response.json()
+    }
     return json.result.blockNumber || json.result
 }
 
@@ -227,6 +232,9 @@ export const fetchTxAndTransfers = async (network = 'moonbeam', address: string,
     const [startBlock, endBlock] = await Promise.all([getNearestBlock(endpoint, apiKey, startDate, 'before'),
         getNearestBlock(endpoint, apiKey, endDate, 'after')
     ])
+    if (isNaN(startBlock) || isNaN(endBlock)) {
+        throw new HttpError(400, "No matching block number found for start or end date. Please verify input dates.")
+    }
 
     const [transferResponse, txResponse, internalTxResponse] = await Promise.all([
         fetch(`${endpoint}?module=account&action=tokentx&address=${walletAdr}&startblock=${startBlock}&endblock=${endBlock}&page=1&offset=0&sort=desc&sort=desc&apikey=${apiKey}`),
