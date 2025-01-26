@@ -183,11 +183,6 @@ const extractSwaps = (transactions: EVMTx[], transfers: EVMTransfer[], walletAdd
 const getNearestBlock = async (endpoint: string, apiKey: string, date: Date, closest: 'before' | 'after'): Promise<number> => {
     const response = await fetch(`${endpoint}?module=block&action=getblocknobytime&timestamp=${Math.floor(date.getTime() / 1000)}&closest=${closest}&apikey=${apiKey}`)
     let json = await response.json()
-    if (json.message !== 'OK') { // error -> try to swap before after
-        closest = closest === 'before' ? 'after' : 'before'
-        const response = await fetch(`${endpoint}?module=block&action=getblocknobytime&timestamp=${Math.floor(date.getTime() / 1000)}&closest=${closest}&apikey=${apiKey}`)
-        json = await response.json()
-    }
     return json.result.blockNumber || json.result
 }
 
@@ -224,22 +219,30 @@ export const evmChainConfigs = {
     }
 }
 
+function isToday(date) {
+    const today = new Date();
+    return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    );
+}
+
 export const fetchTxAndTransfers = async (network = 'moonbeam', address: string, startDate: Date, endDate: Date): Promise<{ tx: EVMTx[], transfers: EVMTransfer[] }> => {
     const config = evmChainConfigs[network]
     const endpoint = config.endpoint
     const apiKey = config.apiKey
     const walletAdr = address.toLowerCase()
-    const [startBlock, endBlock] = await Promise.all([getNearestBlock(endpoint, apiKey, startDate, 'before'),
-        getNearestBlock(endpoint, apiKey, endDate, 'after')
-    ])
-    if (isNaN(startBlock) || isNaN(endBlock)) {
+    const endBlockPromise = !endDate || isToday(endDate) ? Promise.resolve(undefined) : getNearestBlock(endpoint, apiKey, endDate, 'after')
+    const [startBlock, endBlock] = await Promise.all([getNearestBlock(endpoint, apiKey, startDate, 'before'), endBlockPromise])
+    if (isNaN(startBlock) || (endBlock !== undefined && isNaN(endBlock))) {
         throw new HttpError(400, "No matching block number found for start or end date. Please verify input dates.")
     }
-
+    const endBlockQuery = endBlock ? `&{endblock=${endBlock}` : ''
     const [transferResponse, txResponse, internalTxResponse] = await Promise.all([
-        fetch(`${endpoint}?module=account&action=tokentx&address=${walletAdr}&startblock=${startBlock}&endblock=${endBlock}&page=1&offset=0&sort=desc&sort=desc&apikey=${apiKey}`),
-        fetch(`${endpoint}?module=account&action=txlist&address=${walletAdr}&startblock=${startBlock}&endblock=${endBlock}&page=1&offset=0&sort=desc&apikey=${apiKey}`),
-        fetch(`${endpoint}?module=account&action=txlistinternal&address=${walletAdr}&startblock=${startBlock}&endblock=${endBlock}&page=1&offset=0&sort=desc&apikey=${apiKey}`)
+        fetch(`${endpoint}?module=account&action=tokentx&address=${walletAdr}&startblock=${startBlock}${endBlockQuery}&page=1&offset=0&sort=desc&sort=desc&apikey=${apiKey}`),
+        fetch(`${endpoint}?module=account&action=txlist&address=${walletAdr}&startblock=${startBlock}${endBlockQuery}&page=1&offset=0&sort=desc&apikey=${apiKey}`),
+        fetch(`${endpoint}?module=account&action=txlistinternal&address=${walletAdr}&startblock=${startBlock}${endBlockQuery}&page=1&offset=0&sort=desc&apikey=${apiKey}`)
     ])
 
     const transfers: EVMTransfer[] = (await transferResponse.json()).result
