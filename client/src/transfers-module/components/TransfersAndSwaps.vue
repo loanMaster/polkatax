@@ -138,13 +138,13 @@ const isDisabled = computed(() => {
 
 function validateDate() {
   const timeStamp = Date.now();
+  dateValidationError.value = '';
   const maxDate = date.formatDate(timeStamp, 'YYYY/MM/DD');
   if (store.startDate <= maxDate && store.endDate <= maxDate) {
     if (store.startDate > store.endDate) {
       dateValidationError.value = 'End date must not be before start date';
       return false;
     } else {
-      dateValidationError.value = '';
       return true;
     }
   } else {
