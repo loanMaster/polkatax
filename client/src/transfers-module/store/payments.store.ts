@@ -7,6 +7,7 @@ import {
 } from '../../shared-module/util/date-utils';
 import { Payment, PaymentDto, Payments, PaymentsList } from '../model/payments';
 import { Swap, SwapList, TradingSummary } from 'src/swap-module/model/swaps';
+import { date } from 'quasar';
 
 const getTokens = (swaps: SwapList) => {
   const temp: string[] = [];
@@ -122,8 +123,8 @@ export const usePaymentsStore = defineStore('payments', {
       address: '',
       selectedToken: '',
       paymentsFilter: 'All transfers',
-      startDate: formatDate(getFirstDayOfYear().getTime()),
-      endDate: formatDate(Date.now()),
+      startDate: date.formatDate(getFirstDayOfYear().getTime(), 'YYYY/MM/DD'),
+      endDate: date.formatDate(Date.now(), 'YYYY/MM/DD'),
       excludedEntries: [],
       swapTypeFilter: { twoAssets: true, multipleAssets: true },
       visibleSwapTokens: [],

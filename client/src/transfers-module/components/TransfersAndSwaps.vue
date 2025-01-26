@@ -7,13 +7,24 @@
       <div class="dropdown"><currency-dropdown v-model="store.currency" /></div>
       <div class="dropdown">
         <date-picker
-          v-model="startDate"
+          v-model="store.startDate"
           label="Start date"
-          :max-date="maxDate"
+          @update:modelValue="validateDate"
         />
       </div>
       <div class="dropdown">
-        <date-picker v-model="endDate" label="End date" :max-date="maxDate" />
+        <date-picker
+          v-model="store.endDate"
+          label="End date"
+          @update:modelValue="validateDate"
+        />
+        <div
+          :style="{ opacity: dateValidationError ? 1 : 0 }"
+          style="color: red; margin-top: -12px; position: absolute"
+          class="q-ml-md q-field--error"
+        >
+          ⓘ {{ dateValidationError }}
+        </div>
       </div>
       <address-input v-model="store.address" />
       <q-btn
@@ -82,6 +93,7 @@ const $q = useQuasar();
 
 const store = usePaymentsStore();
 const tab = ref('payments');
+const dateValidationError = ref('');
 
 async function fetchRewards() {
   if (!isDisabled.value) {
@@ -120,41 +132,25 @@ const isDisabled = computed(() => {
     store.address.trim() === '' ||
     !store.currency ||
     !store.chain ||
-    store.startDate > maxDate.value ||
-    store.endDate > maxDate.value
+    !validateDate()
   );
 });
 
-const maxDate = computed(() => {
+function validateDate() {
   const timeStamp = Date.now();
-  return date.formatDate(timeStamp, 'YYYY/MM/DD');
-});
-
-const startDate = computed({
-  get: () => store.startDate,
-  set: (value) => {
-    store.startDate = value;
-    if (
-      new Date(store.startDate).getTime() > new Date(store.endDate).getTime() &&
-      store.startDate <= maxDate.value
-    ) {
-      store.endDate = `${store.startDate}`;
+  const maxDate = date.formatDate(timeStamp, 'YYYY/MM/DD');
+  if (store.startDate <= maxDate && store.endDate <= maxDate) {
+    if (store.startDate > store.endDate) {
+      dateValidationError.value = 'End date must not be before start date';
+      return false;
+    } else {
+      dateValidationError.value = '';
+      return true;
     }
-  },
-});
-
-const endDate = computed({
-  get: () => store.endDate,
-  set: (value) => {
-    store.endDate = value;
-    if (
-      new Date(store.startDate).getTime() > new Date(store.endDate).getTime() &&
-      store.startDate <= maxDate.value
-    ) {
-      store.startDate = `${store.endDate}`;
-    }
-  },
-});
+  } else {
+    return false;
+  }
+}
 
 const meme = ref(`img/${Math.floor(Math.random() * 3).toFixed(0)}.jpg`);
 </script>

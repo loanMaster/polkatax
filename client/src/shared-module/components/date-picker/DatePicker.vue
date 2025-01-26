@@ -5,10 +5,7 @@
       :model-value="props.modelValue"
       @update:model-value="onNewValueSelected"
       mask="date"
-      :rules="[
-        'date',
-        (d) => d <= props.maxDate || 'Date must no be in the future',
-      ]"
+      :rules="['date', (d) => d <= maxDate || 'Date must not be in the future']"
       :label="props.label"
     >
       <template v-slot:append>
@@ -33,13 +30,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { date } from 'quasar';
 
 const emits = defineEmits(['update:modelValue']);
 
 const props = defineProps({
   modelValue: String,
   label: String,
-  maxDate: String,
 });
 
 function onNewValueSelected(date: string) {
@@ -50,8 +47,13 @@ const minYearMonth = computed(() => {
   return `${new Date().getFullYear() - 10}/01`;
 });
 
+const maxDate = computed(() => {
+  const timeStamp = Date.now();
+  return date.formatDate(timeStamp, 'YYYY/MM/DD');
+});
+
 function dateRangeFn(newDate: string) {
-  return newDate <= props.maxDate!;
+  return newDate <= maxDate.value;
 }
 </script>
 
