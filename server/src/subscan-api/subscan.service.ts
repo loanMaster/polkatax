@@ -127,13 +127,25 @@ export class SubscanService {
         }
     }
 
+    private async retry<T>(query: () => Promise<T>, retries = 2, backOff = [2000, 5000]): Promise<T> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await query();
+            } catch (e) {
+                logger.warn(e);
+                if (i === retries - 1) throw e;
+                await new Promise(res => setTimeout(res, backOff[i]));
+            }
+        }
+    }
+
     private async iterateOverPages<T>(fetchPage: (page, count) => Promise<{ list: T[], hasNext: boolean }>): Promise<T[]> {
         let page = 0
         const count = 100
         const result = []
         let intermediate: { list: T[], hasNext: boolean } = {list: [], hasNext: false}
         do {
-            intermediate = await fetchPage(page, count)
+            intermediate = await this.retry(() => fetchPage(page, count))
             result.push(...intermediate.list)
             page++
         } while (intermediate.hasNext)
