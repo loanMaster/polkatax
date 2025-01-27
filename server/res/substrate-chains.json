@@ -151,7 +151,7 @@
       "coingeckoId": "pha"
     },
     {
-      "name": "crust",
+      "name": "crust-parachain",
       "token": "cru",
       "coingeckoId": "crust-network"
     },

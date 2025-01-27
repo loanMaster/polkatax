@@ -115,7 +115,7 @@ export const chainList: Chain[] = [
   },
   { chain: 'phala', label: 'Phala' },
   {
-    chain: 'crust',
+    chain: 'crust-parachain',
     label: 'Crust',
   },
   { chain: 'hydration', label: 'Hydration' },
@@ -129,10 +129,6 @@ export const chainList: Chain[] = [
     label: 'Bifrost',
   },
   { chain: 'centrifuge', label: 'Centrifuge' },
-  {
-    chain: 'crust',
-    label: 'Crust',
-  },
   {
     chain: 'darwinia',
     label: 'Darwinia',
