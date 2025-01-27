@@ -6,7 +6,7 @@ export const chainList: Chain[] = [
     label: 'Joystream',
   },
   {
-    chain: 'enjin',
+    chain: 'matrix',
     label: 'Enjin',
   },
   {

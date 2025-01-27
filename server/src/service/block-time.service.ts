@@ -30,13 +30,13 @@ export class BlockTimeService {
         const tolerance = 3 * 24 * 60 * 60
         const meta = await this.subscanService.fetchMetadata(chainName);
         const firstBlock: Block = await this.subscanService.fetchBlock(chainName, 1)
-        const lastBlock: Block = await this.subscanService.fetchBlock(chainName, meta.blockNum)
+        const lastBlock: Block = (await this.subscanService.fetchBlockList(chainName,  0, 1))[0]
         const blockMin = await this.searchBlock(chainName, Math.max(minDate, firstBlock.block_timestamp * 1000), firstBlock, lastBlock)
         const blockMax = await this.searchBlock(chainName, Math.min(maxDate || Date.now(), lastBlock.block_timestamp * 1000), firstBlock, lastBlock)
         logger.info(`Exit getMinMaxBlock for chain ${chainName}`)
         return {
             blockMin: Math.max(1, Math.round(blockMin - 3 * tolerance / meta.avgBlockTime )),
-            blockMax: Math.min(meta.blockNum, Math.round(blockMax + 3 * tolerance / meta.avgBlockTime))
+            blockMax: Math.min(lastBlock.block_num, Math.round(blockMax + 3 * tolerance / meta.avgBlockTime))
         }
     }
 

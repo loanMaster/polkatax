@@ -1,6 +1,6 @@
 import {logger} from "../logger/logger";
 import {CurrencyExchangeRateService} from "./currency-exchange-rate.service";
-import {CurrencyQuotes, Quotes, TokenPriceHistoryService} from "./token-price-history.service";
+import {CurrencyQuotes, TokenPriceHistoryService} from "./token-price-history.service";
 import {Transfer} from "../model/transfer";
 import {formatDate} from "../util/format-date";
 import {Swap} from "../model/swap";

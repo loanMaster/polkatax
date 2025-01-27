@@ -82,6 +82,19 @@ export class SubscanService {
         return body.data
     }
 
+    async fetchBlockList(chainName: string, page = 0, row = 1): Promise<Block[]> {
+        const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/blocks`, {
+            method: `post`,
+            headers: {
+                "Content-Type": "application/json",
+                'x-api-key': process.env['SUBSCAN_API_KEY']
+            },
+            body: JSON.stringify({page, row})
+        }));
+        const body = await response.json();
+        return body.data.blocks
+    }
+
     async fetchAllPoolStakingRewards(chainName: string, address: string, poolId: number): Promise<StakingReward[]> {
         return this.iterateOverPages<StakingReward>((page, count) =>
             this.fetchPoolStakingRewards(chainName, address, poolId, count, page)
