@@ -111,7 +111,7 @@ export const chainList: Chain[] = [
   { chain: 'moonbeam', label: 'Moonbeam', explorer: 'https://moonscan.io/tx/' },
   {
     chain: 'astar',
-    label: 'Astar Substrate',
+    label: 'Astar',
   },
   { chain: 'phala', label: 'Phala' },
   {
