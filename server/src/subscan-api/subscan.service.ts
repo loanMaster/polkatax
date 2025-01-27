@@ -127,7 +127,7 @@ export class SubscanService {
         }
     }
 
-    private async retry<T>(query: () => Promise<T>, retries = 2, backOff = [2000, 5000]): Promise<T> {
+    private async retry<T>(query: () => Promise<T>, retries = 2, backOff = [5000, 30000]): Promise<T> {
         for (let i = 0; i < retries; i++) {
             try {
                 return await query();

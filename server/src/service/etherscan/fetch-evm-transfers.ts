@@ -257,13 +257,7 @@ export const fetchTxAndTransfers = async (network = 'moonbeam', address: string,
 
     let tx = []
     tx.push(...transactions)
-
-    // the "value" field of internal transactions seems to be meaningless / misleading. it is set to zero here
-    tx.push(...internalTransactions.map(tx => ({
-        ...tx,
-        value: 0
-    })))
-
+    tx.push(...internalTransactions)
     tx = tx.filter(t => Number(t.timeStamp) >= startDate.getTime() / 1000 && Number(t.timeStamp) <= endDate.getTime() / 1000)
         .filter(t => t.isError == "0" && (t.txreceipt_status === undefined || t.txreceipt_status == '1'))
     return {tx, transfers}
