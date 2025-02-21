@@ -115,15 +115,17 @@ async function fetchRewards() {
       await store.fetchTransfers();
     } catch (error: any) {
       const message =
-        error.status && error.status === 429
-          ? 'Too many requests. Please try again in one minute'
+        error.status && (error.status === 429 || error.status === 503)
+          ? 'Too many requests. Please try again in some minutes'
           : error.status && error.status === 400
           ? await error.text()
           : 'There was an error fetching your data. Please try again later';
       $q.dialog({
         title:
           error.status && error.status === 429
-            ? 'Request limit exceeded'
+            ? 'Request limit exceeded' :
+          error.status && error.status === 503
+            ? 'Server overloaded'
             : 'An error occurred',
         message,
         persistent: true,
