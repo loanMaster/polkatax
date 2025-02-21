@@ -186,8 +186,9 @@ export class SubscanService {
         }
     }
 
-    fetchAllExtrinsics(chainName: string, address: string, block_min?: number, block_max?: number): Promise<Transaction[]> {
-        logger.info(`fetchAllExtrinsics for ${chainName} and address ${address}`)
+    fetchAllTx(chainName: string, address: string, block_min?: number, block_max?: number, evm = false): Promise<Transaction[]> {
+        logger.info(`fetchAllExtrinsics for ${chainName} and address ${address}. Evm ${evm}`)
+        const endpoint = evm ? 'api/scan/evm/v2/transactions' : 'api/v2/scan/extrinsics'
         const fetchExtrinsics = async (chainName: string, address: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transaction[], hasNext: boolean }> => {
             const body = JSON.stringify({
                 row,
@@ -196,14 +197,25 @@ export class SubscanService {
                 success: true,
                 block_range: block_min !== undefined && block_max !== undefined ? `${block_min}-${block_max}` : undefined
             })
-            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`, {
+            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/${endpoint}`, {
                 method: `post`,
                 headers: this.defaultHeader,
                 body: body
             }));
             const responseBody = await response.json()
             return {
-                list: (responseBody.data?.extrinsics || []).map(entry => {
+                list: (responseBody.data?.extrinsics || responseBody.data?.list || []).map(entry => {
+                    if (evm) {
+                        entry = {
+                            ...entry,
+                            account_display: {
+                                address: entry.from
+                            },
+                            functionName: entry.method,
+                            callModule: entry.contract_name,
+                            extrinsic_hash: entry.hash
+                        }
+                    }
                     return {
                         hash: entry.extrinsic_hash,
                         account: entry.account_display.address,
@@ -212,11 +224,11 @@ export class SubscanService {
                         functionName: entry.call_module_function,
                         callModule: entry.call_module
                     }
-                }), hasNext: (responseBody.data?.extrinsics || []).length >= row
+                }), hasNext: (responseBody.data?.extrinsics || responseBody.data?.list || []).length >= row
             }
         }
         const result = this.iterateOverPages<Transaction>((page, count) =>
-                fetchExtrinsics(chainName, address, count, page, block_min, block_max))
+            fetchExtrinsics(chainName, address, count, page, block_min, block_max))
         logger.info(`Exit fetchAllExtrinsics for ${chainName} and address ${address}`)
         return result
     }
@@ -232,13 +244,17 @@ export class SubscanService {
             body: body
         }));
         const json = await response.json()
-        return (json.data.list && json.data.list.length > 0 ? json.data.list : [{ address }]).map(entry => entry.address)
+        return (json.data.list && json.data.list.length > 0 ?
+            json.data.list.map(entry => ({ address: entry.address.toLowerCase() })) :
+            [{ address }]).map(entry => entry.address.toLowerCase())
     }
 
-    async fetchAllTransfers(chainName: string, account: string, block_min?: number, block_max?: number): Promise<Transfers> {
-        logger.info(`fetchAllTransfers for ${chainName} and account ${account}`)
+    async fetchAllTransfers(chainName: string, account: string, block_min?: number, block_max?: number, evm = false): Promise<Transfers> {
+        logger.info(`fetchAllTransfers for ${chainName} and account ${account}. Evm: ${evm}`)
+        const endpoint = evm ? 'api/scan/evm/token/transfer' : 'api/v2/scan/transfers'
         const addresses = await this.fetchAccounts(account, chainName)
-        const isMyAccount = (address: string) => addresses.indexOf(address) > -1
+        const transfers: any = {};
+        const isMyAccount = (address: string) => address.toLowerCase() === account.toLowerCase() || addresses.indexOf(address.toLowerCase()) > -1
         const fetchTransfers = async (chainName: string, account: string, row: number = 100, page: number = 0, block_min?: number, block_max?: number): Promise<{ list: Transfers[], hasNext: boolean }> => {
             const body = JSON.stringify({
                 row,
@@ -247,14 +263,22 @@ export class SubscanService {
                 success: true,
                 block_range: block_min !== undefined && block_max !== undefined ? `${block_min}-${block_max}` : undefined
             })
-            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/api/v2/scan/transfers`, {
+            const response = await handleError(fetch(`https://${chainName}.api.subscan.io/${endpoint}`, {
                 method: `post`,
                 headers: this.defaultHeader,
                 body: body
             }));
-            const responseBody = await response.json()
-            const transfers: any = {};
-            (responseBody.data?.transfers || []).forEach(entry => {
+            const responseBody = await response.json();
+            (responseBody.data?.transfers || responseBody.data?.list || []).forEach(entry => {
+                if (evm) {
+                    entry = {
+                        ...entry,
+                        asset_symbol: entry.symbol,
+                        module: entry.to_display?.evm_contract?.contract_name,
+                        amount: BigNumber(entry.value).dividedBy(BigNumber(10).pow(entry.decimals)).toNumber(),
+                        block_timestamp: entry.create_at
+                    }
+                }
                 const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from
                 if (!transfers[entry.hash]) {
                     transfers[entry.hash] = {}
@@ -281,10 +305,10 @@ export class SubscanService {
                 transfers[entry.hash][entry.asset_symbol].timestamp = entry.block_timestamp
                 transfers[entry.hash][entry.asset_symbol].hash = entry.hash
             })
-            return {list: [transfers], hasNext: (responseBody.data?.transfers || []).length >= row}
+            return {list: [transfers], hasNext: (responseBody.data?.transfers || responseBody.data?.list || []).length >= row}
         }
         const result = mergeListElements(await this.iterateOverPages<any>((page, count) =>
-                fetchTransfers(chainName, account, count, page, block_min, block_max)))
+            fetchTransfers(chainName, account, count, page, block_min, block_max)))
         logger.info(`Exit fetchAllTransfers for ${chainName} and account ${account}`)
         return result
     }
