@@ -93,10 +93,10 @@ async function fetchRewards() {
       $q.dialog({
         title:
           error.status && error.status === 429
-            ? 'Request limit exceeded' :
-            error.status && error.status === 503
-              ? 'Server overloaded'
-              : 'An error occurred',
+            ? 'Request limit exceeded'
+            : error.status && error.status === 503
+            ? 'Server overloaded'
+            : 'An error occurred',
         message,
         persistent: true,
       });
