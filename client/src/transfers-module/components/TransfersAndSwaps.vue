@@ -45,6 +45,13 @@
       <q-tab name="swaps" label="Swaps" />
     </q-tabs>
     <div>
+      <div
+        class="text-h6 text-center q-my-md bg-warning"
+        v-if="store.chain === 'acala'"
+      >
+        ⚠ EVM transactions on Acala are not supported yet ⚠
+      </div>
+
       <token-transfers
         v-if="store.paymentList !== undefined && tab === 'payments'"
       />
