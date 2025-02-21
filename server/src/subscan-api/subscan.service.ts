@@ -244,7 +244,7 @@ export class SubscanService {
             body: body
         }));
         const json = await response.json()
-        return (json.data.list && json.data.list.length > 0 ?
+        return (json?.data?.list && json?.data?.list.length > 0 ?
             json.data.list.map(entry => ({ address: entry.address.toLowerCase() })) :
             [{ address }]).map(entry => entry.address.toLowerCase())
     }

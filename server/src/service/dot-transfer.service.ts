@@ -117,9 +117,10 @@ export class DotTransferService {
             address = await this.subscanService.mapToSubstrateAccount(chainName, address)
         }
         const {blockMin, blockMax} = await this.blockTimeService.getMinMaxBlock(chainName, minDate.getTime(), maxDate ? maxDate.getTime() : undefined)
-        let {transfers, transactions} = await this.fetchTxAndTransfers(chainName, address, blockMin, blockMax, false)
 
-        if (evmAddress) {
+        let {transfers, transactions} = address ? await this.fetchTxAndTransfers(chainName, address, blockMin, blockMax, false) : { transfers: {}, transactions: [] }
+
+        if (evmAddress && chainName.toLowerCase() !== 'acala') { // Acala evm transaction are not supported, yet.
             const result = await this.fetchTxAndTransfers(chainName, evmAddress, blockMin, blockMax, true)
             this._merge(transfers, result.transfers)
             transactions = transactions.concat(result.transactions)
