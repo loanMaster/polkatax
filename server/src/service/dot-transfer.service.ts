@@ -70,7 +70,7 @@ export class DotTransferService {
                         block: transfer[token].block || tx?.block_num,
                         date: transfer[token].timestamp || tx?.block_timestamp,
                         functionName: processFunctionName(transfer[token].functionName),
-                        contract: undefined,
+                        contract: tx?.callModule,
                         tokens: {}
                     }
                     const tokenLower = token.toLowerCase()
@@ -127,6 +127,21 @@ export class DotTransferService {
         }
 
         const swaps = this._extractSwaps(transactions, transfers)
+
+        if (chainName.toLowerCase() === 'hydration') { // special logic for handling 2-Pool/4-Pool tokens during swap. issue #32
+            swaps.forEach(s => {
+                if (Object.keys(s.tokens).length > 2) {
+                    const soldTokens = Object.keys(s.tokens).filter(t => s.tokens[t].type === 'sell');
+                    const boughtTokens = Object.keys(s.tokens).filter(t => s.tokens[t].type === 'buy');
+                    for (let poolToken of ['2-pool', '4-pool']) {
+                        if ((soldTokens.indexOf(poolToken) > -1 && soldTokens.length == 2) || (boughtTokens.indexOf(poolToken) > -1 && boughtTokens.length == 2)) {
+                            delete s.tokens[poolToken];
+                        }
+                    }
+                }
+            })
+        }
+
         const filtered = swaps.filter(s => (
             s.date * 1000 >= minDate.getTime() && (!maxDate || s.date * 1000 <= maxDate.getTime())
         ))

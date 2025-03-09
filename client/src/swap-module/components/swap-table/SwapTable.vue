@@ -154,11 +154,12 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'transferTo',
+    name: 'contract',
     align: 'center',
     label: 'Contract',
     field: 'contract',
-    format: (value: string) => value.substring(0, 10) + '...',
+    format: (value: string) =>
+      value ? value.substring(0, 10) + (value.length > 10 ? '...' : '') : '-',
     sortable: true,
   },
   {
