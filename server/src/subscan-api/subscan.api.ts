@@ -154,6 +154,9 @@ export class SubscanApi {
         });
         const transfers: any = {};
         (responseBody.data?.transfers || responseBody.data?.list || []).forEach(entry => {
+            if (!entry.hash) {
+                return;
+            }
             if (evm) {
                 entry = {
                     ...entry,
