@@ -1,1 +1,0 @@
-export const fiatCurrencies = ["aed","ars","aud","bhd","bmd","brl","cad","clp","usd","eur","gbp","chf","cny","czk","dkk","hkd","idr","ils","inr","jpy","krw","kwd","lkr","mxn","myr","ngn","nok","nzd","php","pkr","pln","rub","sek","sgd","sgd","thb","try","twd","uah","vnd","zar"]

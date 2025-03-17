@@ -1,10 +1,13 @@
 import fs from "fs";
-import {ExchangeRateService} from "../exchange-rate-api/exchange-rate.service";
 import {ExchangeRates} from "../exchange-rate-api/exchange-rates";
 import {logger} from "../logger/logger";
 import {formatDate} from "../util/format-date";
+import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
 
 export class CurrencyExchangeRateService {
+    constructor(private exchangeRatesRestService: ExchangeRateRestService) {
+    }
+
     async init() {
         await this.sync()
         setInterval(async () => {
@@ -29,7 +32,6 @@ export class CurrencyExchangeRateService {
 
     private async sync() {
         logger.info('CurrencyExchangeRateService syncing')
-        const exchangeRatesService = new ExchangeRateService()
         let results: ExchangeRates = this.getExchangeRates()
         // fetch data from 10 years back if it hasn't been stored yet. otherwise fetch current and last year
         const yearsToLookPast = Object.keys(results).length === 0 ? 10 : 1
@@ -37,7 +39,7 @@ export class CurrencyExchangeRateService {
             let year = new Date().getFullYear() - yearInPast
             results = {
                 ...results,
-                ...(await exchangeRatesService.fetchTimeSeries(`${year}-01-01`, this.endOfYearOrNow(year)))
+                ...(await this.exchangeRatesRestService.fetchTimeSeries(`${year}-01-01`, this.endOfYearOrNow(year)))
             }
         }
         fs.writeFileSync(__dirname + '/../../res/quotes/currency-exchange.rates.json', JSON.stringify(results))

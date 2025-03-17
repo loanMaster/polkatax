@@ -11,7 +11,7 @@ export class StakingRewardsService {
     }
 
     private async filterRewards(rewards: StakingReward[], chainName: string, minDate: number, maxDate: number): Promise<Transfer[]> {
-        const token = await this.subscanService.fetchToken(chainName)
+        const token = await this.subscanService.fetchNativeToken(chainName)
 
         return rewards.filter(r =>
             (!maxDate || r.block_timestamp < maxDate / 1000) && r.block_timestamp >= minDate / 1000

@@ -1,8 +1,8 @@
 import {logger} from "../logger/logger";
 import * as fs from 'fs';
 import {formatDate} from "../util/format-date";
-import { CoingeckoService } from "../coingecko-api/coingecko.service";
 import { findCoingeckoToken } from "../util/find-coingecko-token-id";
+import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
 
 export interface Quotes {
     [isoDate:string]: number;
@@ -21,7 +21,7 @@ export class TokenPriceHistoryService {
     private static cachedPrices: { [tokenIdCurrency: string]: Quotes } = {}
     private static timer
 
-    constructor(private coingeckoService: CoingeckoService) {
+    constructor(private coingeckoService: CoingeckoRestService) {
     }
 
     public init() {
@@ -120,7 +120,6 @@ export class TokenPriceHistoryService {
     }
 
     private addTokenToSyncList(symbol: string) {
-
         const tokensToSync = this.getTokensToSync()
         if (tokensToSync.tokens.indexOf(symbol) === -1) {
             tokensToSync.tokens.push(symbol)

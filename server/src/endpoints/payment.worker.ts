@@ -8,12 +8,14 @@ import {SubscanService} from "../subscan-api/subscan.service";
 import {Transfer} from "../model/transfer";
 import {FiatCurrencyService} from "../service/fiat-currency.service";
 import {TokenPriceHistoryService} from "../service/token-price-history.service";
-import {CoingeckoService} from "../coingecko-api/coingecko.service";
+import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
 import {CurrencyExchangeRateService} from "../service/currency-exchange-rate.service";
 import {coingeckoSupportsToken} from "../util/coingecko-supports-token";
 import {TokenPriceService} from "../service/token-price.service";
 import {logger} from "../logger/logger";
 import {parentPort, workerData} from 'worker_threads';
+import {SubscanApi} from "../subscan-api/subscan.api";
+import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
 
 async function processTask(data: any) {
     let { startDay, endDay, chainName, address, currency } = data
@@ -25,17 +27,18 @@ async function processTask(data: any) {
     }
 
     const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()]
-    const tokenRewardsService = new DotTransferService(new BlockTimeService(new SubscanService()), new SubscanService())
+    const subscanService = new SubscanService(new SubscanApi())
+    const tokenRewardsService = new DotTransferService(new BlockTimeService(new SubscanApi()), subscanService)
     const {swaps, payments} = evmChainConfig ? await fetchSwapsAndPayments(chainName, address, startDay, endDay) :
         await tokenRewardsService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
     const listOfTransfers: { [symbol: string]: { values: Transfer[], currentPrice: number } } = {}
 
-    const currencyService = new FiatCurrencyService(new TokenPriceHistoryService(new CoingeckoService()), new CurrencyExchangeRateService())
+    const currencyService = new FiatCurrencyService(new TokenPriceHistoryService(new CoingeckoRestService()), new CurrencyExchangeRateService(new ExchangeRateRestService()))
 
     const tokens = currencyService.getTokens(swaps)
     tokens.push(...Object.keys(payments))
     const supportedTokens = tokens.filter(symbol => coingeckoSupportsToken(symbol, chainName))
-    const currentPrices = await new TokenPriceService(new CoingeckoService()).fetchCurrentPrices(supportedTokens, chainName, currency)
+    const currentPrices = await new TokenPriceService(new CoingeckoRestService()).fetchCurrentPrices(supportedTokens, chainName, currency)
 
     const quoteCurrencies = ['usd', 'chf', 'eur']
     const quoteCurrency = quoteCurrencies.indexOf(currency.toLocaleLowerCase()) > -1 ? currency : 'usd'

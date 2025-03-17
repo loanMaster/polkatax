@@ -1,12 +1,12 @@
-import {CoingeckoService} from "../coingecko-api/coingecko.service";
 import {findCoingeckoToken} from "../util/find-coingecko-token-id";
+import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
 
 const MAX_AGE = 6 * 60 * 60 * 1000
 
 export class TokenPriceService {
     private static quotes: { [tokenId: string]: { [currency: string]: { price: number, timestamp: number } } } = {}
 
-    constructor(private coingeckoService: CoingeckoService) {
+    constructor(private coingeckoService: CoingeckoRestService) {
     }
 
     private hasAllQuotes(tokens: { id: string }[], currency: string) {

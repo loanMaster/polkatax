@@ -9,17 +9,18 @@ import {CurrencyExchangeRateService} from "./service/currency-exchange-rate.serv
 import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
 import {paymentsEndpoint} from "./endpoints/payments.endpoint";
 import {TokenPriceHistoryService} from "./service/token-price-history.service";
-import { CoingeckoService } from './coingecko-api/coingecko.service';
+import {ExchangeRateRestService} from "./exchange-rate-api/exchange-rate.rest-service";
+import {CoingeckoRestService} from "./coingecko-api/coingecko.rest-service";
 
 const init = async () => {
 
     try {
-        await new CurrencyExchangeRateService().init()
+        await new CurrencyExchangeRateService(new ExchangeRateRestService()).init()
     } catch (error) {
         logger.error(error)
     }
 
-    new TokenPriceHistoryService(new CoingeckoService()).init()
+    new TokenPriceHistoryService(new CoingeckoRestService()).init()
 
     const fastify = Fastify({
         logger,

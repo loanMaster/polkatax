@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "serve": "ts-node src/server.ts"
+    "serve": "ts-node src/server.ts",
+    "test-watch": "jest --watch --verbose false",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -24,10 +26,12 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.6.2",
+    "@jest/types": "^29.6.3",
     "@types/bignumber.js": "^5.0.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.1.5",
     "@types/node-fetch": "^2.6.4",
-    "jest": "^29.6.2",
-    "ts-jest": "^29.1.1"
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.6"
   }
 }

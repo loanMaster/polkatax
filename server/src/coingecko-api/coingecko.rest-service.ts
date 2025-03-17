@@ -1,10 +1,10 @@
 import "node-fetch";
-import {HttpError} from "../error/HttpError";
-import {logger} from "../logger/logger";
 import { parse } from 'node-html-parser';
 import { Quotes } from 'src/service/token-price-history.service';
+import {logger} from "../logger/logger";
+import {HttpError} from "../error/HttpError";
 
-export class CoingeckoService {
+export class CoingeckoRestService {
     async fetchPrices(tokenIds: string[], currency: string): Promise<{[tokenId: string]: { [currency: string]: number }}> {
         logger.info(`CoingeckoService.fetchPrices for ${tokenIds.join(',')}`)
         const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${tokenIds.join(',')}&vs_currencies=${currency}&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false`, {
@@ -45,7 +45,7 @@ export class CoingeckoService {
         return jsonData
     }
     
-    async getExportDataUrl(tokenId: string) {
+    private async getExportDataUrl(tokenId: string) {
         const response = await fetch('https://www.coingecko.com/en/coins/' + tokenId + '/historical_data')
         const html = await response.text()
         const document = parse(html)
