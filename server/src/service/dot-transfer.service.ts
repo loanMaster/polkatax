@@ -134,7 +134,7 @@ export class DotTransferService {
                     const soldTokens = Object.keys(s.tokens).filter(t => s.tokens[t].type === 'sell');
                     const boughtTokens = Object.keys(s.tokens).filter(t => s.tokens[t].type === 'buy');
                     for (let poolToken of ['2-pool', '4-pool']) {
-                        if ((soldTokens.indexOf(poolToken) > -1 && soldTokens.length == 2) || (boughtTokens.indexOf(poolToken) > -1 && boughtTokens.length == 2)) {
+                        if ((soldTokens.indexOf(poolToken) > -1 && soldTokens.length > 1) || (boughtTokens.indexOf(poolToken) > -1 && boughtTokens.length > 1)) {
                             delete s.tokens[poolToken];
                         }
                     }
