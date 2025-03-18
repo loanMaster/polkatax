@@ -120,7 +120,7 @@ export class DotTransferService {
 
         let {transfers, transactions} = address ? await this.fetchTxAndTransfers(chainName, address, blockMin, blockMax, false) : { transfers: {}, transactions: [] }
 
-        if (evmAddress && chainName.toLowerCase() !== 'acala') { // Acala evm transaction are not supported, yet.
+        if (evmAddress) { // Acala evm transaction are not supported, yet.
             const result = await this.fetchTxAndTransfers(chainName, evmAddress, blockMin, blockMax, true)
             this._merge(transfers, result.transfers)
             transactions = transactions.concat(result.transactions)
