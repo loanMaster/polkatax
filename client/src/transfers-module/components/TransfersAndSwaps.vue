@@ -71,7 +71,7 @@
           results.
         </div>
         <div class="q-mx-auto text-center">
-          <img :src="meme" style="max-width: 80%" />
+          <img :src="meme" style="max-width: 40%" />
         </div>
       </div>
     </div>
@@ -154,5 +154,5 @@ function validateDate() {
   }
 }
 
-const meme = ref(`img/${Math.floor(Math.random() * 3).toFixed(0)}.jpg`);
+const meme = ref('img/dollar-4932316_1280.jpg');
 </script>

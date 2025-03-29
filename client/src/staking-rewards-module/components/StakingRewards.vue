@@ -50,7 +50,7 @@
         software comes without warranty. Please verify the exported results
       </div>
       <div class="q-mx-auto text-center">
-        <img :src="meme" style="max-width: 80%" />
+        <img :src="meme" style="max-width: 40%" />
       </div>
     </div>
   </q-page>
@@ -114,5 +114,5 @@ const isDisabled = computed(() => {
   );
 });
 
-const meme = ref(`img/${Math.floor(Math.random() * 3).toFixed(0)}.jpg`);
+const meme = ref('img/dollar-4932316_1280.jpg');
 </script>
