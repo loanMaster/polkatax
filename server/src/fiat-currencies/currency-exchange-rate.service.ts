@@ -1,8 +1,9 @@
 import fs from "fs";
-import {ExchangeRates} from "../exchange-rate-api/exchange-rates";
-import {logger} from "../logger/logger";
-import {formatDate} from "../util/format-date";
-import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
+import { ExchangeRateRestService } from "./exchange-rate-api/exchange-rate.rest-service";
+import { logger } from "src/common/logger/logger";
+import { formatDate } from "src/common/util/format-date";
+import { ExchangeRates } from "./exchange-rate-api/exchange-rates";
+
 
 export class CurrencyExchangeRateService {
     constructor(private exchangeRatesRestService: ExchangeRateRestService) {

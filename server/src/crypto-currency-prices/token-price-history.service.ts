@@ -1,8 +1,7 @@
-import {logger} from "../logger/logger";
+import {logger} from "../common/logger/logger";
 import * as fs from 'fs';
-import {formatDate} from "../util/format-date";
-import { findCoingeckoToken } from "../util/find-coingecko-token-id";
-import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
+import {CoingeckoRestService} from "./coingecko-api/coingecko.rest-service";
+import { findCoingeckoToken } from "src/common/util/find-coingecko-token-id";
 
 export interface Quotes {
     [isoDate:string]: number;

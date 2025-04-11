@@ -1,5 +1,5 @@
-import {findCoingeckoToken} from "../util/find-coingecko-token-id";
-import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
+import { findCoingeckoToken } from "src/common/util/find-coingecko-token-id";
+import {CoingeckoRestService} from "./coingecko-api/coingecko.rest-service";
 
 const MAX_AGE = 6 * 60 * 60 * 1000
 

@@ -1,12 +1,12 @@
 import dotenv from 'dotenv'
-import {SubscanService} from "../subscan-api/subscan.service";
-import {Transfer, Transfers} from "../subscan-api/transfer";
+import {SubscanService} from "../api/subscan.service";
+import {Transfer, Transfers} from "../model/transfer";
 import {BlockTimeService} from "./block-time.service";
-import {TokenTransfer, TokenTransfers} from "../model/token-transfer";
-import {Transaction} from "../subscan-api/transaction";
-import {Swap} from "../model/swap";
-import {processFunctionName} from "../util/process-function-name";
-import {logger} from "../logger/logger";
+import {Transaction} from "../model/transaction";
+import { TokenTransfer, TokenTransfers } from 'src/common/model/token-transfer';
+import { processFunctionName } from 'src/common/util/process-function-name';
+import { Swap } from 'src/common/model/swap';
+import { logger } from 'src/common/logger/logger';
 
 dotenv.config({path: __dirname + '/../.env'})
 

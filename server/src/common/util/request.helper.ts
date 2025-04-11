@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import {HttpError} from "../error/HttpError";
+import {HttpError} from "../common/error/HttpError";
 
 export class RequestHelper {
     defaultHeader = {}

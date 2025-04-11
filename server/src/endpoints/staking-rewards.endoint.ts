@@ -1,6 +1,6 @@
 import Joi from "joi";
 import {RouteOptions} from "fastify/types/route";
-import {HttpError} from "../error/HttpError";
+import {HttpError} from "../common/error/HttpError";
 import * as substrateChains from "../../res/substrate-chains.json"
 import {runWorker} from "./run-worker";
 

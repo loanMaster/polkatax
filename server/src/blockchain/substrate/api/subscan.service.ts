@@ -1,10 +1,10 @@
-import {Token} from "./token";
-import {Transfers} from "./transfer";
-import {logger} from "../logger/logger";
-import {Transaction} from "./transaction";
-import {mergeListElements} from "../util/merge-list";
-import {StakingReward} from "./staking-reward";
+import {Token} from "../model/token";
+import {Transfers} from "../model/transfer";
+import {Transaction} from "../model/transaction";
+import {StakingReward} from "../model/staking-reward";
 import {SubscanApi} from "./subscan.api";
+import { logger } from "src/common/logger/logger";
+import { mergeListElements } from "src/common/util/merge-list";
 
 export class SubscanService {
 

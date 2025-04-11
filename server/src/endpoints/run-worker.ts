@@ -1,6 +1,6 @@
 import path from "path";
 import {Worker} from "worker_threads";
-import {HttpError} from "../error/HttpError";
+import {HttpError} from "../common/error/HttpError";
 
 const MAX_WORKERS = 2;
 let activeWorkers = 0

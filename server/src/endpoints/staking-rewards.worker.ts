@@ -1,13 +1,13 @@
 import {StakingRewardsService} from "../service/staking-rewards.service";
 import {BlockTimeService} from "../service/block-time.service";
-import {SubscanService} from "../subscan-api/subscan.service";
-import {TokenPriceService} from "../service/token-price.service";
-import {TokenPriceHistoryService} from "../service/token-price-history.service";
-import {FiatCurrencyService} from "../service/fiat-currency.service";
+import {SubscanService} from "../substrate-blockchain/api/subscan.service";
+import {TokenPriceService} from "../crypto-currency-prices/token-price.service";
+import {TokenPriceHistoryService} from "../crypto-currency-prices/token-price-history.service";
+import {FiatCurrencyService} from "../fiat-currencies/fiat-currency.service";
 import { parentPort, workerData } from 'worker_threads';
-import {SubscanApi} from "../subscan-api/subscan.api";
-import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
-import {CurrencyExchangeRateService} from "../service/currency-exchange-rate.service";
+import {SubscanApi} from "../substrate-blockchain/api/subscan.api";
+import {CoingeckoRestService} from "../crypto-currency-prices/coingecko-api/coingecko.rest-service";
+import {CurrencyExchangeRateService} from "../fiat-currencies/currency-exchange-rate.service";
 import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
 
 async function processTask(data: any) {

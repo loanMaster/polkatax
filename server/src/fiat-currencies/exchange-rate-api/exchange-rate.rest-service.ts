@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
-import {HttpError} from "../error/HttpError";
 import {ExchangeRates} from "./exchange-rates";
-import {logger} from "../logger/logger";
+import { logger } from 'src/common/logger/logger';
+import { HttpError } from 'src/common/error/HttpError';
 
 export class ExchangeRateRestService {
     async fetchTimeSeries(isoDateStart: string, isoDateEnd: string): Promise<ExchangeRates> {

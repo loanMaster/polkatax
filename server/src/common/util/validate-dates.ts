@@ -1,4 +1,4 @@
-import {HttpError} from "../error/HttpError";
+import {HttpError} from "../common/error/HttpError";
 import {formatDate} from "./format-date";
 
 export const validateDates = (startDate: Date, endDate?: Date) => {

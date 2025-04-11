@@ -1,9 +1,9 @@
-import {logger} from "../logger/logger";
+import {logger} from "../common/logger/logger";
 import {CurrencyExchangeRateService} from "./currency-exchange-rate.service";
-import {CurrencyQuotes, TokenPriceHistoryService} from "./token-price-history.service";
-import {Transfer} from "../model/transfer";
-import {formatDate} from "../util/format-date";
-import {Swap} from "../model/swap";
+import {CurrencyQuotes, TokenPriceHistoryService} from "../crypto-currency-prices/token-price-history.service";
+import {Transfer} from "../common/model/transfer";
+import {Swap} from "../common/model/swap";
+import { formatDate } from "src/common/util/format-date";
 
 export class FiatCurrencyService {
 

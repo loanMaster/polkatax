@@ -1,21 +1,20 @@
-import {validateDates} from "../util/validate-dates";
-import {evmChainConfigs, fetchSwapsAndPayments} from "../service/etherscan/fetch-evm-transfers";
 import * as substrateChains from "../../res/substrate-chains.json";
-import {HttpError} from "../error/HttpError";
-import {DotTransferService} from "../service/dot-transfer.service";
-import {BlockTimeService} from "../service/block-time.service";
-import {SubscanService} from "../subscan-api/subscan.service";
-import {Transfer} from "../model/transfer";
-import {FiatCurrencyService} from "../service/fiat-currency.service";
-import {TokenPriceHistoryService} from "../service/token-price-history.service";
-import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
-import {CurrencyExchangeRateService} from "../service/currency-exchange-rate.service";
-import {coingeckoSupportsToken} from "../util/coingecko-supports-token";
-import {TokenPriceService} from "../service/token-price.service";
-import {logger} from "../logger/logger";
+import {HttpError} from "../common/error/HttpError";
+import {Transfer} from "../common/model/transfer";
+import {FiatCurrencyService} from "../fiat-currencies/fiat-currency.service";
+import {TokenPriceHistoryService} from "../crypto-currency-prices/token-price-history.service";
+import {CoingeckoRestService} from "../crypto-currency-prices/coingecko-api/coingecko.rest-service";
+import {CurrencyExchangeRateService} from "../fiat-currencies/currency-exchange-rate.service";
+import {TokenPriceService} from "../crypto-currency-prices/token-price.service";
+import {logger} from "../common/logger/logger";
 import {parentPort, workerData} from 'worker_threads';
-import {SubscanApi} from "../subscan-api/subscan.api";
-import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
+import { validateDates } from "src/common/util/validate-dates";
+import { evmChainConfigs, fetchSwapsAndPayments } from "src/blockchain/evm/fetch-evm-transfers";
+import { SubscanService } from "src/blockchain/substrate/api/subscan.service";
+import { SubscanApi } from "src/blockchain/substrate/api/subscan.api";
+import { DotTransferService } from "src/blockchain/substrate/services/dot-transfer.service";
+import { BlockTimeService } from "src/blockchain/substrate/services/block-time.service";
+import { coingeckoSupportsToken } from "src/common/util/coingecko-supports-token";
 
 async function processTask(data: any) {
     let { startDay, endDay, chainName, address, currency } = data

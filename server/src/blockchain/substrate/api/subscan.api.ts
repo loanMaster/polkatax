@@ -1,11 +1,11 @@
-import {MetaData} from "./meta-data";
-import {Token} from "./token";
-import {Block} from "./block";
-import {StakingReward} from "./staking-reward";
+import {MetaData} from "../model/meta-data";
+import {Token} from "../model/token";
+import {Block} from "../model/block";
+import {StakingReward} from "../model/staking-reward";
 import {BigNumber} from "bignumber.js";
-import {Transaction} from "./transaction";
-import {Transfers} from "./transfer";
-import {RequestHelper} from "../util/request.helper";
+import {Transaction} from "../model/transaction";
+import {Transfers} from "../model/transfer";
+import { RequestHelper } from "src/common/util/request.helper";
 
 export class SubscanApi {
     private requestHelper: RequestHelper

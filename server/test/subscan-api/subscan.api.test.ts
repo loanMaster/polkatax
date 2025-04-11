@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, jest, test} from '@jest/globals';
-import {SubscanApi} from "../../src/subscan-api/subscan.api";
+import {SubscanApi} from "../../src/substrate-blockchain/api/subscan.api";
 import {BigNumber} from "bignumber.js";
 
 let subscanApi: SubscanApi;

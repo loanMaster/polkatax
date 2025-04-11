@@ -1,6 +1,6 @@
 import coingeckoTokens from "../../res/coingecko-tokens.json";
 import substrateChains from "../../res/substrate-chains.json";
-import {logger} from "../logger/logger";
+import {logger} from "../common/logger/logger";
 
 const supportsPlatform = (platform, coingeckoToken: { platforms: { [key: string]: string } }) => {
     return (Object.keys(coingeckoToken?.platforms || []))

@@ -1,16 +1,16 @@
 import Fastify from 'fastify'
 import path from "path";
-import {logger} from "./logger/logger";
+import {logger} from "./common/logger/logger";
 import dotenv from 'dotenv'
 dotenv.config({ path: __dirname + '/../.env' })
 
 import * as fs from 'fs'
-import {CurrencyExchangeRateService} from "./service/currency-exchange-rate.service";
+import {CurrencyExchangeRateService} from "./fiat-currencies/currency-exchange-rate.service";
 import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
 import {paymentsEndpoint} from "./endpoints/payments.endpoint";
-import {TokenPriceHistoryService} from "./service/token-price-history.service";
-import {ExchangeRateRestService} from "./exchange-rate-api/exchange-rate.rest-service";
-import {CoingeckoRestService} from "./coingecko-api/coingecko.rest-service";
+import {TokenPriceHistoryService} from "./crypto-currency-prices/token-price-history.service";
+import {CoingeckoRestService} from "./crypto-currency-prices/coingecko-api/coingecko.rest-service";
+import { ExchangeRateRestService } from './fiat-currencies/exchange-rate-api/exchange-rate.rest-service';
 
 const init = async () => {
 
