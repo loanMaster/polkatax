@@ -1,10 +1,10 @@
 import {BlockTimeService} from "./block-time.service";
 import { BigNumber } from "bignumber.js";
 import {SubscanService} from "../api/subscan.service";
-import { Transfer } from "src/common/model/transfer";
 import {StakingReward} from "../model/staking-reward";
-import { HttpError } from "src/common/error/HttpError";
-import { logger } from "src/common/logger/logger";
+import { Transfer } from "../../../common/model/transfer";
+import { HttpError } from "../../../common/error/HttpError";
+import { logger } from "../../../common/logger/logger";
 
 export class StakingRewardsService {
     constructor(private blockTimeService: BlockTimeService, private subscanService: SubscanService) {

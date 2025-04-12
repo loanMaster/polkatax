@@ -5,7 +5,7 @@ import {StakingReward} from "../model/staking-reward";
 import {BigNumber} from "bignumber.js";
 import {Transaction} from "../model/transaction";
 import {Transfers} from "../model/transfer";
-import { RequestHelper } from "src/common/util/request.helper";
+import { RequestHelper } from "../../../common/util/request.helper";
 
 export class SubscanApi {
     private requestHelper: RequestHelper

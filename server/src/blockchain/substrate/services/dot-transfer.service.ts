@@ -3,10 +3,10 @@ import {SubscanService} from "../api/subscan.service";
 import {Transfer, Transfers} from "../model/transfer";
 import {BlockTimeService} from "./block-time.service";
 import {Transaction} from "../model/transaction";
-import { TokenTransfer, TokenTransfers } from 'src/common/model/token-transfer';
-import { processFunctionName } from 'src/common/util/process-function-name';
-import { Swap } from 'src/common/model/swap';
-import { logger } from 'src/common/logger/logger';
+import { logger } from '../../../common/logger/logger';
+import { Swap } from '../../../common/model/swap';
+import { TokenTransfers, TokenTransfer } from '../../../common/model/token-transfer';
+import { processFunctionName } from '../../../common/util/process-function-name';
 
 dotenv.config({path: __dirname + '/../.env'})
 

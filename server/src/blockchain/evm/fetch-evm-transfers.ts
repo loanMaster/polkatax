@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js';
 import fetch from 'node-fetch';
-import { HttpError } from 'src/common/error/HttpError';
-import { logger } from 'src/common/logger/logger';
-import { Swap } from 'src/common/model/swap';
-import { TokenTransfers } from 'src/common/model/token-transfer';
-import { processFunctionName } from 'src/common/util/process-function-name';
+import { HttpError } from '../../common/error/HttpError';
+import { logger } from '../../common/logger/logger';
+import { Swap } from '../../common/model/swap';
+import { TokenTransfers } from '../../common/model/token-transfer';
+import { processFunctionName } from '../../common/util/process-function-name';
+
 
 export interface EVMTransfer {
     blockNumber: string

@@ -5,17 +5,17 @@ import dotenv from 'dotenv'
 dotenv.config({ path: __dirname + '/../.env' })
 
 import * as fs from 'fs'
-import {CurrencyExchangeRateService} from "./fiat-currencies/currency-exchange-rate.service";
 import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
 import {paymentsEndpoint} from "./endpoints/payments.endpoint";
-import {TokenPriceHistoryService} from "./crypto-currency-prices/token-price-history.service";
+import {TokenPriceHistoryService} from "./crypto-currency-prices/services/token-price-history.service";
 import {CoingeckoRestService} from "./crypto-currency-prices/coingecko-api/coingecko.rest-service";
 import { ExchangeRateRestService } from './fiat-currencies/exchange-rate-api/exchange-rate.rest-service';
+import { FiatExchangeRateService } from './fiat-currencies/fiat-exchange-rate.service';
 
 const init = async () => {
 
     try {
-        await new CurrencyExchangeRateService(new ExchangeRateRestService()).init()
+        await new FiatExchangeRateService(new ExchangeRateRestService()).init()
     } catch (error) {
         logger.error(error)
     }

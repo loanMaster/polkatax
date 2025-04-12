@@ -1,20 +1,20 @@
-import * as substrateChains from "../../res/substrate-chains.json";
+import * as substrateChains from "../../res/substrate/substrate-chains.json";
 import {HttpError} from "../common/error/HttpError";
 import {Transfer} from "../common/model/transfer";
-import {FiatCurrencyService} from "../fiat-currencies/fiat-currency.service";
-import {TokenPriceHistoryService} from "../crypto-currency-prices/token-price-history.service";
+import {FiatCurrencyService} from "./services/fiat-currency.service";
 import {CoingeckoRestService} from "../crypto-currency-prices/coingecko-api/coingecko.rest-service";
-import {CurrencyExchangeRateService} from "../fiat-currencies/currency-exchange-rate.service";
-import {TokenPriceService} from "../crypto-currency-prices/token-price.service";
 import {logger} from "../common/logger/logger";
 import {parentPort, workerData} from 'worker_threads';
-import { validateDates } from "src/common/util/validate-dates";
-import { evmChainConfigs, fetchSwapsAndPayments } from "src/blockchain/evm/fetch-evm-transfers";
-import { SubscanService } from "src/blockchain/substrate/api/subscan.service";
-import { SubscanApi } from "src/blockchain/substrate/api/subscan.api";
-import { DotTransferService } from "src/blockchain/substrate/services/dot-transfer.service";
-import { BlockTimeService } from "src/blockchain/substrate/services/block-time.service";
-import { coingeckoSupportsToken } from "src/common/util/coingecko-supports-token";
+import { evmChainConfigs, fetchSwapsAndPayments } from "../blockchain/evm/fetch-evm-transfers";
+import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
+import { SubscanService } from "../blockchain/substrate/api/subscan.service";
+import { BlockTimeService } from "../blockchain/substrate/services/block-time.service";
+import { DotTransferService } from "../blockchain/substrate/services/dot-transfer.service";
+import { coingeckoSupportsToken } from "../common/util/coingecko-supports-token";
+import { validateDates } from "../common/util/validate-dates";
+import { CryptoCurrencyPricesFacade } from "../crypto-currency-prices/crypto-currency-prices.facade";
+import { ExchangeRateRestService } from "../fiat-currencies/exchange-rate-api/exchange-rate.rest-service";
+import { FiatExchangeRateService } from "../fiat-currencies/fiat-exchange-rate.service";
 
 async function processTask(data: any) {
     let { startDay, endDay, chainName, address, currency } = data
@@ -31,13 +31,15 @@ async function processTask(data: any) {
     const {swaps, payments} = evmChainConfig ? await fetchSwapsAndPayments(chainName, address, startDay, endDay) :
         await tokenRewardsService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
     const listOfTransfers: { [symbol: string]: { values: Transfer[], currentPrice: number } } = {}
+    const cryptoCurrencyPricesFacade = new CryptoCurrencyPricesFacade(new CoingeckoRestService())
+    const fiatExchangeRateService = new FiatExchangeRateService(new ExchangeRateRestService())
 
-    const currencyService = new FiatCurrencyService(new TokenPriceHistoryService(new CoingeckoRestService()), new CurrencyExchangeRateService(new ExchangeRateRestService()))
+    const currencyService = new FiatCurrencyService(cryptoCurrencyPricesFacade, fiatExchangeRateService)
 
     const tokens = currencyService.getTokens(swaps)
     tokens.push(...Object.keys(payments))
     const supportedTokens = tokens.filter(symbol => coingeckoSupportsToken(symbol, chainName))
-    const currentPrices = await new TokenPriceService(new CoingeckoRestService()).fetchCurrentPrices(supportedTokens, chainName, currency)
+    const currentPrices = await cryptoCurrencyPricesFacade.fetchCurrentPrices(supportedTokens, chainName, currency)
 
     const quoteCurrencies = ['usd', 'chf', 'eur']
     const quoteCurrency = quoteCurrencies.indexOf(currency.toLocaleLowerCase()) > -1 ? currency : 'usd'

@@ -1,5 +1,5 @@
 import { expect, test} from '@jest/globals';
-import {BlockTimeService} from "../../src/service/block-time.service";
+import { BlockTimeService } from '../../src/blockchain/substrate/services/block-time.service';
 
 let blockTimeService: BlockTimeService;
 

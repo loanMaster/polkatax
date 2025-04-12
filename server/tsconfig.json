@@ -11,9 +11,12 @@
       "reflect-metadata",
       "node"
     ],
+    "paths": {
+      "*": ["*"]          
+    },
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

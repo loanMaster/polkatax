@@ -1,20 +1,19 @@
-import {StakingRewardsService} from "../service/staking-rewards.service";
-import {BlockTimeService} from "../service/block-time.service";
-import {SubscanService} from "../substrate-blockchain/api/subscan.service";
-import {TokenPriceService} from "../crypto-currency-prices/token-price.service";
-import {TokenPriceHistoryService} from "../crypto-currency-prices/token-price-history.service";
-import {FiatCurrencyService} from "../fiat-currencies/fiat-currency.service";
+import {FiatCurrencyService} from "./services/fiat-currency.service";
 import { parentPort, workerData } from 'worker_threads';
-import {SubscanApi} from "../substrate-blockchain/api/subscan.api";
 import {CoingeckoRestService} from "../crypto-currency-prices/coingecko-api/coingecko.rest-service";
-import {CurrencyExchangeRateService} from "../fiat-currencies/currency-exchange-rate.service";
-import {ExchangeRateRestService} from "../exchange-rate-api/exchange-rate.rest-service";
+import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
+import { SubscanService } from "../blockchain/substrate/api/subscan.service";
+import { BlockTimeService } from "../blockchain/substrate/services/block-time.service";
+import { StakingRewardsService } from "../blockchain/substrate/services/staking-rewards.service";
+import { CryptoCurrencyPricesFacade } from "../crypto-currency-prices/crypto-currency-prices.facade";
+import { ExchangeRateRestService } from "../fiat-currencies/exchange-rate-api/exchange-rate.rest-service";
+import { FiatExchangeRateService } from "../fiat-currencies/fiat-exchange-rate.service";
 
 async function processTask(data: any) {
     let { chain, address, currency, poolId, startDay, endDay } = data
-    const priceService = new TokenPriceService(new CoingeckoRestService())
-    const priceHistoryService = new TokenPriceHistoryService(new CoingeckoRestService())
-    const currencyService = new FiatCurrencyService(priceHistoryService, new CurrencyExchangeRateService(new ExchangeRateRestService()))
+    const cryptoPriceService = new CryptoCurrencyPricesFacade(new CoingeckoRestService())
+    const cryptoCurrencyPricesFacade = new CryptoCurrencyPricesFacade(new CoingeckoRestService())
+    const currencyService = new FiatCurrencyService(cryptoCurrencyPricesFacade, new FiatExchangeRateService(new ExchangeRateRestService()))
     const subscanService = new SubscanService(new SubscanApi())
     const stakingRewardsService = new StakingRewardsService(new BlockTimeService(new SubscanApi()), subscanService)
     const isEvmAddress = address.length <= 42
@@ -24,7 +23,7 @@ async function processTask(data: any) {
     const rewardsPromise = poolId > 0 ?
         stakingRewardsService.fetchNominationPoolRewards(chain.name.toLowerCase(), address, poolId, startDay.getTime(), endDay ? endDay.getTime() : undefined) :
         stakingRewardsService.fetchStakingRewards(chain.name.toLowerCase(), address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
-    const currentPricePromise = (priceService.fetchCurrentPrices([chain.token], chain.name, currency))
+    const currentPricePromise = (cryptoPriceService.fetchCurrentPrices([chain.token], chain.name, currency))
     const [rewards, currentPrice] = await Promise.all([rewardsPromise, currentPricePromise])
     const result = {
         values: await currencyService.addFiatValues(rewards, chain.token, chain.name, currency.toLowerCase(), currentPrice[chain.token]),

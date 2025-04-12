@@ -1,8 +1,8 @@
 import "node-fetch";
 import { parse } from 'node-html-parser';
-import { Quotes } from 'src/crypto-currency-prices/token-price-history.service';
 import {logger} from "../../common/logger/logger";
 import {HttpError} from "../../common/error/HttpError";
+import { Quotes } from "../model/crypto-currency-quotes";
 
 export class CoingeckoRestService {
     async fetchPrices(tokenIds: string[], currency: string): Promise<{[tokenId: string]: { [currency: string]: number }}> {
