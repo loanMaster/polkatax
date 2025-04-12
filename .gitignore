@@ -19,6 +19,7 @@ node_modules
 server/public
 server/.env
 
-server/res/quotes/*.json
+server/res/fiat-currencies/quotes/*.json
+server/res/crypto-currencies/quotes/*.json
 
 coverage
