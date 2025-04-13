@@ -20,7 +20,7 @@ export class CryptoCurrencyPricesFacade {
         return this.tokenPriceService.fetchCurrentPrices(symbols, chain, currency);
     }
 
-    async getHistoricPrices(symbol: string, chain: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
-        return this.tokenPriceHistoryService.getHistoricPrices(symbol, chain, currency);
+    async getHistoricPrices(symbol: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
+        return this.tokenPriceHistoryService.getHistoricPrices(symbol, currency);
     }
 }

@@ -1,9 +1,7 @@
 import * as substrateChains from "../../res/substrate/substrate-chains.json";
 import {HttpError} from "../common/error/HttpError";
 import {Transfer} from "../common/model/transfer";
-import {FiatCurrencyService} from "./services/fiat-currency.service";
 import {CoingeckoRestService} from "../crypto-currency-prices/coingecko-api/coingecko.rest-service";
-import {logger} from "../common/logger/logger";
 import {parentPort, workerData} from 'worker_threads';
 import { evmChainConfigs, fetchSwapsAndPayments } from "../blockchain/evm/fetch-evm-transfers";
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
@@ -15,6 +13,22 @@ import { validateDates } from "../common/util/validate-dates";
 import { CryptoCurrencyPricesFacade } from "../crypto-currency-prices/crypto-currency-prices.facade";
 import { ExchangeRateRestService } from "../fiat-currencies/exchange-rate-api/exchange-rate.rest-service";
 import { FiatExchangeRateService } from "../fiat-currencies/fiat-exchange-rate.service";
+import { Swap } from "../common/model/swap";
+import { addFiatValuesToNestedTransfers } from "./helper/addFiatValuesToNestedTransfers";
+import { addFiatValuesToSwaps } from "./helper/addFiatValuesToSwaps";
+import { CombineTokenAndFiatPriceService } from "./services/combine-token-and-fiat-price.service";
+
+function getTokens(swaps: Swap[]): string[] {
+    const tokens = []
+    swaps.forEach(s => {
+        Object.keys(s.tokens).forEach(t => {
+            if (tokens.indexOf(t) === -1) {
+                tokens.push(t)
+            }
+        })
+    })
+    return tokens
+}
 
 async function processTask(data: any) {
     let { startDay, endDay, chainName, address, currency } = data
@@ -30,35 +44,25 @@ async function processTask(data: any) {
     const tokenRewardsService = new DotTransferService(new BlockTimeService(new SubscanApi()), subscanService)
     const {swaps, payments} = evmChainConfig ? await fetchSwapsAndPayments(chainName, address, startDay, endDay) :
         await tokenRewardsService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
-    const listOfTransfers: { [symbol: string]: { values: Transfer[], currentPrice: number } } = {}
+    
     const cryptoCurrencyPricesFacade = new CryptoCurrencyPricesFacade(new CoingeckoRestService())
     const fiatExchangeRateService = new FiatExchangeRateService(new ExchangeRateRestService())
 
-    const currencyService = new FiatCurrencyService(cryptoCurrencyPricesFacade, fiatExchangeRateService)
+    const priceService = new CombineTokenAndFiatPriceService(cryptoCurrencyPricesFacade, fiatExchangeRateService)
 
-    const tokens = currencyService.getTokens(swaps)
+    const tokens = getTokens(swaps)
     tokens.push(...Object.keys(payments))
-    const supportedTokens = tokens.filter(symbol => coingeckoSupportsToken(symbol, chainName))
-    const currentPrices = await cryptoCurrencyPricesFacade.fetchCurrentPrices(supportedTokens, chainName, currency)
+    const supportedTokens = Array.from(new Set(tokens.filter(symbol => coingeckoSupportsToken(symbol, chainName))))
 
-    const quoteCurrencies = ['usd', 'chf', 'eur']
-    const quoteCurrency = quoteCurrencies.indexOf(currency.toLocaleLowerCase()) > -1 ? currency : 'usd'
-    const quotes = await currencyService.getQuotesForTokens(supportedTokens, chainName, quoteCurrency.toLowerCase())
+    const quotes = await priceService.fetchQuotesForTokens(supportedTokens, chainName, currency)
 
-    for (let token of Object.keys(payments)) {
-        const transfers = payments[token]
-        if (!quotes[token]) {
-            logger.warn(`No quotes for ${token} found.`)
-            listOfTransfers[token] = {values: transfers, currentPrice: undefined}
-        } else {
-            listOfTransfers[token] = {
-                values: await currencyService.addFiatValues(transfers, token, chainName, currency, currentPrices[token], quotes[token]),
-                currentPrice: currentPrices[token]
-            }
-        }
-    }
-    const swapsExtended = await currencyService.addFiatValuesToSwaps(swaps, currency, chainName, currentPrices)
+    const listOfTransfers: { [symbol: string]: { values: Transfer[], currentPrice: number } } = addFiatValuesToNestedTransfers(payments, quotes);
+
+    const currentPrices = {};
+    Object.keys(quotes).forEach(token => (currentPrices[token] = quotes[token].quotes.latest))
+    const swapsExtended = addFiatValuesToSwaps(swaps, quotes)
     const result = {currentPrices, swaps: swapsExtended, transfers: listOfTransfers}
     parentPort?.postMessage(result);
 }
+
 processTask(workerData);

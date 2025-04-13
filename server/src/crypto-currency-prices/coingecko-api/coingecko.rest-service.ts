@@ -63,7 +63,6 @@ export class CoingeckoRestService {
         for (let dataPoint of json) {
             result[dataPoint['snapped_at'].substring(0, 10)] = Number(dataPoint['price'])
         }
-        result['latest'] = json[json.length - 1]['price']
         result['timestamp'] = Date.now()
         return result
     }

@@ -26,7 +26,7 @@ export class TokenPriceHistoryService {
         this.sync()
     }
 
-    async getHistoricPrices(symbol: string, chain: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
+    async getHistoricPrices(symbol: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
         symbol = symbol.toLowerCase()
         if (this.synonyms[symbol]) {
             symbol = this.synonyms[symbol]
