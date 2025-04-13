@@ -3,7 +3,7 @@ import { CryptoCurrencyPricesFacade } from "../../crypto-currency-prices/crypto-
 import { CurrencyQuotes } from "../../crypto-currency-prices/model/crypto-currency-quotes";
 import { FiatExchangeRateService } from "../../fiat-currencies/fiat-exchange-rate.service";
 
-export class CombineTokenAndFiatPriceService {
+export class TokenPriceConversionService {
 
     private supportedQuoteCurrencies = ["usd", "eur", "chf"]
 
@@ -22,8 +22,8 @@ export class CombineTokenAndFiatPriceService {
                 },
                 currency: toCurrency
             }
-            Object.keys(multiTokenQuotes[token].quotes).forEach(timestamp => (
-                quotesInTargetCurrency.quotes[timestamp] = multiTokenQuotes[token].quotes[timestamp] * fiatExchangeRates[timestamp][toCurrency]
+            Object.keys(multiTokenQuotes[token].quotes).filter(key => key !== 'timestamp' && key !== 'latest').forEach(timestamp => (
+                quotesInTargetCurrency[token].quotes[timestamp] = multiTokenQuotes[token].quotes[timestamp] * fiatExchangeRates[timestamp][toCurrency.toUpperCase()]
             ))
         })
         return quotesInTargetCurrency
@@ -35,7 +35,7 @@ export class CombineTokenAndFiatPriceService {
         const latestPrices = await this.cryptoCurrencyPricesFacade.fetchCurrentPrices(tokens, chain, currency);
         for (let i = 0; i < tokens.length; i++) {
             try {
-                result[tokens[i]] = await this.cryptoCurrencyPricesFacade.getHistoricPrices(tokens[i], quotesCurrency)
+                result[tokens[i]] = await this.cryptoCurrencyPricesFacade.getHistoricPrices(tokens[i], quotesCurrency as 'usd' | 'chf' | 'eur')
                 result[tokens[i]].quotes.latest = latestPrices[tokens[i]]
             } catch (e) {
                 logger.error("Failed to fetch quotes for token " + tokens[i])

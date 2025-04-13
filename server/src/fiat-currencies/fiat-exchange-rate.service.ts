@@ -7,7 +7,7 @@ import { logger } from "../common/logger/logger";
 const currencyExchangeRatesFileName = __dirname + '/../../res/fiat-currencies/quotes/currency-exchange.rates.json'
 
 export class FiatExchangeRateService {
-    constructor(private exchangeRatesRestService: ExchangeRateRestService) {
+    constructor(private exchangeRateRestService: ExchangeRateRestService) {
     }
 
     async init() {
@@ -41,7 +41,7 @@ export class FiatExchangeRateService {
             let year = new Date().getFullYear() - yearInPast
             results = {
                 ...results,
-                ...(await this.exchangeRatesRestService.fetchTimeSeries(`${year}-01-01`, this.endOfYearOrNow(year)))
+                ...(await this.exchangeRateRestService.fetchTimeSeries(`${year}-01-01`, this.endOfYearOrNow(year)))
             }
         }
         fs.writeFileSync(currencyExchangeRatesFileName, JSON.stringify(results))

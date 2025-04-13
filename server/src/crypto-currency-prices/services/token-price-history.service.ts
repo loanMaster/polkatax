@@ -13,9 +13,7 @@ export class TokenPriceHistoryService {
     private static cachedPrices: { [tokenIdCurrency: string]: Quotes } = {}
     private static timer
 
-    private stati
-
-    constructor(private coingeckoService: CoingeckoRestService) {
+    constructor(private coingeckoRestService: CoingeckoRestService) {
     }
 
     public init() {
@@ -26,7 +24,7 @@ export class TokenPriceHistoryService {
         this.sync()
     }
 
-    async getHistoricPrices(symbol: string, currency: string = 'usd'): Promise<CurrencyQuotes> {
+    async getHistoricPrices(symbol: string, currency: 'usd' | 'chf' | 'eur' = 'usd'): Promise<CurrencyQuotes> {
         symbol = symbol.toLowerCase()
         if (this.synonyms[symbol]) {
             symbol = this.synonyms[symbol]
@@ -139,7 +137,7 @@ export class TokenPriceHistoryService {
         if (!token) {
             throw new Error("Token " + symbol + " not found in coingecko list.")
         }
-        const quotes: Quotes = await this.coingeckoService.fetchHistoricalData(token.id, currency)
+        const quotes: Quotes = await this.coingeckoRestService.fetchHistoricalData(token.id, currency)
         const symbolCurr = symbol + '_' + currency
         this.storeQuotes(symbolCurr, quotes)
         TokenPriceHistoryService.cachedPrices[symbolCurr] = quotes
