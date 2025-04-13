@@ -1,8 +1,8 @@
 import Joi from "joi";
 import {RouteOptions} from "fastify/types/route";
-import {HttpError} from "../error/HttpError";
-import * as substrateChains from "../../res/substrate-chains.json"
-import {runWorker} from "./run-worker";
+import {HttpError} from "../common/error/HttpError";
+import * as substrateChains from "../../res/substrate/substrate-chains.json"
+import { runWorker } from "./workers/run-worker";
 
 export const stakingRewardsEndpoint: RouteOptions = {
     method: 'GET',

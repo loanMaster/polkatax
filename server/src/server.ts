@@ -1,26 +1,22 @@
 import Fastify from 'fastify'
 import path from "path";
-import {logger} from "./logger/logger";
+import {logger} from "./common/logger/logger";
 import dotenv from 'dotenv'
 dotenv.config({ path: __dirname + '/../.env' })
 
 import * as fs from 'fs'
-import {CurrencyExchangeRateService} from "./service/currency-exchange-rate.service";
-import {stakingRewardsEndpoint} from "./endpoints/staking-rewards.endoint";
-import {paymentsEndpoint} from "./endpoints/payments.endpoint";
-import {TokenPriceHistoryService} from "./service/token-price-history.service";
-import {ExchangeRateRestService} from "./exchange-rate-api/exchange-rate.rest-service";
-import {CoingeckoRestService} from "./coingecko-api/coingecko.rest-service";
+import { DIContainer } from './di-container';
+import { stakingRewardsEndpoint } from './endpoints/staking-rewards.endoint';
+import { paymentsEndpoint } from './endpoints/payments.endpoint';
 
 const init = async () => {
-
     try {
-        await new CurrencyExchangeRateService(new ExchangeRateRestService()).init()
+        await DIContainer.resolve('fiatExchangeRateService').init();
     } catch (error) {
         logger.error(error)
     }
 
-    new TokenPriceHistoryService(new CoingeckoRestService()).init()
+    DIContainer.resolve('tokenPriceHistoryService').init()
 
     const fastify = Fastify({
         logger,
@@ -45,9 +41,9 @@ const init = async () => {
     fastify.log.info("Static files are served from folder " + staticFilesFolder)
     await fastify.register(import('@fastify/static'), {
         root: staticFilesFolder
-    })
+    });
 
-    fastify.setErrorHandler( (error, request, reply) => {
+    fastify.setErrorHandler((error, request, reply) => {
         if (error.statusCode) {
             logger.info(`Error: Status ${error.statusCode}, Message: ${error.message}`, error)
             reply.status(error.statusCode).send(error.message)
@@ -58,15 +54,40 @@ const init = async () => {
             }
             reply.status(500).send(error.message)
         }
-    })
+    });
 
-    fastify.route(stakingRewardsEndpoint)
-    fastify.route(paymentsEndpoint)
+    fastify.route(stakingRewardsEndpoint as any)
+    fastify.route(paymentsEndpoint as any)
 
     fastify.setNotFoundHandler((request, reply) => { // TODO: implement better solution
         reply.header('Content-Type', 'text/html')
         reply.send(fs.readFileSync(staticFilesFolder + '/index.html', 'utf-8')).status(200)
     })
+
+    fastify.route({
+        method: 'GET',
+        url: '/',
+        schema: {
+          querystring: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              excitement: { type: 'integer' }
+            }
+          },
+          response: {
+            200: {
+              type: 'object',
+              properties: {
+                hello: { type: 'string' }
+              }
+            }
+          }
+        },
+        handler: function (request, reply) {
+          reply.send({ hello: 'world' })
+        }
+      })
 
     fastify.listen({ port: Number(process.env['PORT'] || 3001) , host: '0.0.0.0' }, (err) => {
         if (err) {

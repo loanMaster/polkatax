@@ -1,6 +1,6 @@
 import {test } from '@jest/globals';
 import { fail } from 'assert';
-import {validateDates} from "../../src/util/validate-dates";
+import { validateDates } from '../../src/common/util/validate-dates';
 
 test('should throw if start date after end date', () => {
     try {

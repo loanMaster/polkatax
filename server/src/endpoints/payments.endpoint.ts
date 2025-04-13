@@ -1,6 +1,6 @@
 import Joi from "joi";
 import {RouteOptions} from "fastify/types/route";
-import {runWorker} from "./run-worker";
+import { runWorker } from "./workers/run-worker";
 
 export const paymentsEndpoint: RouteOptions = {
     method: 'GET',
