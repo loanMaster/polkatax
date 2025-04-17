@@ -6,7 +6,7 @@
       use-input
       v-model="chain"
       :label="chain ? chain.label : 'Token'"
-      :options="filteredTokens"
+      :options="filteredChains"
       option-value="chain"
       option-label="symbol"
       color="teal"
@@ -28,46 +28,54 @@
   </div>
 </template>
 <script setup lang="ts">
-import { tokenList } from '../../../shared-module/const/tokenList';
-import { computed, ref } from 'vue';
-import { Token } from '../../../shared-module/model/token';
+import { computed, onUnmounted, Ref, ref } from 'vue';
+import { useStakingRewardsStore } from '../../store/staking-rewards.store';
+import { Chain } from '../../../shared-module/model/chain';
 
-const tokens = ref(
-  tokenList
-    .filter((t) => t.stakingRewards === undefined || t.stakingRewards)
-    .sort((a, b) => (a.chain > b.chain ? 1 : -1))
-);
-const filteredTokens = ref(tokens.value);
-
+const chains: Ref<Chain[]> = ref([]);
+const filteredChains: Ref<Chain[]> = ref([]);
 const emits = defineEmits(['update:modelValue']);
+
+const store = useStakingRewardsStore();
+
+const subscription = store.chainList.subscribe((chains) => {
+  chains.value = chains
+    .sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1))
+    .map((c: Chain) => c.token);
+  filteredChains.value = chains.value;
+});
+
+onUnmounted(() => {
+  subscription.unsubscribe();
+});
 
 const props = defineProps({
   modelValue: String,
 });
 
-function onNewValueSelected(value: Token) {
-  emits('update:modelValue', value ? value.chain : '');
+function onNewValueSelected(value: Chain) {
+  emits('update:modelValue', value);
 }
 
 function filterFn(val: string, update: (cb: () => void) => void) {
   if (val.trim() === '') {
     update(() => {
-      filteredTokens.value = tokens.value;
+      filteredChains.value = chains.value;
     });
     return;
   }
 
   update(() => {
     const needle = val.toLowerCase();
-    filteredTokens.value = tokens.value.filter(
-      (v: Token) =>
-        v.symbol.toLowerCase().indexOf(needle) > -1 ||
-        v.label.toLowerCase().indexOf(needle) > -1
+    filteredChains.value = chains.value.filter(
+      (v: Chain) =>
+        v.token.toLowerCase().indexOf(needle) > -1 ||
+        v.token.toLowerCase().indexOf(needle) > -1
     );
   });
 }
 
 const chain = computed(() => {
-  return tokenList.find((t) => t.chain === props.modelValue);
+  return chains.value.find((c) => c.domain === props.modelValue);
 });
 </script>

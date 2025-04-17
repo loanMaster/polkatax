@@ -1,4 +1,4 @@
 export interface NominationPool {
-    metadata: string;
-    pool_id: number;
-  }
+  metadata: string;
+  pool_id: number;
+}

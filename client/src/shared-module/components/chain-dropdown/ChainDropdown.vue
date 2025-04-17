@@ -26,8 +26,7 @@
 </template>
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { chainList } from 'src/shared-module/const/chainList';
-import { Chain } from 'app/client/src/shared-module/model/chain';
+import { Chain } from '../../../shared-module/model/chain';
 
 const chains = ref(
   chainList.sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1))
