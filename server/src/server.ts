@@ -43,7 +43,7 @@ const init = async () => {
         root: staticFilesFolder
     });
 
-    fastify.get('/res/subscan-chains', function (req, reply) {
+    fastify.get('/api/res/subscan-chains', function (req, reply) {
       reply.sendFile('subscan-chains.json', path.join(__dirname, '../res/gen')) 
     })
 

@@ -50,7 +50,7 @@ import { computed, onMounted, ref, Ref } from 'vue';
 import {
   NominationPool,
   NominationPoolService,
-} from '../../service/nomination-pool.service';
+} from '../../service/fetch-nomination-pools';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
 
 const rewardsStore = useStakingRewardsStore();

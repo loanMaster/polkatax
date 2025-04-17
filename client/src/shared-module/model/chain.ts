@@ -1,4 +1,5 @@
 export interface Chain {
-  chain: string;
+  domain: string;
   label: string;
+  token: string;
 }

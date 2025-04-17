@@ -1,89 +1,70 @@
 import { defineStore } from 'pinia';
 import { StakingRewardsService } from '../service/staking-rewards.service';
-import { Reward, RewardDto, Rewards } from '../model/rewards';
+import { Rewards } from '../model/rewards';
 import { TimeFrames } from '../../shared-module/model/time-frames';
-import { formatDate } from '../../shared-module/util/date-utils';
 import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
+import{ BehaviorSubject, firstValueFrom, from, map, merge, Observable, of, ReplaySubject, switchMap } from 'rxjs' 
+import { Chain } from '../../shared-module/model/chain';
+import { fetchSubscanChains } from '../../shared-module/service/fetch-subscan-chains';
+import { fetchNominationPools } from '../service/fetch-nomination-pools';
+import { calculateRewardSummary } from './helper/calculate-reward-summary';
+import { groupRewardsByDay } from './helper/group-rewards-by-day';
+import { addIsoDateAndCurrentValue } from './helper/add-iso-date-and-current-value';
+import { NominationPool } from '../model/nomination-pool';
+import { CompletedRequest, DataRequest, PendingRequest } from '../../shared-module/model/data-request';
+import { wrapDataRequest } from '../../shared-module/service/wrap-data-request';
 
-function groupRewardsByDay(rewards: Reward[]) {
-  const groupedByDay: {
-    [key: string]: { amount: number; value: number; valueNow: number };
-  } = {};
-  rewards.forEach((r: Reward) => {
-    if (!groupedByDay[r.isoDate]) {
-      groupedByDay[r.isoDate] = {
-        amount: 0,
-        value: 0,
-        valueNow: 0,
-      };
-    }
-    groupedByDay[r.isoDate].amount += r.amount;
-    groupedByDay[r.isoDate].value += r.value;
-    groupedByDay[r.isoDate].valueNow += r.valueNow || 0;
-  });
-  return groupedByDay;
-}
+const chainList = from(fetchSubscanChains())
+const chain = new BehaviorSubject<Chain>({ domain: 'polkadot', label: 'Polkadot relay chain', token: 'DOT' });
+const nominationPools: Observable<DataRequest<NominationPool[]>>  = chain.pipe(switchMap((chain: Chain) => 
+  merge(of(new PendingRequest<NominationPool[]>([])), from(fetchNominationPools(chain.domain)).pipe(wrapDataRequest()))
+));
+const rewards = new ReplaySubject<DataRequest<Rewards>>(1);
+const sortRewards = (rewards: Rewards) => rewards.values.sort((a, b) => (a.block - b.block));
 
 export const useStakingRewardsStore = defineStore('rewards', {
   state: () => {
     return {
-      rewards: undefined as Rewards | undefined,
+      rewards: rewards.asObservable(),
       nominationPoolId: 0,
-      chain: '',
       currency: '',
       address: '',
       timeFrame: TimeFrames.currentMonth as string,
+      chainList,
+      chain: chain.asObservable(),
+      nominationPools
     };
-  },
-  getters: {
-    token(): string {
-      return tokenList.find((t) => t.chain === this.chain)?.symbol || '';
-    },
   },
   actions: {
     async fetchRewards() {
       const startDate = getStartDate(this.timeFrame);
       const endDate = getEndDate(this.timeFrame);
+      const chain = (await firstValueFrom(this.chain)).domain
       const rewardsDto = await new StakingRewardsService().fetchStakingRewards(
-        this.chain,
+        chain,
         this.address.trim(),
         this.currency,
         this.nominationPoolId,
         startDate,
         endDate
       );
-      this.rewards = {
-        values: [],
-        summary: {
-          amount: 0,
-          value: 0,
-          valueNow: 0,
-        },
+      const valuesWithIsoDate = addIsoDateAndCurrentValue(rewardsDto.values, rewardsDto.currentPrice);
+      const result: Rewards = {
+        values: valuesWithIsoDate,
+        summary: calculateRewardSummary(valuesWithIsoDate),
         nominationPoolId: this.nominationPoolId,
         currentPrice: rewardsDto.currentPrice,
         timeFrame: this.timeFrame,
         startDate,
         endDate,
-        chain: this.chain,
+        chain,
         token: rewardsDto.token,
         currency: this.currency,
         address: this.address,
-        dailyValues: {},
+        dailyValues: groupRewardsByDay(valuesWithIsoDate),
       };
-      this.rewards!.values = rewardsDto.values.map((v: RewardDto) => {
-        const isoDate = formatDate(v.date * 1000);
-        const reward = {
-          ...v,
-          isoDate: isoDate,
-          valueNow: v.amount * rewardsDto.currentPrice,
-        };
-        this.rewards!.summary.amount += v.amount;
-        this.rewards!.summary.value += v.value;
-        this.rewards!.summary.valueNow += reward.valueNow;
-        return reward as Reward;
-      });
-      this.rewards!.values.sort((a, b) => (a > b ? 1 : -1));
-      this.rewards!.dailyValues = groupRewardsByDay(this.rewards!.values);
+      sortRewards(result);
+      rewards.next(new CompletedRequest(result));
     },
   },
 });

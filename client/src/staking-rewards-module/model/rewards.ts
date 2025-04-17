@@ -1,6 +1,7 @@
 export interface Reward extends RewardDto {
   date: number;
-  valueNow?: number;
+  valueNow: number;
+  isoDate: string;
 }
 
 export interface RewardSummary {
