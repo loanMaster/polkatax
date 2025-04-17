@@ -4,7 +4,7 @@ import { ExchangeRates } from "./model/exchange-rates";
 import { formatDate } from "../common/util/format-date";
 import { logger } from "../common/logger/logger";
 
-const currencyExchangeRatesFileName = __dirname + '/../../res/fiat-currencies/quotes/currency-exchange.rates.json'
+const currencyExchangeRatesFileName = __dirname + '/../../res/gen/fiat-currencies-quotes/currency-exchange.rates.json'
 
 export class FiatExchangeRateService {
     constructor(private exchangeRateRestService: ExchangeRateRestService) {

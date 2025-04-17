@@ -40,4 +40,5 @@ export interface RewardDto {
 export interface RewardsDto {
   values: RewardDto[];
   currentPrice: number;
+  token: string;
 }

@@ -19,19 +19,20 @@ export class StakingRewardsWithFiatService {
         let { chain, address, poolId, startDay, endDay } = stakingRewardsRequest
         const isEvmAddress = address.length <= 42
         if (isEvmAddress) {
-            address = await this.subscanService.mapToSubstrateAccount(chain.name, address)
+            address = await this.subscanService.mapToSubstrateAccount(chain.domain, address)
         }
         return poolId > 0 ?
-            this.stakingRewardsService.fetchNominationPoolRewards(chain.name.toLowerCase(), address, poolId, startDay.getTime(), endDay ? endDay.getTime() : undefined) :
-            this.stakingRewardsService.fetchStakingRewards(chain.name.toLowerCase(), address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
+            this.stakingRewardsService.fetchNominationPoolRewards(chain.domain, address, poolId, startDay.getTime(), endDay ? endDay.getTime() : undefined) :
+            this.stakingRewardsService.fetchStakingRewards(chain.domain, address, startDay.getTime(), endDay ? endDay.getTime() : undefined)
     }
     
     async fetchStakingRewards(stakingRewardsRequest: StakingRewardsRequest): Promise<StakingRewardsResponse> {
         let { chain, currency } = stakingRewardsRequest
-        const quotes = await this.fetchQuotesForToken(chain.token, chain.name, currency)
+        const quotes = await this.fetchQuotesForToken(chain.token, chain.domain, currency)
         return {
             values: addFiatValuesToTransfers(await this.fetchRawStakingRewards(stakingRewardsRequest), quotes),
-            currentPrice: quotes.quotes?.latest ?? 0
+            currentPrice: quotes.quotes?.latest ?? 0,
+            token: chain.token
         }
     }
 }

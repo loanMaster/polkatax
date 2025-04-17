@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "serve": "ts-node src/server.ts",
+    "generate-subscan-chain-list": "ts-node src/generate-subscan-chain-list.ts",
     "test-watch": "jest --watch --verbose false",
     "test": "jest"
   },

@@ -43,6 +43,10 @@ const init = async () => {
         root: staticFilesFolder
     });
 
+    fastify.get('/res/subscan-chains', function (req, reply) {
+      reply.sendFile('subscan-chains.json', path.join(__dirname, '../res/gen')) 
+    })
+
     fastify.setErrorHandler((error, request, reply) => {
         if (error.statusCode) {
             logger.info(`Error: Status ${error.statusCode}, Message: ${error.message}`, error)
@@ -63,31 +67,6 @@ const init = async () => {
         reply.header('Content-Type', 'text/html')
         reply.send(fs.readFileSync(staticFilesFolder + '/index.html', 'utf-8')).status(200)
     })
-
-    fastify.route({
-        method: 'GET',
-        url: '/',
-        schema: {
-          querystring: {
-            type: 'object',
-            properties: {
-              name: { type: 'string' },
-              excitement: { type: 'integer' }
-            }
-          },
-          response: {
-            200: {
-              type: 'object',
-              properties: {
-                hello: { type: 'string' }
-              }
-            }
-          }
-        },
-        handler: function (request, reply) {
-          reply.send({ hello: 'world' })
-        }
-      })
 
     fastify.listen({ port: Number(process.env['PORT'] || 3001) , host: '0.0.0.0' }, (err) => {
         if (err) {

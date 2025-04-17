@@ -2,9 +2,8 @@ import { defineStore } from 'pinia';
 import { StakingRewardsService } from '../service/staking-rewards.service';
 import { Reward, RewardDto, Rewards } from '../model/rewards';
 import { TimeFrames } from '../../shared-module/model/time-frames';
-import { tokenList } from '../../shared-module/const/tokenList';
-import { formatDate } from 'src/shared-module/util/date-utils';
-import { getEndDate, getStartDate } from 'src/shared-module/util/date-utils';
+import { formatDate } from '../../shared-module/util/date-utils';
+import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
 
 function groupRewardsByDay(rewards: Reward[]) {
   const groupedByDay: {
@@ -66,7 +65,7 @@ export const useStakingRewardsStore = defineStore('rewards', {
         startDate,
         endDate,
         chain: this.chain,
-        token: tokenList.find((t) => t.chain === this.chain)!.symbol,
+        token: rewardsDto.token,
         currency: this.currency,
         address: this.address,
         dailyValues: {},

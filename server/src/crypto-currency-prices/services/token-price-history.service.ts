@@ -7,7 +7,7 @@ import { CurrencyQuotes, Quotes } from "../model/crypto-currency-quotes";
 
 const MAX_AGE = 4 * 60 * 60 * 1000
 
-const data_folder = __dirname + '/../../../res/crypto-currencies/quotes/'
+const data_folder = __dirname + '/../../../res/gen/crypto-currencies-quotes/'
 
 export class TokenPriceHistoryService {
     private static cachedPrices: { [tokenIdCurrency: string]: Quotes } = {}

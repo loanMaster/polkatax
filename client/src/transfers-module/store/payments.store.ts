@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { tokenList } from '../../shared-module/const/tokenList';
 import { PaymentsService } from '../service/payments.service';
 import {
   formatDate,

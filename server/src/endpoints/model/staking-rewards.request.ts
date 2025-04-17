@@ -1,8 +1,8 @@
 export interface StakingRewardsRequest {
     chain: {
-        name: string,
-        token:  string,
-        coingeckoId: string
+        domain: string,
+        label:  string,
+        token: string
     },
     address: string;
     poolId?: number;

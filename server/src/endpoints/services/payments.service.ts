@@ -1,4 +1,4 @@
-import { evmChainConfigs, fetchSwapsAndPayments } from "../../blockchain/evm/fetch-evm-transfers"
+import { fetchSwapsAndPayments } from "../../blockchain/evm/fetch-evm-transfers"
 import { DotTransferService } from "../../blockchain/substrate/services/dot-transfer.service"
 import { HttpError } from "../../common/error/HttpError"
 import { Swap } from "../../common/model/swap"
@@ -7,10 +7,11 @@ import { coingeckoSupportsToken } from "../../common/util/coingecko-supports-tok
 import { validateDates } from "../../common/util/validate-dates"
 import { addFiatValuesToNestedTransfers } from "../helper/addFiatValuesToNestedTransfers"
 import { addFiatValuesToSwaps } from "../helper/addFiatValuesToSwaps"
-import * as substrateChains from "../../../res/substrate/substrate-chains.json";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { TokenPriceConversionService } from "./token-price-conversion.service"
 import { PaymentsRequest } from "../model/payments.request"
 import {PaymentsResponse} from "../model/payments.response";
+import { evmChainConfigs } from "../../blockchain/evm/evm-chains.config"
 
 export class PaymentsService {
     constructor(private dotTransferService: DotTransferService, 
@@ -34,7 +35,7 @@ export class PaymentsService {
     
         validateDates(startDay, endDay)
         endDay = endDay && endDay < new Date() ? endDay : new Date()
-        if (!evmChainConfigs[chainName.toLocaleLowerCase()] && !substrateChains.chains.find(p => p.name === chainName.toLowerCase())) {
+        if (!evmChainConfigs[chainName.toLocaleLowerCase()] && !subscanChains.chains.find(p => p.label.toLowerCase() === chainName.toLowerCase())) {
             throw new HttpError(400, "Chain " + chainName + " not found")
         }
     
