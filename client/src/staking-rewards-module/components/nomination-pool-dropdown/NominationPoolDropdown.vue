@@ -52,34 +52,33 @@ import { NominationPool } from '../../model/nomination-pool';
 
 const rewardsStore = useStakingRewardsStore();
 const nominationPools: Ref<NominationPool[]> = ref([]);
-const chain: Ref<string | undefined> = ref(undefined);
 const model: Ref<NominationPool | undefined> = ref(undefined);
 const showLoading = ref(false);
 const nominationPoolsDisabled: Ref<boolean> = ref(false);
+const filteredPools = ref(nominationPools.value);
 
 const chainSubscription = rewardsStore.chain.subscribe((c) => {
-  chain.value = c.domain;
   nominationPoolsDisabled.value =
-    chain.value !== 'kusama' && chain.value !== 'polkadot';
+    !c || (c.domain !== 'kusama' && c.domain !== 'polkadot');
 });
 
 const nominationPoolSubscription = rewardsStore.nominationPools.subscribe(
   (dataRequest) => {
     if (!dataRequest.pending) {
       showLoading.value = false;
-      nominationPools.value = dataRequest.data!;
     } else {
       showLoading.value = true;
     }
+    nominationPools.value = dataRequest.data || [];
+    filteredPools.value = nominationPools.value;
+    model.value = undefined;
   }
 );
 
 onUnmounted(() => {
   chainSubscription.unsubscribe();
-  chainSubscription.unsubscribe();
+  nominationPoolSubscription.unsubscribe();
 });
-
-const filteredPools = ref(nominationPools.value);
 
 function onNewValueSelected(value: NominationPool | undefined) {
   rewardsStore.nominationPoolId = value?.pool_id || 0;

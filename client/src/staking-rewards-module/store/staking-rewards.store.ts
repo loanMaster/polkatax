@@ -5,9 +5,9 @@ import { TimeFrames } from '../../shared-module/model/time-frames';
 import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
 import {
   BehaviorSubject,
+  filter,
   firstValueFrom,
   from,
-  map,
   merge,
   Observable,
   of,
@@ -29,12 +29,13 @@ import {
 import { wrapDataRequest } from '../../shared-module/service/wrap-data-request';
 
 const chainList = from(fetchSubscanChains());
-const chain = new BehaviorSubject<Chain>({
+const chain: BehaviorSubject<Chain>  = new BehaviorSubject<Chain>({
   domain: 'polkadot',
-  label: 'Polkadot relay chain',
+  label: 'Polkadot',
   token: 'DOT',
 });
 const nominationPools: Observable<DataRequest<NominationPool[]>> = chain.pipe(
+  filter(c => !!c),
   switchMap((chain: Chain) =>
     merge(
       of(new PendingRequest<NominationPool[]>([])),
@@ -60,7 +61,12 @@ export const useStakingRewardsStore = defineStore('rewards', {
     };
   },
   actions: {
+    selectChain(newChain: Chain) {
+      chain.next(newChain);
+    },
     async fetchRewards() {
+      try {
+        rewards.next(new PendingRequest(undefined));
       const startDate = getStartDate(this.timeFrame);
       const endDate = getEndDate(this.timeFrame);
       const chain = (await firstValueFrom(this.chain)).domain;
@@ -92,6 +98,9 @@ export const useStakingRewardsStore = defineStore('rewards', {
       };
       sortRewards(result);
       rewards.next(new CompletedRequest(result));
+    } catch (error) {
+      rewards.next({ pending: false, error, data: undefined });
+    }
     },
   },
 });

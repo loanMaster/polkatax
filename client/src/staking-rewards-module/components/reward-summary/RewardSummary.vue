@@ -1,6 +1,6 @@
 <template>
   <div class="text-h6">Summary of staking rewards ({{ timeFrame }})</div>
-  <table class="q-my-lg q-mx-auto">
+  <table class="q-my-lg q-mx-auto" v-if="rewards">
     <tr>
       <td class="text-left q-pa-sm">Total rewards:</td>
       <td class="text-right q-pa-sm">
@@ -32,7 +32,7 @@
       </td>
     </tr>
   </table>
-  <div>
+  <div v-if="rewards">
     Verify your rewards here:
     <a
       :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`"
@@ -75,7 +75,7 @@ const averageDailyRewards = computed(() => {
 });
 
 const timeFrame = computed(() => {
-  return rewardsStore.rewards ? formatTimeFrame(rewards.value!.timeFrame) : '';
+  return rewards.value ? formatTimeFrame(rewards.value!.timeFrame) : '';
 });
 
 function formatCurrency(value: number) {

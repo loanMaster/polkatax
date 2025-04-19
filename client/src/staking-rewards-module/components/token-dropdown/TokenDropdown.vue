@@ -4,11 +4,11 @@
       filled
       @filter="filterFn"
       use-input
-      v-model="chain"
-      :label="chain ? chain.label : 'Token'"
+      :modelValue="props.modelValue"
+      :label="props.modelValue ? props.modelValue.label : 'Blockchain'"
       :options="filteredChains"
       option-value="chain"
-      option-label="symbol"
+      option-label="token"
       color="teal"
       @update:model-value="onNewValueSelected"
       clearable
@@ -18,9 +18,9 @@
         <q-item v-bind="scope.itemProps">
           <q-item-section>
             <q-item-label
-              >{{ scope.opt.label || scope.opt.chain }}
+              >{{ scope.opt.label || scope.opt.domain }}
             </q-item-label>
-            <q-item-label caption>{{ scope.opt.symbol }}</q-item-label>
+            <q-item-label caption>{{ scope.opt.token }}</q-item-label>
           </q-item-section>
         </q-item>
       </template>
@@ -28,29 +28,15 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
-import { useStakingRewardsStore } from '../../store/staking-rewards.store';
+import { PropType, Ref, ref } from 'vue';
 import { Chain } from '../../../shared-module/model/chain';
 
-const chains: Ref<Chain[]> = ref([]);
 const filteredChains: Ref<Chain[]> = ref([]);
 const emits = defineEmits(['update:modelValue']);
 
-const store = useStakingRewardsStore();
-
-const subscription = store.chainList.subscribe((chains) => {
-  chains.value = chains
-    .sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1))
-    .map((c: Chain) => c.token);
-  filteredChains.value = chains.value;
-});
-
-onUnmounted(() => {
-  subscription.unsubscribe();
-});
-
 const props = defineProps({
-  modelValue: String,
+  modelValue: Object as PropType<Chain>,
+  chains: Array as PropType<Chain[]>,
 });
 
 function onNewValueSelected(value: Chain) {
@@ -60,22 +46,19 @@ function onNewValueSelected(value: Chain) {
 function filterFn(val: string, update: (cb: () => void) => void) {
   if (val.trim() === '') {
     update(() => {
-      filteredChains.value = chains.value;
+      filteredChains.value = props.chains || [];
     });
     return;
   }
 
   update(() => {
     const needle = val.toLowerCase();
-    filteredChains.value = chains.value.filter(
+    filteredChains.value = (props.chains || []).filter(
       (v: Chain) =>
-        v.token.toLowerCase().indexOf(needle) > -1 ||
+        v.label.toLowerCase().indexOf(needle) > -1 ||
+        v.domain.toLowerCase().indexOf(needle) > -1 ||
         v.token.toLowerCase().indexOf(needle) > -1
     );
   });
 }
-
-const chain = computed(() => {
-  return chains.value.find((c) => c.domain === props.modelValue);
-});
 </script>

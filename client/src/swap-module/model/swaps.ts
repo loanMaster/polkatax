@@ -2,7 +2,7 @@ export interface SwappedTokens {
   [token: string]: {
     amount: number;
     value: number;
-    valueNow: number;
+    valueNow: number | undefined;
     price: number;
     type: 'sell' | 'buy';
   };

@@ -1,4 +1,4 @@
-import { PaymentsListDto } from 'src/transfers-module/model/payments';
+import { PaymentsListDto } from '../../transfers-module/model/payments';
 
 export class PaymentsService {
   async fetchTokenRewards(
