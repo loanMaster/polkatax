@@ -19,9 +19,9 @@ export const getFirstDayOfYear = () => {
 };
 
 export const getStartDate = (timeFrameKey: string) => {
-  const timeFrame = (TimeFrames[timeFrameKey])
+  const timeFrame = TimeFrames[timeFrameKey];
   const temp = getStartOfCurrentDay();
-  if (typeof(timeFrame) === 'string') {
+  if (typeof timeFrame === 'string') {
     switch (timeFrame) {
       case TimeFrames['This Month']:
         temp.setDate(1);
@@ -40,17 +40,17 @@ export const getStartDate = (timeFrameKey: string) => {
         temp.setDate(1);
         temp.setMonth(temp.getMonth() - 1);
         break;
-      }
-    } else {
-      temp.setDate(1);
-      temp.setMonth(0);
-      temp.setFullYear(Number(timeFrame));
+    }
+  } else {
+    temp.setDate(1);
+    temp.setMonth(0);
+    temp.setFullYear(Number(timeFrame));
   }
   return temp.getTime();
 };
 
 export const getEndDate = (timeFrameKey: string) => {
-  const timeFrame = (TimeFrames[timeFrameKey])
+  const timeFrame = TimeFrames[timeFrameKey];
   const temp = getStartOfCurrentDay();
   switch (timeFrame) {
     case TimeFrames['This Month']:

@@ -34,10 +34,9 @@ const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
   token: 'DOT',
 });
 const chainList$ = from(fetchSubscanChains()).pipe(
-  map((chainList) => [...chainList.chains, ...ethChains]), map(list => {
-    return list.sort((a: Chain, b: Chain) =>
-      a.label > b.label ? 1 : -1
-    );
+  map((chainList) => [...chainList.chains, ...ethChains]),
+  map((list) => {
+    return list.sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1));
   })
 );
 const swaps$ = new ReplaySubject<DataRequest<SwapList>>(1);
@@ -106,30 +105,31 @@ export const usePaymentsStore = defineStore('payments', {
     selectToken(token: string) {
       selectedToken$.next(token);
     },
-    setSwapsFilter(newFilter: { twoAssets: boolean, multipleAssets: boolean }) {
-      swapTypeFilter$.next(newFilter)
+    setSwapsFilter(newFilter: { twoAssets: boolean; multipleAssets: boolean }) {
+      swapTypeFilter$.next(newFilter);
     },
     async toggleAllVisibleSwapTokens() {
-      const swapTokens = await firstValueFrom(visibleSwapTokens$)
-      const allActive = swapTokens.filter(t => t.value).length > 0
-      visibleSwapTokens$.next(swapTokens.map(t => ({ ...t, value: !allActive })))
+      const swapTokens = await firstValueFrom(visibleSwapTokens$);
+      const allActive = swapTokens.filter((t) => t.value).length > 0;
+      visibleSwapTokens$.next(
+        swapTokens.map((t) => ({ ...t, value: !allActive }))
+      );
     },
     async updateSwapAssetVisibility(token: string, visible: boolean) {
-      const swapTokens = await firstValueFrom(visibleSwapTokens$)
-      const newTokens = swapTokens.map(t => {
+      const swapTokens = await firstValueFrom(visibleSwapTokens$);
+      const newTokens = swapTokens.map((t) => {
         if (t.name === token) {
           return {
             name: token,
-            value: visible
-          }
-         } else {
-            return {
-              ...t
-            }
-          }
+            value: visible,
+          };
+        } else {
+          return {
+            ...t,
+          };
         }
-      )
-      visibleSwapTokens$.next(newTokens)
+      });
+      visibleSwapTokens$.next(newTokens);
     },
     async fetchTransfers() {
       swaps$.next({ data: undefined, pending: true });

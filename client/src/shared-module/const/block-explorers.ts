@@ -1,4 +1,4 @@
-export const blockExplorers: {[key: string]: string} = {
+export const blockExplorers: { [key: string]: string } = {
   etherum: 'https://etherscan.io/tx/',
   'arbitrum-one': 'https://arbiscan.io/tx/',
   polygon: 'https://polygonscan.com/tx/',

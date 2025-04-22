@@ -8,7 +8,7 @@
   </div>
 
   <div class="justify-around items-center column" v-if="paymentsCurrentToken">
-    <payments-summary/>
+    <payments-summary />
   </div>
 
   <div class="justify-around items-center column" v-if="paymentsCurrentToken">

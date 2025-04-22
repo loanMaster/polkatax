@@ -107,9 +107,8 @@ const chainList: Ref<Chain[]> = ref([]);
 const selectedChain: Ref<Chain | undefined> = ref(undefined);
 store.chain$.pipe(take(1)).subscribe((c) => (selectedChain.value = c));
 
-
-const chainSubscription = store.chainList$.subscribe(chains => {
-  chainList.value = chains
+const chainSubscription = store.chainList$.subscribe((chains) => {
+  chainList.value = chains;
 });
 
 const paymentSubscription = store.paymentList$.subscribe(

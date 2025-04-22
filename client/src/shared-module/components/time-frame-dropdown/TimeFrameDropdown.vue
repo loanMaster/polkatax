@@ -29,7 +29,7 @@ const props = defineProps({
 });
 
 function onListItemClick(timeFrame: string | number) {
-  console.log(String(timeFrame))
+  console.log(String(timeFrame));
   emits('update:modelValue', timeFrame);
 }
 

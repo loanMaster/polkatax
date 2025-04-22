@@ -33,7 +33,11 @@
         label="All"
       />
       <div v-for="token in visibleSwapTokens" v-bind:key="token">
-        <q-checkbox :model-value="token.value" :label="token.name.toUpperCase()" @update:model-value="(value) => toggleOne(token.name, value)"/>
+        <q-checkbox
+          :model-value="token.value"
+          :label="token.name.toUpperCase()"
+          @update:model-value="(value) => toggleOne(token.name, value)"
+        />
       </div>
     </div>
   </div>
@@ -59,7 +63,7 @@ const visibleSwapTokensSub = store.visibleSwapTokens$.subscribe(
 );
 
 function toggleOne(token: string, visible: boolean) {
-  store.updateSwapAssetVisibility(token, visible)
+  store.updateSwapAssetVisibility(token, visible);
 }
 
 const filterSub = store.swapTypeFilter$.subscribe((filter) => {
@@ -72,11 +76,17 @@ onUnmounted(() => {
 });
 
 function toggleTwoAssets(event: boolean) {
-  store.setSwapsFilter({ twoAssets: event, multipleAssets: swapTypeFilter.value?.multipleAssets || false })
+  store.setSwapsFilter({
+    twoAssets: event,
+    multipleAssets: swapTypeFilter.value?.multipleAssets || false,
+  });
 }
 
 function toggleMultipleAssets(event: boolean) {
-  store.setSwapsFilter({ twoAssets: swapTypeFilter.value?.twoAssets || false, multipleAssets: event })
+  store.setSwapsFilter({
+    twoAssets: swapTypeFilter.value?.twoAssets || false,
+    multipleAssets: event,
+  });
 }
 
 const all = computed(() => {
