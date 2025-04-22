@@ -7,7 +7,7 @@ export interface TokenPayment extends TransferDto {
 
 export interface TokenPaymentsData {
   payments: TokenPayment[];
-  currentPrice: number;
+  currentPrice?: number;
   summary?: TokenPaymentsSummary;
 }
 

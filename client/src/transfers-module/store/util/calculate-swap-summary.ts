@@ -9,49 +9,39 @@ export const calculateSwapSummary = (
   swapList: SwapList | undefined,
   filteredSwaps: Swap[]
 ): TradingSummary[] => {
-  if (!swapList) {
-    return [];
-  }
-  const tradingSummary: any = {};
-  filteredSwaps.forEach((swap: Swap) => {
-    Object.keys(swap.tokens).forEach((token) => {
-      const tokenSwapInfo = swap.tokens[token];
-      tradingSummary[token] = tradingSummary[token] || {
-        sold: { amount: 0, valueNow: 0, value: 0 },
-        bought: { amount: 0, valueNow: 0, value: 0 },
-        total: { amount: 0, valueNow: 0, value: 0 },
+  if (!swapList) return [];
+
+  const summaryMap: Record<string, TradingSummary> = {};
+
+  for (const swap of filteredSwaps) {
+    for (const [token, tokenInfo] of Object.entries(swap.tokens)) {
+      const type = tokenInfo.type === 'sell' ? 'sold' : 'bought';
+      const current = summaryMap[token] ?? {
+        token,
+        priceNow: swapList.currentPrices[token],
+        sold: { amount: 0, value: 0, valueNow: 0 },
+        bought: { amount: 0, value: 0, valueNow: 0 },
+        total: { amount: 0, value: 0, valueNow: 0 },
       };
-      tradingSummary[token].token = token;
-      tradingSummary[token].priceNow = swapList.currentPrices[token];
-      const property = tokenSwapInfo.type === 'sell' ? 'sold' : 'bought';
-      tradingSummary[token][property].amount += tokenSwapInfo.amount;
-      tradingSummary[token][property].value = sumOrNaN(
-        tradingSummary[token][property].value,
-        tokenSwapInfo.value
+
+      current[type].amount += tokenInfo.amount;
+      current[type].value = sumOrNaN(current[type].value, tokenInfo.value);
+      current[type].valueNow = sumOrNaN(
+        current[type].valueNow,
+        tokenInfo.valueNow
       );
-      tradingSummary[token][property].valueNow = sumOrNaN(
-        tradingSummary[token][property].valueNow,
-        tokenSwapInfo.valueNow
-      );
-    });
-  });
-  Object.keys(tradingSummary).forEach((token) => {
-    tradingSummary[token].total.amount +=
-      tradingSummary[token].bought.amount - tradingSummary[token].sold.amount;
-    tradingSummary[token].total.value = sumOrNaN(
-      tradingSummary[token].total.value,
-      tradingSummary[token].bought.value,
-      -tradingSummary[token].sold.value
+
+      summaryMap[token] = current;
+    }
+  }
+
+  return Object.values(summaryMap).map((summary) => {
+    summary.total.amount = summary.bought.amount - summary.sold.amount;
+    summary.total.value = sumOrNaN(summary.bought.value, -summary.sold.value!);
+    summary.total.valueNow = sumOrNaN(
+      summary.bought.valueNow,
+      -summary.sold.valueNow!
     );
-    tradingSummary[token].total.valueNow = sumOrNaN(
-      tradingSummary[token].total.valueNow,
-      tradingSummary[token].bought.valueNow,
-      -tradingSummary[token].sold.valueNow
-    );
+    return summary;
   });
-  const swapSummary: TradingSummary[] = [];
-  Object.keys(tradingSummary).forEach((token) => {
-    swapSummary.push(tradingSummary[token]);
-  });
-  return swapSummary;
 };

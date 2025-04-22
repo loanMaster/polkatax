@@ -159,7 +159,7 @@ export const usePaymentsStore = defineStore('payments', {
 
       const paymentList: PaymentPortfolio = {
         ...metadata,
-        tokens: addCurrentValueAndSummaryToTransfers(transfers, currentPrices),
+        tokens: addCurrentValueAndSummaryToTransfers(transfers),
       };
 
       const selectedToken = Object.keys(paymentList.tokens).sort((a, b) =>

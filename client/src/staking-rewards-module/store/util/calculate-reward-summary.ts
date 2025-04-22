@@ -1,15 +1,20 @@
 import { Reward, RewardSummary } from '../../model/rewards';
 
 export const calculateRewardSummary = (rewards: Reward[]): RewardSummary => {
-  const summary: RewardSummary = {
-    amount: 0,
-    value: 0,
-    valueNow: 0,
-  };
-  rewards.forEach((reward: Reward) => {
-    summary.amount += reward.amount;
-    summary.value += reward.value;
-    summary.valueNow += reward.valueNow!;
-  });
-  return summary;
+  return rewards.reduce<RewardSummary>(
+    (acc, reward) => {
+      return {
+        amount: acc.amount + reward.amount,
+        value:
+          acc.value === undefined || reward.value === undefined
+            ? undefined
+            : acc.value + reward.value,
+        valueNow:
+          acc.valueNow === undefined || reward.valueNow === undefined
+            ? undefined
+            : acc.valueNow + reward.valueNow,
+      };
+    },
+    { amount: 0, value: 0, valueNow: 0 }
+  );
 };

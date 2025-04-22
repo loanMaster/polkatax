@@ -3,18 +3,16 @@ import { TokenPaymentsData } from '../../model/payments';
 import { TransferDto } from '../../model/payments-response.dto';
 import { calculatePaymentsSummary } from './calculate-payments-summary';
 
-export const addCurrentValueAndSummaryToTransfers = (
-  transfers: {
-    [symbol: string]: { values: TransferDto[]; currentPrice: number };
-  },
-  currentPrices: { [key: string]: number }
-) => {
+export const addCurrentValueAndSummaryToTransfers = (transfers: {
+  [symbol: string]: { values: TransferDto[]; currentPrice?: number };
+}) => {
   const result: { [key: string]: TokenPaymentsData } = {};
   for (const token of Object.keys(transfers)) {
     const paymentsForToken = transfers[token].values.map((v: TransferDto) => {
-      const valueNow = isNaN(v.amount * currentPrices[token])
-        ? undefined
-        : v.amount * currentPrices[token];
+      const valueNow =
+        transfers[token].currentPrice !== undefined
+          ? v.amount * transfers[token].currentPrice
+          : undefined;
       return {
         ...v,
         valueNow,
@@ -24,7 +22,7 @@ export const addCurrentValueAndSummaryToTransfers = (
     result[token] = {
       payments: paymentsForToken,
       summary: calculatePaymentsSummary(paymentsForToken),
-      currentPrice: currentPrices[token],
+      currentPrice: transfers[token].currentPrice,
     };
   }
   return result;

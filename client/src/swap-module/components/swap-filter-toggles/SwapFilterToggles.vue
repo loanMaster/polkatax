@@ -32,7 +32,7 @@
         @update:model-value="toggleAll"
         label="All"
       />
-      <div v-for="token in visibleSwapTokens" v-bind:key="token">
+      <div v-for="token in visibleSwapTokens" v-bind:key="token.name">
         <q-checkbox
           :model-value="token.value"
           :label="token.name.toUpperCase()"

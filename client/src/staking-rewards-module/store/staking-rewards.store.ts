@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { StakingRewardsService } from '../service/staking-rewards.service';
 import { Rewards } from '../model/rewards';
 import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
 import {
@@ -26,6 +25,7 @@ import {
   PendingRequest,
 } from '../../shared-module/model/data-request';
 import { wrapDataRequest } from '../../shared-module/service/wrap-data-request';
+import { fetchStakingRewards } from '../service/fetch-staking-rewards';
 
 const chainList$ = from(fetchSubscanChains());
 const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
@@ -69,15 +69,14 @@ export const useStakingRewardsStore = defineStore('rewards', {
         const startDate = getStartDate(this.timeFrame);
         const endDate = getEndDate(this.timeFrame);
         const chain = (await firstValueFrom(chain$)).domain;
-        const rewardsDto =
-          await new StakingRewardsService().fetchStakingRewards(
-            chain,
-            this.address.trim(),
-            this.currency,
-            this.nominationPoolId,
-            startDate,
-            endDate
-          );
+        const rewardsDto = await fetchStakingRewards(
+          chain,
+          this.address.trim(),
+          this.currency,
+          this.nominationPoolId,
+          startDate,
+          endDate
+        );
         const valuesWithIsoDate = addIsoDateAndCurrentValue(
           rewardsDto.values,
           rewardsDto.currentPrice

@@ -19,8 +19,8 @@ export interface Swap {
 
 export interface SummaryPosition {
   amount: number;
-  value: number;
-  valueNow: number;
+  value?: number;
+  valueNow?: number;
 }
 
 export interface TradingSummary {

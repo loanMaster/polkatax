@@ -3,12 +3,12 @@ import { sumOrNaN } from './sum-or-nan';
 
 export const calculatePaymentsSummary = (
   payments: TokenPayment[],
-  excludedEntries: TokenPayment[] = []
+  excludedEntries: { hash: string }[] = []
 ) => {
   const excludedHashes = excludedEntries.map((e) => e.hash);
   const summary: any = { value: 0, amount: 0, valueNow: 0 };
   payments
-    .filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .filter((v) => !v.hash || excludedHashes.indexOf(v.hash) === -1)
     .forEach((v) => {
       summary.amount += v.amount;
       summary.value = sumOrNaN(summary.value, v.value);

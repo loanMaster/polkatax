@@ -25,7 +25,7 @@ export const formatValue = (value: number) => {
 };
 
 export const currencyFormatter = (currency: string | undefined) =>
-  new Intl.NumberFormat(navigator.language || 'en-US', {
+  new Intl.NumberFormat(navigator?.language || 'en-US', {
     style: 'currency',
     currency: currency!.toUpperCase(),
     minimumFractionDigits: 2,
