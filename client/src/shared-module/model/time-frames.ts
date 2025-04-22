@@ -1,9 +1,9 @@
-export const TimeFrames = Object.freeze({
-  currentMonth: 'This Month',
-  currentYear: 'This Year',
-  lastSevenDays: 'Last 7 days',
-  lastThirtyDays: 'Last 30 days',
-  lastMonth: 'Last Month',
+export const TimeFrames: { [key: string]: number | string } = Object.freeze({
+  'This Month': 'This Month',
+  'This Year': 'This Year',
+  'Last 7 days': 'Last 7 days',
+  'Last 30 days': 'Last 30 days',
+  'Last Month': 'Last Month',
   lastYear: new Date().getFullYear() - 1,
   twoYearsAgo: new Date().getFullYear() - 2,
   threeYearsAgo: new Date().getFullYear() - 3,

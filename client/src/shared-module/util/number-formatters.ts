@@ -24,10 +24,10 @@ export const formatValue = (value: number) => {
   return valueFormatter.format(value);
 };
 
-export const currencyFormatter = (currency: string) =>
+export const currencyFormatter = (currency: string | undefined) =>
   new Intl.NumberFormat(navigator.language || 'en-US', {
     style: 'currency',
-    currency: currency.toUpperCase(),
+    currency: currency!.toUpperCase(),
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     currencyDisplay: 'symbol',

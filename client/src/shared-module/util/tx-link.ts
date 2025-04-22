@@ -1,8 +1,7 @@
-import { Chain } from '../../shared-module/model/chain';
-import { chainList } from '../../shared-module/const/chainList';
+import { blockExplorers } from '../const/block-explorers';
 
 export const getTxLink = (hash: string, chainName: string) => {
-  return chainList.find((c: Chain) => c.domain === chainName).explorer
-    ? chainList.find((c: Chain) => c.domain === chainName).explorer + hash
+  return blockExplorers[chainName] !== undefined
+    ? blockExplorers[chainName] + hash
     : `https://${chainName}.subscan.io/tx/${hash}`;
 };

@@ -4,7 +4,11 @@
       class="q-my-md flex justify-between align-center items-center column-md row-lg row-xl column-xs column-sm"
     >
       <div class="dropdown">
-        <token-dropdown v-model="selectedChain" :chains="chainList" @update:model-value="newChainSelected"/>
+        <token-dropdown
+          v-model="selectedChain"
+          :chains="chainList"
+          @update:model-value="newChainSelected"
+        />
       </div>
       <div class="dropdown">
         <currency-dropdown v-model="rewardsStore.currency" />
@@ -76,52 +80,55 @@ const $q = useQuasar();
 const rewardsStore = useStakingRewardsStore();
 
 const rewards: Ref<Rewards | undefined> = ref(undefined);
-const chainList: Ref<Chain[]> = ref([])
+const chainList: Ref<Chain[]> = ref([]);
 const selectedChain: Ref<Chain | undefined> = ref(undefined);
-rewardsStore.chain.pipe(take(1)).subscribe(c => selectedChain.value = c);
+rewardsStore.chain$.pipe(take(1)).subscribe((c) => (selectedChain.value = c));
 
-const rewardsSubscription = rewardsStore.rewards.subscribe(async r => {
-  rewards.value = r.data
+const rewardsSubscription = rewardsStore.rewards$.subscribe(async (r) => {
+  rewards.value = r.data;
   if (r.pending) {
     $q.loading.show({
-        message:
-          'Fetching staking rewards. This may take a while. Please be patient...',
-        html: true,
-        boxClass: 'bg-grey-2 text-grey-9',
-        spinnerColor: 'primary',
-      });
+      message:
+        'Fetching staking rewards. This may take a while. Please be patient...',
+      html: true,
+      boxClass: 'bg-grey-2 text-grey-9',
+      spinnerColor: 'primary',
+    });
   } else if (r.error) {
     const error = r.error;
     const message =
       r.error.status && (error.status === 429 || error.status === 503)
-          ? 'Too many requests. Please try again in some minutes'
-          : error.status && error.status === 400
-          ? await error.text()
-          : 'There was an error fetching your data. Please try again later';
-      $q.dialog({
-        title:
-          error.status && error.status === 429
-            ? 'Request limit exceeded'
-            : error.status && error.status === 503
-            ? 'Server overloaded'
-            : 'An error occurred',
-        message,
-        persistent: true,
-      });
+        ? 'Too many requests. Please try again in some minutes'
+        : error.status && error.status === 400
+        ? await error.text()
+        : 'There was an error fetching your data. Please try again later';
+    $q.dialog({
+      title:
+        error.status && error.status === 429
+          ? 'Request limit exceeded'
+          : error.status && error.status === 503
+          ? 'Server overloaded'
+          : 'An error occurred',
+      message,
+      persistent: true,
+    });
   } else {
     $q.loading.hide();
   }
-})
-
-const chainListSubscription = rewardsStore.chainList.subscribe((chainsList) => {
-  chainList.value = chainsList.chains
-    .sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1))
 });
+
+const chainListSubscription = rewardsStore.chainList$.subscribe(
+  (chainsList) => {
+    chainList.value = chainsList.chains.sort((a: Chain, b: Chain) =>
+      a.label > b.label ? 1 : -1
+    );
+  }
+);
 
 onUnmounted(() => {
   rewardsSubscription.unsubscribe();
   chainListSubscription.unsubscribe();
-})
+});
 
 function fetchRewards() {
   if (!isDisabled.value) {
@@ -137,7 +144,7 @@ const isDisabled = computed(() => {
   return (
     rewardsStore.address.trim() === '' ||
     !rewardsStore.currency ||
-    !rewardsStore.chain
+    !selectedChain.value
   );
 });
 

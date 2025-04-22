@@ -1,37 +1,57 @@
 import { defineStore } from 'pinia';
-import { PaymentsService } from '../service/payments.service';
+import { fetchSwapsAndTransfers } from '../service/fetch-swaps-and-transfers';
 import {
   formatDate,
   getFirstDayOfYear,
 } from '../../shared-module/util/date-utils';
-import { Payment, Payments, PaymentsList } from '../model/payments';
 import { Swap, SwapList, TradingSummary } from '../../swap-module/model/swaps';
 import { date } from 'quasar';
-import { BehaviorSubject, combineLatest, firstValueFrom, from, map, Observable, ReplaySubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
+  from,
+  map,
+  Observable,
+  ReplaySubject,
+} from 'rxjs';
 import { fetchSubscanChains } from '../../shared-module/service/fetch-subscan-chains';
 import { Chain } from '../../shared-module/model/chain';
 import { ethChains } from '../../shared-module/const/eth-chains';
 import { DataRequest } from '../../shared-module/model/data-request';
-import { extractTokensFromSwaps } from './helper/extract-tokens-from-swaps';
-import { calculatePamymentsSummary } from './helper/calculate-payments-summary';
-import { calculateSwapSummary } from './helper/calculate-swap-summary';
-import { addCurrentValueToTokens } from './helper/add-current-value-to-tokens';
-import { filterSwaps } from './helper/filtered-swaps';
-import { filterPayments } from './helper/filter-payments';
+import { extractTokensFromSwaps } from './util/extract-tokens-from-swaps';
+import { calculateSwapSummary } from './util/calculate-swap-summary';
+import { addCurrentValueToSwappedTokens } from './util/add-current-value-to-swapped-tokens';
+import { filterSwaps } from './util/filter-swaps';
+import { filterPayments } from './util/filter-payments';
+import { PaymentsResponseDto } from '../model/payments-response.dto';
+import { addCurrentValueAndSummaryToTransfers } from './util/add-current-value-to-transfers';
+import { PaymentPortfolio, TokenPaymentsData } from '../model/payments';
 
-const chain$: BehaviorSubject<Chain>  = new BehaviorSubject<Chain>({
+const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
   domain: 'polkadot',
   label: 'Polkadot',
   token: 'DOT',
 });
-const chainList$ = from(fetchSubscanChains()).pipe(map(chains => ([...chains, ...ethChains])));
+const chainList$ = from(fetchSubscanChains()).pipe(
+  map((chainList) => [...chainList.chains, ...ethChains]), map(list => {
+    return list.sort((a: Chain, b: Chain) =>
+      a.label > b.label ? 1 : -1
+    );
+  })
+);
 const swaps$ = new ReplaySubject<DataRequest<SwapList>>(1);
-const payments$ = new ReplaySubject<DataRequest<PaymentsList>>(1);
-const paymentsFilter$ = new BehaviorSubject<string>('All transfers')
-const excludedEntries$ = new BehaviorSubject([])
-const swapTypeFilter$ = new BehaviorSubject({ twoAssets: true, multipleAssets: true })
-const visibleSwapTokens$ = new BehaviorSubject<{ name: string, value: boolean}[]>([])
-const selectedToken$ = new ReplaySubject<string>(1)
+const payments$ = new ReplaySubject<DataRequest<PaymentPortfolio>>(1);
+const paymentsFilter$ = new BehaviorSubject<string>('All transfers');
+const excludedEntries$ = new BehaviorSubject([]);
+const swapTypeFilter$ = new BehaviorSubject({
+  twoAssets: true,
+  multipleAssets: true,
+});
+const visibleSwapTokens$ = new BehaviorSubject<
+  { name: string; value: boolean }[]
+>([]);
+const selectedToken$ = new ReplaySubject<string>(1);
 
 export const usePaymentsStore = defineStore('payments', {
   state: () => {
@@ -39,7 +59,7 @@ export const usePaymentsStore = defineStore('payments', {
       paymentList$: payments$.asObservable(),
       swaps$: swaps$.asObservable(),
       chain$: chain$.asObservable(),
-      currency: '',
+      currency: 'USD',
       address: '',
       selectedToken$: selectedToken$.asObservable(),
       chainList$,
@@ -52,28 +72,70 @@ export const usePaymentsStore = defineStore('payments', {
     };
   },
   getters: {
-    swapTokens(): Observable<string[]> {
-      return this.swaps$.pipe(map(swaps => extractTokensFromSwaps(swaps.data)))
+    swapTokens$(): Observable<string[]> {
+      return swaps$.pipe(map((swaps) => extractTokensFromSwaps(swaps.data)));
     },
-    paymentsCurrentToken(): Observable<Payments | undefined> {
-      return combineLatest([payments$, selectedToken$, paymentsFilter$, excludedEntries$])
-      .pipe(map(filterPayments))
+    paymentsCurrentToken$(): Observable<TokenPaymentsData | undefined> {
+      return combineLatest([
+        payments$,
+        selectedToken$,
+        paymentsFilter$,
+        excludedEntries$,
+      ]).pipe(map(filterPayments));
     },
-    filteredSwaps(): Observable<Swap[]> {
-      return combineLatest([swaps$, visibleSwapTokens$, swapTypeFilter$]).pipe(map(filterSwaps))
+    filteredSwaps$(): Observable<Swap[]> {
+      return combineLatest([swaps$, visibleSwapTokens$, swapTypeFilter$]).pipe(
+        map(filterSwaps)
+      );
     },
-    swapSummary(): Observable<TradingSummary[]> {
-      return combineLatest([swaps$, this.filteredSwaps]).pipe(map(([swaps, filteredSwaps]) => 
-        calculateSwapSummary(swaps.data, filteredSwaps)
-      ))
+    swapSummary$(): Observable<TradingSummary[]> {
+      return combineLatest([swaps$, this.filteredSwaps$]).pipe(
+        map(([swaps, filteredSwaps]) =>
+          calculateSwapSummary(swaps.data, filteredSwaps)
+        )
+      );
     },
   },
   actions: {
+    selectChain(newChain: Chain) {
+      chain$.next(newChain);
+    },
+    setPaymentsFilter(newFilter: string) {
+      paymentsFilter$.next(newFilter);
+    },
+    selectToken(token: string) {
+      selectedToken$.next(token);
+    },
+    setSwapsFilter(newFilter: { twoAssets: boolean, multipleAssets: boolean }) {
+      swapTypeFilter$.next(newFilter)
+    },
+    async toggleAllVisibleSwapTokens() {
+      const swapTokens = await firstValueFrom(visibleSwapTokens$)
+      const allActive = swapTokens.filter(t => t.value).length > 0
+      visibleSwapTokens$.next(swapTokens.map(t => ({ ...t, value: !allActive })))
+    },
+    async updateSwapAssetVisibility(token: string, visible: boolean) {
+      const swapTokens = await firstValueFrom(visibleSwapTokens$)
+      const newTokens = swapTokens.map(t => {
+        if (t.name === token) {
+          return {
+            name: token,
+            value: visible
+          }
+         } else {
+            return {
+              ...t
+            }
+          }
+        }
+      )
+      visibleSwapTokens$.next(newTokens)
+    },
     async fetchTransfers() {
       swaps$.next({ data: undefined, pending: true });
       payments$.next({ data: undefined, pending: true });
 
-      const chain = await firstValueFrom(this.chain$)
+      const chain = await firstValueFrom(chain$);
       const startDate = new Date(this.startDate).getTime();
       const endDate = new Date(this.endDate);
       endDate.setHours(23);
@@ -86,47 +148,41 @@ export const usePaymentsStore = defineStore('payments', {
         endDate: formatDate(endDate.getTime()),
         currency: this.currency,
       };
-      const result = await new PaymentsService().fetchTokenRewards(
-        chain.domain,
-        this.address.trim(),
-        this.currency,
-        startDate,
-        endDate.getTime()
-      );
-      const paymentList = {
+      const { swaps, transfers, currentPrices }: PaymentsResponseDto =
+        await fetchSwapsAndTransfers(
+          chain.domain,
+          this.address.trim(),
+          this.currency,
+          startDate,
+          endDate.getTime()
+        );
+
+      const paymentList: PaymentPortfolio = {
         ...metadata,
-        tokens: {} as any,
+        tokens: addCurrentValueAndSummaryToTransfers(transfers, currentPrices),
       };
-      const transfers = result.transfers;
-      for (const token of Object.keys(transfers)) {
-        const payments = (transfers as any)[token];
-        payments.values.forEach((v: Payment) => {
-          v.valueNow = isNaN(v.amount * payments.currentPrice)
-            ? undefined
-            : v.amount * payments.currentPrice;
-        });
-        payments.summary = calculatePamymentsSummary(payments);
-        paymentList.tokens[token] = payments;
-      }
+
       const selectedToken = Object.keys(paymentList.tokens).sort((a, b) =>
         a > b ? 1 : -1
       )[0];
-      addCurrentValueToTokens(result);
-      const swaps = {
+
+      const swapList: SwapList = {
         ...metadata,
         startDate,
         endDate: endDate.getTime(),
-        swaps: result.swaps,
-        currentPrices: result.currentPrices,
+        swaps: addCurrentValueToSwappedTokens(swaps, currentPrices),
+        currentPrices,
       };
-      const visibleSwapTokens = extractTokensFromSwaps(swaps).map((t) => ({
+
+      const visibleSwapTokens = extractTokensFromSwaps(swapList).map((t) => ({
         name: t,
         value: true,
       }));
-      selectedToken$.next(selectedToken);
+
+      swaps$.next({ data: swapList, pending: false });
       visibleSwapTokens$.next(visibleSwapTokens);
-      swaps$.next({ data: swaps, pending: false });
-      payments$.next({ data: paymentList, pending: false })
+      payments$.next({ data: paymentList, pending: false });
+      selectedToken$.next(selectedToken);
     },
   },
 });

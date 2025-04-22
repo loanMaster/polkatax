@@ -3,14 +3,15 @@
     <q-btn-dropdown :label="selectedTimeFrame" push no-caps>
       <q-list>
         <q-item
-          v-for="timeFrame in Object.values(timeFrames)"
+          v-for="timeFrame in Object.keys(timeFrames)"
           :key="timeFrame"
+          :label="timeFrames[timeFrame]"
           clickable
           v-close-popup
           @click="onListItemClick(timeFrame)"
         >
           <q-item-section>
-            <q-item-label>{{ timeFrame }}</q-item-label>
+            <q-item-label>{{ timeFrames[timeFrame] }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -27,12 +28,13 @@ const props = defineProps({
   modelValue: String,
 });
 
-function onListItemClick(timeFrame: string) {
+function onListItemClick(timeFrame: string | number) {
+  console.log(String(timeFrame))
   emits('update:modelValue', timeFrame);
 }
 
 const selectedTimeFrame = computed(() => {
-  return Object.values(TimeFrames).find((k) => k === props.modelValue);
+  return props.modelValue !== undefined ? TimeFrames[props.modelValue] : '';
 });
 
 const timeFrames = ref(TimeFrames);

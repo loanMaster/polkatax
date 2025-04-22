@@ -1,16 +1,18 @@
-export interface Payment extends PaymentDto {
-  date: number;
+import { TransferDto } from './payments-response.dto';
+
+export interface TokenPayment extends TransferDto {
   valueNow?: number;
+  isoDate: string;
 }
 
-export interface Payments {
-  values: Payment[];
+export interface TokenPaymentsData {
+  payments: TokenPayment[];
   currentPrice: number;
-  summary: PaymentSummary | undefined;
+  summary?: TokenPaymentsSummary;
 }
 
-export interface PaymentsList {
-  tokens: { [token: string]: Payments };
+export interface PaymentPortfolio {
+  tokens: { [token: string]: TokenPaymentsData };
   chain: string;
   address: string;
   startDate: string;
@@ -18,27 +20,8 @@ export interface PaymentsList {
   currency: string;
 }
 
-export interface PaymentSummary {
+export interface TokenPaymentsSummary {
   amount: number;
   value: number;
   valueNow: number;
-}
-
-export interface DailyPayments {
-  [key: string]: { amount: number; value: number; valueNow: number };
-}
-
-export interface PaymentDto {
-  date: number;
-  hash: string;
-  amount: number;
-  value: number;
-  price?: number;
-}
-
-export interface PaymentsListDto {
-  [token: string]: {
-    values: PaymentDto[];
-    currentPrice: number;
-  };
 }

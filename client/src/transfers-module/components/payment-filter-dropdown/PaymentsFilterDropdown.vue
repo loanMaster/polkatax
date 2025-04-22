@@ -18,7 +18,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { onUnmounted, Ref, ref } from 'vue';
 import { usePaymentsStore } from '../../store/payments.store';
 
 const paymentFilters = ref([
@@ -28,14 +28,17 @@ const paymentFilters = ref([
 ]);
 
 const store = usePaymentsStore();
+const selectedPaymentsFilter: Ref<string | undefined> = ref(undefined);
 
-const selectedPaymentsFilter = computed(() => {
-  return Object.values(paymentFilters.value).find(
-    (k) => k === store.paymentsFilter
-  );
+const subscription = store.paymentsFilter$.subscribe((f) => {
+  selectedPaymentsFilter.value = f;
+});
+
+onUnmounted(() => {
+  subscription.unsubscribe();
 });
 
 function onListItemClick(paymentsFilter: string) {
-  store.paymentsFilter = paymentsFilter;
+  store.setPaymentsFilter(paymentsFilter);
 }
 </script>

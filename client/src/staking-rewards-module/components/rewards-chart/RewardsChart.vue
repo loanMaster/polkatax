@@ -23,7 +23,7 @@ const props = defineProps({
 
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.rewards.subscribe((dataRequest) => {
+const subscription = rewardsStore.rewards$.subscribe((dataRequest) => {
   rewards.value = dataRequest.data;
 });
 

@@ -57,12 +57,12 @@ const showLoading = ref(false);
 const nominationPoolsDisabled: Ref<boolean> = ref(false);
 const filteredPools = ref(nominationPools.value);
 
-const chainSubscription = rewardsStore.chain.subscribe((c) => {
+const chainSubscription = rewardsStore.chain$.subscribe((c) => {
   nominationPoolsDisabled.value =
     !c || (c.domain !== 'kusama' && c.domain !== 'polkadot');
 });
 
-const nominationPoolSubscription = rewardsStore.nominationPools.subscribe(
+const nominationPoolSubscription = rewardsStore.nominationPools$.subscribe(
   (dataRequest) => {
     if (!dataRequest.pending) {
       showLoading.value = false;

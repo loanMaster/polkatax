@@ -35,7 +35,7 @@
   <div v-if="rewards">
     Verify your rewards here:
     <a
-      :href="`https://${rewardsStore.rewards.chain}.subscan.io/account/${rewardsStore.rewards.address}?tab=reward`"
+      :href="`https://${rewards.chain}.subscan.io/account/${rewards.address}?tab=reward`"
       style="line-break: anywhere"
       target="_blank"
     >
@@ -56,12 +56,12 @@ const rewardsStore = useStakingRewardsStore();
 
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-rewardsStore.rewards.subscribe((dataRequest) => {
+rewardsStore.rewards$.subscribe((dataRequest) => {
   rewards.value = dataRequest.data;
 });
 
 const averageDailyRewards = computed(() => {
-  if (!rewardsStore.rewards) {
+  if (!rewardsStore.rewards$) {
     return 0;
   }
   return (

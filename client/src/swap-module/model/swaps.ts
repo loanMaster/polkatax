@@ -12,7 +12,6 @@ export interface Swap {
   date: number;
   block: number;
   hash: string;
-  amount: number;
   contract: string;
   functionName: string;
   tokens: SwappedTokens;

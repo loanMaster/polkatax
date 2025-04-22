@@ -59,7 +59,7 @@ interface RewardsTableHeader extends Reward {
 const rewardsStore = useStakingRewardsStore();
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.rewards.subscribe((dataRequest) => {
+const subscription = rewardsStore.rewards$.subscribe((dataRequest) => {
   rewards.value = dataRequest.data;
 });
 
@@ -202,7 +202,7 @@ function exportJson() {
     };
   });
   saveAs(
-    new Blob([JSON.stringify({ ...rewardsStore.rewards, values: values })], {
+    new Blob([JSON.stringify({ ...rewardsStore.rewards$, values: values })], {
       type: 'text/plain;charset=utf-8',
     }),
     'staking-rewards.json'

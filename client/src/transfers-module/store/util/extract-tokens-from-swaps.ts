@@ -1,9 +1,11 @@
-import { Swap, SwapList } from "../../../swap-module/model/swaps";
+import { Swap, SwapList } from '../../../swap-module/model/swaps';
 
-export const extractTokensFromSwaps = (swaps: SwapList | undefined): string[] => {
-    if (swaps === undefined) {
-        return []
-    }
+export const extractTokensFromSwaps = (
+  swaps: SwapList | undefined
+): string[] => {
+  if (swaps === undefined) {
+    return [];
+  }
   const temp: string[] = [];
   (swaps.swaps || []).forEach((swap: Swap) => {
     Object.keys(swap.tokens).forEach((token) => {

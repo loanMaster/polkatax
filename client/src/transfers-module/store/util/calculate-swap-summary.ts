@@ -1,13 +1,17 @@
-import { Swap, SwapList, TradingSummary } from "../../../swap-module/model/swaps";
-import { sumOrNaN } from "./sum-or-nan";
+import {
+  Swap,
+  SwapList,
+  TradingSummary,
+} from '../../../swap-module/model/swaps';
+import { sumOrNaN } from './sum-or-nan';
 
 export const calculateSwapSummary = (
   swapList: SwapList | undefined,
   filteredSwaps: Swap[]
 ): TradingSummary[] => {
-    if (!swapList) {
-        return []
-    }
+  if (!swapList) {
+    return [];
+  }
   const tradingSummary: any = {};
   filteredSwaps.forEach((swap: Swap) => {
     Object.keys(swap.tokens).forEach((token) => {
