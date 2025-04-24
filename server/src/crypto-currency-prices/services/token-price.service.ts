@@ -19,8 +19,8 @@ export class TokenPriceService {
     private getCachedPrices(tokens: { id: string, symbol: string }[], currency: string): { [currency: string]: number } {
         const response = {}
         tokens.forEach(token => {
-            response[token.id] = response[token.id] || {}
-            response[token.id][currency] = TokenPriceService.quotes[token.id]?.[currency.toLowerCase()].price
+            response[token.id] ??= {}
+            response[token.id][currency.toLowerCase()] = TokenPriceService.quotes[token.id]?.[currency.toLowerCase()].price
         })
         return response
     }

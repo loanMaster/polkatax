@@ -2,15 +2,16 @@ import {logger} from "../../common/logger/logger";
 import * as fs from 'fs';
 import {CoingeckoRestService} from "../coingecko-api/coingecko.rest-service";
 import { findCoingeckoToken } from "../../common/util/find-coingecko-token-id";
-import { formatDate } from "../../common/util/format-date";
 import { CurrencyQuotes, Quotes } from "../model/crypto-currency-quotes";
+import * as substrateTokenToCoingeckoId from "../../../res/substrate-token-to-coingecko-id.json"
+import { formatDate } from "../../common/util/date-utils";
 
 const MAX_AGE = 4 * 60 * 60 * 1000
 
 const data_folder = __dirname + '/../../../res/gen/crypto-currencies-quotes/'
 
 export class TokenPriceHistoryService {
-    private static cachedPrices: { [tokenIdCurrency: string]: Quotes } = {}
+    private static cachedPrices: { [symbolCurrency: string]: Quotes } = {}
     private static timer
 
     constructor(private coingeckoRestService: CoingeckoRestService) {
@@ -38,17 +39,10 @@ export class TokenPriceHistoryService {
         if (fs.existsSync(data_folder + 'tokens-to-sync.json')) {
             return JSON.parse(fs.readFileSync(data_folder + 'tokens-to-sync.json', 'utf-8'))
         } else {
+            
             return {
                 tokens: [
-                    "glmr",
-                    "intr",
-                    "glmr",
-                    "kint",
-                    "ksm",
-                    "pha",
-                    "bnc",
-                    "link",
-                    "aca",
+                    ...substrateTokenToCoingeckoId.tokens.map(t => t.token),
                     "op",
                     "eth",
                     "velo",
@@ -60,7 +54,6 @@ export class TokenPriceHistoryService {
                     "sushi",
                     "usdt",
                     "dai",
-                    "dot",
                     "wbtc",
                     "frax",
                     "well"
@@ -89,7 +82,7 @@ export class TokenPriceHistoryService {
                     if (!TokenPriceHistoryService.cachedPrices[symbolCurr]) {
                         this.fetchStoredQuotes(symbolCurr)
                     }
-                    if (!this.informationUpToDate(symbolCurr)) {
+                    if (!this.informationUpToDate(symbol, currency)) {
                         await this.fetchQuotesForSymbol(symbol, currency)
                         logger.info(`TokenPriceHistoryService syncing done for token ${symbol} and currency ${currency}`)
                         break;
@@ -98,17 +91,21 @@ export class TokenPriceHistoryService {
                     if (error.statusCode === 404) {
                         tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
                     }
-                    logger.error(`Error syncing token ${symbol} for currency ${currency}`, error)
-                    logger.error(error)
+                    logger.warn(`Error syncing token ${symbol} for currency ${currency}`, error)
+                    logger.warn(error)
                     break;
                 }
             }
         }
-        if (tokensToSync.tokens.every(tokenId => 
-            this.currenciesToSync.every(currency => this.informationUpToDate(tokenId + '_' + currency))
+        if (tokensToSync.tokens.every(symbol => 
+            this.currenciesToSync.every(currency => this.informationUpToDate(symbol, currency))
         )) {
             logger.info(`TokenPriceHistoryService syncing completed!`)
         }
+    }
+
+    private combine(symbol: string, currency: string) {
+        return symbol + '_' + currency
     }
 
     private addTokenToSyncList(symbol: string) {
@@ -119,19 +116,20 @@ export class TokenPriceHistoryService {
         }
     }
 
-    private informationUpToDate(tokenIdCurrency: string) {
+    private informationUpToDate(symbol: string, currency: string) {
+        const combinedIdx = this.combine(symbol, currency)
         const yesterday = new Date()
         yesterday.setDate(yesterday.getDate() - 1);
 
-        return TokenPriceHistoryService.cachedPrices[tokenIdCurrency]
-            && (TokenPriceHistoryService.cachedPrices[tokenIdCurrency][formatDate(yesterday)]
-            || new Date().getTime() - TokenPriceHistoryService.cachedPrices[tokenIdCurrency].timestamp < MAX_AGE)
+        return TokenPriceHistoryService.cachedPrices[combinedIdx]
+            && (TokenPriceHistoryService.cachedPrices[combinedIdx][formatDate(yesterday)]
+            || new Date().getTime() - TokenPriceHistoryService.cachedPrices[combinedIdx].timestamp < MAX_AGE)
     }
 
 
     private async fetchQuotesForSymbol(symbol: string, currency: string = 'usd') {
-        if (this.informationUpToDate(symbol)) {
-            return TokenPriceHistoryService.cachedPrices[symbol]
+        if (this.informationUpToDate(symbol, currency)) {
+            return TokenPriceHistoryService.cachedPrices[this.combine(symbol, currency)]
         }
         const token = findCoingeckoToken(symbol, 'polkadot')
         if (!token) {

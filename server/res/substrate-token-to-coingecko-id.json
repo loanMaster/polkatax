@@ -4,10 +4,6 @@
         "coingeckoId": "stafi"
     },
     {
-        "token": "FIS",
-        "coingeckoId": "stafi"
-    },
-    {
         "token": "SDN",
         "coingeckoId": "shiden-network"
     },

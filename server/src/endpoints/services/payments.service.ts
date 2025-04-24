@@ -1,5 +1,4 @@
-import { fetchSwapsAndPayments } from "../../blockchain/evm/fetch-evm-transfers"
-import { DotTransferService } from "../../blockchain/substrate/services/dot-transfer.service"
+import { fetchSwapsAndPayments } from "../../blockchain/evm/service/evm-tx.service"
 import { HttpError } from "../../common/error/HttpError"
 import { Swap } from "../../common/model/swap"
 import { Transfer } from "../../common/model/transfer"
@@ -11,10 +10,11 @@ import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { TokenPriceConversionService } from "./token-price-conversion.service"
 import { PaymentsRequest } from "../model/payments.request"
 import {PaymentsResponse} from "../model/payments.response";
-import { evmChainConfigs } from "../../blockchain/evm/evm-chains.config"
+import { evmChainConfigs } from "../../blockchain/evm/constants/evm-chains.config"
+import { SwapsAndTransfersService } from "../../blockchain/substrate/services/swaps-and-transfers.service"
 
 export class PaymentsService {
-    constructor(private dotTransferService: DotTransferService, 
+    constructor(private swapsAndTransferService: SwapsAndTransfersService, 
         private tokenPriceConversionService: TokenPriceConversionService) {
     }
 
@@ -41,7 +41,7 @@ export class PaymentsService {
     
         const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()]
         const {swaps, payments} = evmChainConfig ? await fetchSwapsAndPayments(chainName, address, startDay, endDay) :
-            await this.dotTransferService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
+            await this.swapsAndTransferService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
     
         const tokens = this.getTokens(swaps)
         tokens.push(...Object.keys(payments))

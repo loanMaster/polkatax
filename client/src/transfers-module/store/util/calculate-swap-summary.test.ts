@@ -1,8 +1,5 @@
 import { calculateSwapSummary } from './calculate-swap-summary';
-import {
-  Swap,
-  SwapList,
-} from '../../../swap-module/model/swaps';
+import { Swap, SwapList } from '../../../swap-module/model/swaps';
 import { expect, test, describe } from '@jest/globals';
 
 describe('calculateSwapSummary', () => {

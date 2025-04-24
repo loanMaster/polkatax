@@ -1,8 +1,8 @@
 import fs from "fs";
 import { ExchangeRateRestService } from "./exchange-rate-api/exchange-rate.rest-service";
 import { ExchangeRates } from "./model/exchange-rates";
-import { formatDate } from "../common/util/format-date";
 import { logger } from "../common/logger/logger";
+import { formatDate } from "../common/util/date-utils";
 
 const currencyExchangeRatesFileName = __dirname + '/../../res/gen/fiat-currencies-quotes/currency-exchange.rates.json'
 

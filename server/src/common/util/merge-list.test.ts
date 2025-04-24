@@ -1,6 +1,6 @@
 import {test,expect } from '@jest/globals';
-import { Transfers } from '../../src/blockchain/substrate/model/transfer';
-import { mergeListElements } from '../../src/common/util/merge-list';
+import { mergeListElements } from './merge-list';
+import { Transfers } from '../../blockchain/substrate/model/transfer';
 
 test('should merge lists', () => {
     const l: Transfers[] = [
