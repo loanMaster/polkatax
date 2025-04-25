@@ -1,5 +1,3 @@
-import { evmChainConfigs, fetchSwapsAndPayments } from "../../blockchain/evm/fetch-evm-transfers"
-import { DotTransferService } from "../../blockchain/substrate/services/dot-transfer.service"
 import { HttpError } from "../../common/error/HttpError"
 import { Swap } from "../../common/model/swap"
 import { Transfer } from "../../common/model/transfer"
@@ -7,14 +5,18 @@ import { coingeckoSupportsToken } from "../../common/util/coingecko-supports-tok
 import { validateDates } from "../../common/util/validate-dates"
 import { addFiatValuesToNestedTransfers } from "../helper/addFiatValuesToNestedTransfers"
 import { addFiatValuesToSwaps } from "../helper/addFiatValuesToSwaps"
-import * as substrateChains from "../../../res/substrate/substrate-chains.json";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { TokenPriceConversionService } from "./token-price-conversion.service"
 import { PaymentsRequest } from "../model/payments.request"
 import {PaymentsResponse} from "../model/payments.response";
+import { evmChainConfigs } from "../../blockchain/evm/constants/evm-chains.config"
+import { SwapsAndTransfersService } from "../../blockchain/substrate/services/swaps-and-transfers.service"
+import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swaps-and-payments.service"
 
 export class PaymentsService {
-    constructor(private dotTransferService: DotTransferService, 
-        private tokenPriceConversionService: TokenPriceConversionService) {
+    constructor(private swapsAndTransfersService: SwapsAndTransfersService, 
+        private tokenPriceConversionService: TokenPriceConversionService,
+        private evmSwapsAndPaymentsService: EvmSwapsAndPaymentsService) {
     }
 
     getTokens(swaps: Swap[]): string[] {
@@ -34,13 +36,13 @@ export class PaymentsService {
     
         validateDates(startDay, endDay)
         endDay = endDay && endDay < new Date() ? endDay : new Date()
-        if (!evmChainConfigs[chainName.toLocaleLowerCase()] && !substrateChains.chains.find(p => p.name === chainName.toLowerCase())) {
+        if (!evmChainConfigs[chainName.toLocaleLowerCase()] && !subscanChains.chains.find(p => p.label.toLowerCase() === chainName.toLowerCase())) {
             throw new HttpError(400, "Chain " + chainName + " not found")
         }
     
         const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()]
-        const {swaps, payments} = evmChainConfig ? await fetchSwapsAndPayments(chainName, address, startDay, endDay) :
-            await this.dotTransferService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
+        const {swaps, payments} = evmChainConfig ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(chainName, address, startDay, endDay) :
+            await this.swapsAndTransfersService.fetchSwapsAndTransfers(chainName, address, startDay, endDay)
     
         const tokens = this.getTokens(swaps)
         tokens.push(...Object.keys(payments))

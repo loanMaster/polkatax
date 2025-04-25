@@ -1,7 +1,7 @@
 import Joi from "joi";
 import {RouteOptions} from "fastify/types/route";
 import {HttpError} from "../common/error/HttpError";
-import * as substrateChains from "../../res/substrate/substrate-chains.json"
+import * as subscanChains from "../../res/gen/subscan-chains.json"
 import { runWorker } from "./workers/run-worker";
 
 export const stakingRewardsEndpoint: RouteOptions = {
@@ -10,7 +10,7 @@ export const stakingRewardsEndpoint: RouteOptions = {
     schema: {
         params: Joi.object({
             chain: Joi.string().custom((value) => {
-                const result = substrateChains.chains.find(p => p.name === value.toLowerCase())
+                const result = subscanChains.chains.find(p => p.label.toLowerCase() === value.toLowerCase())
                 if (!result) {
                     throw new HttpError(400, "Chain " + value + " not found")
                 }

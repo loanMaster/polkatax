@@ -4,67 +4,93 @@
     <tr>
       <td class="text-left q-pa-sm">Chain:</td>
       <td class="text-right q-pa-sm">
-        {{ store.paymentList.chain }}
+        {{ paymentList?.chain }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Token:</td>
       <td class="text-right q-pa-sm">
-        {{ store.selectedToken.toUpperCase() }}
+        {{ (selectedToken || '').toUpperCase() }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Total transfers:</td>
       <td class="text-right q-pa-sm">
         {{
-          formatTokenAmount(store.paymentsCurrentToken.summary.amount) +
+          formatTokenAmount(paymentsCurrentToken?.summary?.amount || 0) +
           ' ' +
-          store.selectedToken.toUpperCase()
+          (selectedToken || '').toUpperCase()
         }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value at time of transaction(s):</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(store.paymentsCurrentToken.summary.value) }}
+        {{ formatCurrency(paymentsCurrentToken?.summary?.value || 0) }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value now:</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(store.paymentsCurrentToken.summary.valueNow) }}
+        {{ formatCurrency(paymentsCurrentToken?.summary?.valueNow || 0) }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Current price:</td>
       <td class="text-right q-pa-sm">
-        {{ formatPrice(store.paymentsCurrentToken.currentPrice) }}
+        {{ formatPrice(paymentsCurrentToken?.currentPrice || 0) }}
       </td>
     </tr>
   </table>
 </template>
 
 <script setup lang="ts">
+import { onUnmounted, Ref, ref } from 'vue';
 import {
   currencyFormatter,
   tokenAmountFormatter,
 } from '../../../shared-module/util/number-formatters';
-import { usePaymentsStore } from 'src/transfers-module/store/payments.store';
+import { PaymentPortfolio, TokenPaymentsData } from '../../model/payments';
+import { usePaymentsStore } from '../../store/payments.store';
 
 const store = usePaymentsStore();
+
+const paymentList: Ref<PaymentPortfolio | undefined> = ref(undefined);
+const paymentsCurrentToken: Ref<TokenPaymentsData | undefined> = ref(undefined);
+const selectedToken: Ref<string | undefined> = ref(undefined);
+
+const subscriptionAllPayments = store.paymentList$.subscribe((payments) => {
+  paymentList.value = payments.data;
+});
+
+const subscriptionCurrentTokenPayments = store.paymentsCurrentToken$.subscribe(
+  (paymentOfToken) => {
+    paymentsCurrentToken.value = paymentOfToken;
+  }
+);
+
+const selectedTokenSubscription = store.selectedToken$.subscribe((token) => {
+  selectedToken.value = token;
+});
+
+onUnmounted(() => {
+  subscriptionAllPayments.unsubscribe();
+  subscriptionCurrentTokenPayments.unsubscribe();
+  selectedTokenSubscription.unsubscribe();
+});
 
 function formatCurrency(value: number) {
   if (isNaN(value)) {
     return '-';
   }
-  return currencyFormatter(store.paymentList.currency).format(value);
+  return currencyFormatter(paymentList.value?.currency).format(value);
 }
 
-function formatPrice(value: number) {
-  if (isNaN(value)) {
+function formatPrice(value: number | undefined) {
+  if (value === undefined || isNaN(value)) {
     return '-';
   }
-  return currencyFormatter(store.paymentList.currency).format(value);
+  return currencyFormatter(paymentList.value?.currency).format(value);
 }
 
 function formatTokenAmount(value: number) {

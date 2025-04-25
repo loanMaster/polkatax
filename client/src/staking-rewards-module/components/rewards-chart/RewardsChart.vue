@@ -8,10 +8,11 @@
   ></GChart>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onUnmounted, ref, Ref } from 'vue';
 import { GChart } from 'vue-google-charts';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
 import { formatDate } from '../../../shared-module/util/date-utils';
+import { Rewards } from '../../model/rewards';
 
 const rewardsStore = useStakingRewardsStore();
 
@@ -20,18 +21,27 @@ const props = defineProps({
   chartType: String,
 });
 
+const rewards: Ref<Rewards | undefined> = ref(undefined);
+
+const subscription = rewardsStore.rewards$.subscribe((dataRequest) => {
+  rewards.value = dataRequest.data;
+});
+
 const hasData = computed(() => {
-  return (rewardsStore.rewards?.values || []).length !== 0;
+  return (rewards.value?.values || []).length !== 0;
+});
+
+onUnmounted(() => {
+  subscription.unsubscribe();
 });
 
 const rewardDataTable = computed(() => {
   const header = props.currency
     ? [['date', 'Value at payout time', 'Value now']]
     : [['date', 'Amount']];
-  const minDay = rewardsStore.rewards!.values[0].isoDate;
+  const minDay = rewards.value!.values[0].isoDate;
   const maxDay =
-    rewardsStore.rewards!.values[rewardsStore.rewards!.values.length - 1]
-      .isoDate;
+    rewards.value!.values[rewards.value!.values.length - 1].isoDate;
   const temp = new Date(minDay);
   temp.setHours(0);
   temp.setMilliseconds(0);
@@ -44,12 +54,12 @@ const rewardDataTable = computed(() => {
       props.currency
         ? [
             new Date(isoDate + ':00:00:00'),
-            rewardsStore.rewards?.dailyValues[isoDate]?.value || 0,
-            rewardsStore.rewards?.dailyValues[isoDate]?.valueNow || 0,
+            rewards.value?.dailyValues[isoDate]?.value || 0,
+            rewards.value?.dailyValues[isoDate]?.valueNow || 0,
           ]
         : [
             new Date(isoDate + ':00:00:00'),
-            rewardsStore.rewards?.dailyValues[isoDate]?.amount || 0,
+            rewards.value?.dailyValues[isoDate]?.amount || 0,
           ]
     );
     temp.setDate(temp.getDate() + 1);
@@ -59,11 +69,9 @@ const rewardDataTable = computed(() => {
 
 const options = computed(() => ({
   title: `Rewards (${
-    props.currency
-      ? rewardsStore.rewards!.currency
-      : rewardsStore.rewards!.token
+    props.currency ? rewards.value!.currency : rewards.value!.token
   })`,
-  curveType: rewardsStore.rewards!.values.length > 50 ? 'function' : undefined,
+  curveType: rewards.value!.values.length > 50 ? 'function' : undefined,
   legend: { position: 'top' },
   hAxis: {
     title: 'Date',

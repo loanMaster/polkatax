@@ -1,5 +1,6 @@
-import coingeckoTokens from "../../../res/coingecko/coingecko-tokens.json";
-import substrateChains from "../../../res/substrate/substrate-chains.json";
+import coingeckoTokens from "../../../res/coingecko-tokens.json";
+import * as subscanChains from "../../../res/gen/subscan-chains.json"
+import * as substrateTokenToCoingeckoId from "../../../res/substrate-token-to-coingecko-id.json"
 import { logger } from "../logger/logger";
 
 const supportsPlatform = (platform, coingeckoToken: { platforms: { [key: string]: string } }) => {
@@ -8,7 +9,7 @@ const supportsPlatform = (platform, coingeckoToken: { platforms: { [key: string]
 }
 
 export const findCoingeckoToken = (symbol: string, chain: string): { id: string, symbol: string } | undefined => {
-    const substrateMainToken = substrateChains.chains.find(p => p.token.toLowerCase() === symbol.toLowerCase())
+    const substrateMainToken = substrateTokenToCoingeckoId.tokens.find(p => p.token.toLowerCase() === symbol.toLowerCase())
     if (substrateMainToken) {
         const token = coingeckoTokens.find(p => p.id === substrateMainToken.coingeckoId)
         if (token) {
@@ -16,7 +17,7 @@ export const findCoingeckoToken = (symbol: string, chain: string): { id: string,
         }
     }
 
-    const isSubtrateChain = substrateChains.chains.some(p => p.name === chain)
+    const isSubtrateChain = subscanChains.chains.some(p => p.label.toLowerCase() === chain.toLowerCase())
     const platform = isSubtrateChain ? 'polkadot' : chain
 
     let tokens = coingeckoTokens.filter(p => p.symbol.toLowerCase() === symbol.toLowerCase() && p.id.indexOf('-peg-') == -1)

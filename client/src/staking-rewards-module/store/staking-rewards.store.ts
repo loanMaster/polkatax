@@ -1,90 +1,105 @@
 import { defineStore } from 'pinia';
-import { StakingRewardsService } from '../service/staking-rewards.service';
-import { Reward, RewardDto, Rewards } from '../model/rewards';
-import { TimeFrames } from '../../shared-module/model/time-frames';
-import { tokenList } from '../../shared-module/const/tokenList';
-import { formatDate } from 'src/shared-module/util/date-utils';
-import { getEndDate, getStartDate } from 'src/shared-module/util/date-utils';
+import { Rewards } from '../model/rewards';
+import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
+import {
+  BehaviorSubject,
+  filter,
+  firstValueFrom,
+  from,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  switchMap,
+} from 'rxjs';
+import { Chain } from '../../shared-module/model/chain';
+import { fetchSubscanChains } from '../../shared-module/service/fetch-subscan-chains';
+import { fetchNominationPools } from '../service/fetch-nomination-pools';
+import { calculateRewardSummary } from './util/calculate-reward-summary';
+import { groupRewardsByDay } from './util/group-rewards-by-day';
+import { addIsoDateAndCurrentValue } from './util/add-iso-date-and-current-value';
+import { NominationPool } from '../model/nomination-pool';
+import {
+  CompletedRequest,
+  DataRequest,
+  PendingRequest,
+} from '../../shared-module/model/data-request';
+import { wrapDataRequest } from '../../shared-module/service/wrap-data-request';
+import { fetchStakingRewards } from '../service/fetch-staking-rewards';
 
-function groupRewardsByDay(rewards: Reward[]) {
-  const groupedByDay: {
-    [key: string]: { amount: number; value: number; valueNow: number };
-  } = {};
-  rewards.forEach((r: Reward) => {
-    if (!groupedByDay[r.isoDate]) {
-      groupedByDay[r.isoDate] = {
-        amount: 0,
-        value: 0,
-        valueNow: 0,
-      };
-    }
-    groupedByDay[r.isoDate].amount += r.amount;
-    groupedByDay[r.isoDate].value += r.value;
-    groupedByDay[r.isoDate].valueNow += r.valueNow || 0;
-  });
-  return groupedByDay;
-}
+const chainList$ = from(fetchSubscanChains());
+const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
+  domain: 'polkadot',
+  label: 'Polkadot',
+  token: 'DOT',
+});
+const nominationPools$: Observable<DataRequest<NominationPool[]>> = chain$.pipe(
+  filter((c) => !!c),
+  switchMap((chain: Chain) =>
+    merge(
+      of(new PendingRequest<NominationPool[]>([])),
+      from(fetchNominationPools(chain.domain)).pipe(wrapDataRequest())
+    )
+  )
+);
+const rewards$ = new ReplaySubject<DataRequest<Rewards>>(1);
+const sortRewards = (rewards: Rewards) =>
+  rewards.values.sort((a, b) => a.block - b.block);
 
 export const useStakingRewardsStore = defineStore('rewards', {
   state: () => {
     return {
-      rewards: undefined as Rewards | undefined,
+      rewards$: rewards$.asObservable(),
       nominationPoolId: 0,
-      chain: '',
-      currency: '',
+      currency: 'USD',
       address: '',
-      timeFrame: TimeFrames.currentMonth as string,
+      timeFrame: 'This Month',
+      chainList$,
+      chain$: chain$.asObservable(),
+      nominationPools$,
     };
   },
-  getters: {
-    token(): string {
-      return tokenList.find((t) => t.chain === this.chain)?.symbol || '';
-    },
-  },
   actions: {
+    selectChain(newChain: Chain) {
+      chain$.next(newChain);
+    },
     async fetchRewards() {
-      const startDate = getStartDate(this.timeFrame);
-      const endDate = getEndDate(this.timeFrame);
-      const rewardsDto = await new StakingRewardsService().fetchStakingRewards(
-        this.chain,
-        this.address.trim(),
-        this.currency,
-        this.nominationPoolId,
-        startDate,
-        endDate
-      );
-      this.rewards = {
-        values: [],
-        summary: {
-          amount: 0,
-          value: 0,
-          valueNow: 0,
-        },
-        nominationPoolId: this.nominationPoolId,
-        currentPrice: rewardsDto.currentPrice,
-        timeFrame: this.timeFrame,
-        startDate,
-        endDate,
-        chain: this.chain,
-        token: tokenList.find((t) => t.chain === this.chain)!.symbol,
-        currency: this.currency,
-        address: this.address,
-        dailyValues: {},
-      };
-      this.rewards!.values = rewardsDto.values.map((v: RewardDto) => {
-        const isoDate = formatDate(v.date * 1000);
-        const reward = {
-          ...v,
-          isoDate: isoDate,
-          valueNow: v.amount * rewardsDto.currentPrice,
+      try {
+        rewards$.next(new PendingRequest(undefined));
+        const startDate = getStartDate(this.timeFrame);
+        const endDate = getEndDate(this.timeFrame);
+        const chain = (await firstValueFrom(chain$)).domain;
+        const rewardsDto = await fetchStakingRewards(
+          chain,
+          this.address.trim(),
+          this.currency,
+          this.nominationPoolId,
+          startDate,
+          endDate
+        );
+        const valuesWithIsoDate = addIsoDateAndCurrentValue(
+          rewardsDto.values,
+          rewardsDto.currentPrice
+        );
+        const result: Rewards = {
+          values: valuesWithIsoDate,
+          summary: calculateRewardSummary(valuesWithIsoDate),
+          nominationPoolId: this.nominationPoolId,
+          currentPrice: rewardsDto.currentPrice,
+          timeFrame: this.timeFrame,
+          startDate,
+          endDate,
+          chain,
+          token: rewardsDto.token,
+          currency: this.currency,
+          address: this.address,
+          dailyValues: groupRewardsByDay(valuesWithIsoDate),
         };
-        this.rewards!.summary.amount += v.amount;
-        this.rewards!.summary.value += v.value;
-        this.rewards!.summary.valueNow += reward.valueNow;
-        return reward as Reward;
-      });
-      this.rewards!.values.sort((a, b) => (a > b ? 1 : -1));
-      this.rewards!.dailyValues = groupRewardsByDay(this.rewards!.values);
+        sortRewards(result);
+        rewards$.next(new CompletedRequest(result));
+      } catch (error) {
+        rewards$.next({ pending: false, error, data: undefined });
+      }
     },
   },
 });

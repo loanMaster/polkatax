@@ -10,10 +10,10 @@
       <template v-slot:top>
         <div>
           <span class="text-h6" style="line-break: anywhere"
-            >Rewards ({{ rewardsStore.rewards!.chain }}) - {{ timeFrame }}</span
+            >Rewards ({{ rewards?.chain }}) - {{ timeFrame }}</span
           ><br />
           <span class="text-h6" style="line-break: anywhere"
-            >Address {{ rewardsStore.rewards!.address }}</span
+            >Address {{ rewards?.address }}</span
           >
         </div>
         <q-space />
@@ -29,18 +29,21 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue';
 import { saveAs } from 'file-saver';
 import { Parser } from '@json2csv/plainjs';
-import { Reward } from '../../model/rewards';
+import { Reward, Rewards } from '../../model/rewards';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
 import {
   tokenAmountFormatter,
   valueFormatter,
 } from '../../../shared-module/util/number-formatters';
-import { formatTimeFrame } from '../../../shared-module/util/date-utils';
+import {
+  formatTimeFrame,
+  formatDate,
+  formatDateUTC,
+} from '../../../shared-module/util/date-utils';
 import { Swap } from 'app/client/src/swap-module/model/swaps';
-import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
 
 interface RewardsTableHeader extends Reward {
   'Reward token': string;
@@ -50,14 +53,22 @@ interface RewardsTableHeader extends Reward {
   totalAmount: number;
   totalValue: number;
   totalValueNow: number;
+  utcDate: string;
 }
 
 const rewardsStore = useStakingRewardsStore();
+const rewards: Ref<Rewards | undefined> = ref(undefined);
+
+const subscription = rewardsStore.rewards$.subscribe((dataRequest) => {
+  rewards.value = dataRequest.data;
+});
+
+onUnmounted(() => {
+  subscription.unsubscribe();
+});
 
 const timeFrame = computed(() => {
-  return rewardsStore.rewards
-    ? formatTimeFrame(rewardsStore.rewards!.timeFrame)
-    : '';
+  return rewards.value ? formatTimeFrame(rewards.value!.timeFrame) : '';
 });
 
 const columns = computed(() => [
@@ -87,7 +98,7 @@ const columns = computed(() => [
   {
     name: 'price',
     align: 'right',
-    label: `Price (${rewardsStore?.rewards?.currency})`,
+    label: `Price (${rewards.value?.currency})`,
     field: 'price',
     format: (num: number) => valueFormatter.format(num),
     sortable: true,
@@ -95,7 +106,7 @@ const columns = computed(() => [
   {
     name: 'value',
     align: 'right',
-    label: `Value (${rewardsStore?.rewards?.currency})`,
+    label: `Value (${rewards.value?.currency})`,
     field: 'value',
     format: (num: number) => valueFormatter.format(num),
     sortable: true,
@@ -103,7 +114,7 @@ const columns = computed(() => [
   {
     name: 'valueNow',
     align: 'right',
-    label: `Value now (${rewardsStore?.rewards?.currency})`,
+    label: `Value now (${rewards.value?.currency})`,
     field: 'valueNow',
     format: (num: number) => valueFormatter.format(num),
     sortable: true,
@@ -111,12 +122,12 @@ const columns = computed(() => [
 ]);
 
 const rows = computed(() => {
-  return rewardsStore?.rewards?.values;
+  return rewards.value?.values;
 });
 
 const tokenDigits = computed(() => {
   let max = 0;
-  rewardsStore?.rewards?.values.forEach((v: Reward) => {
+  rewards.value?.values.forEach((v: Reward) => {
     const parts = v.amount.toString().split('.');
     if (parts.length < 2) {
       return 0;
@@ -130,7 +141,7 @@ const tokenDigits = computed(() => {
 });
 
 const rewardToken = computed(() => {
-  return rewardsStore?.rewards?.token;
+  return rewards.value?.token;
 });
 
 const initialPagination = ref({
@@ -142,22 +153,22 @@ const initialPagination = ref({
 
 function exportCsv() {
   const parser = new Parser();
-  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+  const values = [...(rewards.value?.values || [])].map((v) => {
     return {
       ...v,
-      date: formatDateUTC(v.date * 1000),
+      utcDate: formatDateUTC(v.date * 1000),
     };
   });
   values[0] = {
-    'Reward token': rewardsStore?.rewards?.token,
-    Chain: rewardsStore?.rewards?.chain,
-    Currency: rewardsStore?.rewards?.currency,
-    'Wallet address': rewardsStore?.rewards?.address,
-    'NominationPool Id': rewardsStore?.rewards?.nominationPoolId || '',
+    'Reward token': rewards.value?.token,
+    Chain: rewards.value?.chain,
+    Currency: rewards.value?.currency,
+    'Wallet address': rewards.value?.address,
+    'NominationPool Id': rewards.value?.nominationPoolId || '',
     ...values[0],
-    totalAmount: rewardsStore?.rewards?.summary.amount,
-    totalValue: rewardsStore?.rewards?.summary.value,
-    totalValueNow: rewardsStore?.rewards?.summary?.valueNow,
+    totalAmount: rewards.value?.summary.amount,
+    totalValue: rewards.value?.summary.value,
+    totalValueNow: rewards.value?.summary?.valueNow,
   } as RewardsTableHeader;
   const csv = parser.parse(values);
   saveAs(
@@ -168,11 +179,11 @@ function exportCsv() {
 
 function exportKoinlyCsv() {
   const parser = new Parser();
-  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+  const values = [...(rewards.value?.values || [])].map((v) => {
     return {
       'Koinly Date': formatDateUTC(v.date * 1000),
       Amount: v.amount,
-      Currency: rewardsStore?.rewards?.token,
+      Currency: rewards.value?.token,
       TxHash: v.hash,
     };
   });
@@ -184,14 +195,14 @@ function exportKoinlyCsv() {
 }
 
 function exportJson() {
-  const values = [...(rewardsStore?.rewards?.values || [])].map((v) => {
+  const values = [...(rewards.value?.values || [])].map((v) => {
     return {
       ...v,
       date: formatDateUTC(v.date * 1000),
     };
   });
   saveAs(
-    new Blob([JSON.stringify({ ...rewardsStore.rewards, values: values })], {
+    new Blob([JSON.stringify({ ...rewardsStore.rewards$, values: values })], {
       type: 'text/plain;charset=utf-8',
     }),
     'staking-rewards.json'

@@ -1,6 +1,6 @@
 import { logger } from "../../common/logger/logger"
 import { Transfer } from "../../common/model/transfer"
-import { formatDate } from "../../common/util/format-date"
+import { formatDate } from "../../common/util/date-utils"
 import { CurrencyQuotes } from "../../crypto-currency-prices/model/crypto-currency-quotes"
 
 export const addFiatValuesToTransfers = (values: Transfer[], quotes: CurrencyQuotes): Transfer[] => {

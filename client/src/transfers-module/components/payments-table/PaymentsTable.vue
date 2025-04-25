@@ -7,20 +7,27 @@
       no-data-label="No payments found"
       :pagination="initialPagination"
       selection="multiple"
-      v-model:selected="store.excludedEntries"
+      v-model:selected="excludedPayments"
     >
-      <template v-slot:header-selection="scope">
-        Excluded <q-toggle v-model="scope.selected" />
+      <template v-slot:header-selection>
+        Excluded
+        <q-toggle
+          :model-value="allExcluded"
+          @update:model-value="toggleAllExcludedPayments"
+        />
       </template>
 
       <template v-slot:body-selection="scope">
-        <q-toggle v-model="scope.selected" />
+        <q-toggle
+          :model-value="isExcluded(scope.row.hash)"
+          @update:model-value="() => toggleExcludedPayment(scope.row.hash)"
+        />
       </template>
 
       <template v-slot:top>
         <span class="text-h6" style="line-break: anywhere"
-          >Transfers ({{ store.selectedToken.toUpperCase() }} on
-          {{ store.paymentList.chain }})</span
+          >Transfers ({{ (selectedToken || '').toUpperCase() }} on
+          {{ paymentPortfolio?.chain }})</span
         >
         <q-space />
 
@@ -51,7 +58,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue';
 import { saveAs } from 'file-saver';
 import { Parser } from '@json2csv/plainjs';
 import {
@@ -59,14 +66,62 @@ import {
   tokenAmountFormatter,
 } from '../../../shared-module/util/number-formatters';
 import { usePaymentsStore } from '../../store/payments.store';
-import { getTxLink } from 'src/shared-module/util/tx-link';
-import { Swap } from 'src/src/swap-module/model/swaps';
-import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
-import { Payment } from 'src/transfers-module/model/payments';
+import { getTxLink } from '../../../shared-module/util/tx-link';
+import { Swap } from '../../../swap-module/model/swaps';
+import {
+  formatDate,
+  formatDateUTC,
+} from '../../../shared-module/util/date-utils';
+import {
+  PaymentPortfolio,
+  TokenPayment,
+  TokenPaymentsData,
+} from '../../model/payments';
 
 const store = usePaymentsStore();
 const sortAmounts = (value1: number, value2: number) =>
   Math.abs(value1) > Math.abs(value2) ? 1 : -1;
+
+const paymentsCurrentToken: Ref<TokenPaymentsData | undefined> = ref(undefined);
+const excludedPayments: Ref<TokenPayment[]> = ref([]);
+const selectedToken: Ref<string | undefined> = ref(undefined);
+const paymentPortfolio: Ref<PaymentPortfolio | undefined> = ref(undefined);
+
+const subscription = store.paymentsCurrentToken$.subscribe((payments) => {
+  paymentsCurrentToken.value = payments;
+});
+
+const excludedPaymentsSub = store.excludedPayments$.subscribe((excluded) => {
+  excludedPayments.value = excluded;
+});
+
+const selectedTokenSub = store.selectedToken$.subscribe((token) => {
+  selectedToken.value = token;
+});
+
+const paymentPortfolioSub = store.paymentList$.subscribe((portfolioReq) => {
+  paymentPortfolio.value = portfolioReq.data;
+});
+
+const allExcluded = computed(() => {
+  return (
+    paymentsCurrentToken.value &&
+    excludedPayments.value.length === paymentsCurrentToken.value.payments.length
+  );
+});
+
+function isExcluded(hash: string) {
+  return (
+    hash && excludedPayments.value.filter((p) => p.hash === hash).length > 0
+  );
+}
+
+onUnmounted(() => {
+  subscription.unsubscribe();
+  excludedPaymentsSub.unsubscribe();
+  selectedTokenSub.unsubscribe();
+  paymentPortfolioSub.unsubscribe();
+});
 
 const columns = computed(() => [
   {
@@ -87,7 +142,7 @@ const columns = computed(() => [
   {
     name: 'transfer',
     align: 'right',
-    label: `Amount (${token.value.toUpperCase()})`,
+    label: `Amount (${(selectedToken.value || '').toUpperCase()})`,
     field: 'amount',
     format: (num: number) => amountFormatter.value.format(Math.abs(num)),
     sort: sortAmounts,
@@ -113,7 +168,7 @@ const columns = computed(() => [
   {
     name: 'price',
     align: 'right',
-    label: `Price (${store.paymentList?.currency})`,
+    label: `Price (${paymentPortfolio.value?.currency})`,
     field: 'price',
     format: (num: number) => formatValue(num),
     sortable: true,
@@ -121,7 +176,7 @@ const columns = computed(() => [
   {
     name: 'value',
     align: 'right',
-    label: `Value (${store.paymentList?.currency})`,
+    label: `Value (${paymentPortfolio.value?.currency})`,
     field: 'value',
     format: (num: number) => formatValue(Math.abs(num)),
     sort: sortAmounts,
@@ -130,7 +185,7 @@ const columns = computed(() => [
   {
     name: 'valueNow',
     align: 'right',
-    label: `Value now (${store.paymentList?.currency})`,
+    label: `Value now (${paymentPortfolio.value?.currency})`,
     field: 'valueNow',
     format: (num: number) => formatValue(Math.abs(num)),
     sort: sortAmounts,
@@ -148,18 +203,23 @@ const columns = computed(() => [
     align: 'center',
     label: 'Transaction',
     field: 'hash',
-    format: (hash: string) => getTxLink(hash, store?.paymentList?.chain || ''),
+    format: (hash: string) =>
+      getTxLink(hash, paymentPortfolio.value?.chain || ''),
     sortable: false,
   },
 ]);
 
 const rows = computed(() => {
-  return store.paymentsCurrentToken?.values;
+  return paymentsCurrentToken.value?.payments || [];
 });
 
-const token = computed(() => {
-  return store.selectedToken;
-});
+function toggleAllExcludedPayments() {
+  store.toggleAllExcludedPayments();
+}
+
+function toggleExcludedPayment(hash: string) {
+  store.toggleExcludedPayment(hash);
+}
 
 const initialPagination = ref({
   sortBy: 'block',
@@ -170,14 +230,14 @@ const initialPagination = ref({
 
 function exportKoinlyCsv() {
   const parser = new Parser();
-  const excludedHashes = store.excludedEntries.map((e) => e.hash);
-  const values = [...(store.paymentsCurrentToken?.values || [])]
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
+  const values = [...(paymentsCurrentToken.value?.payments || [])]
     .filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((v) => {
       return {
         'Koinly Date': formatDateUTC(v.date * 1000),
         Amount: v.amount,
-        Currency: store.selectedToken,
+        Currency: selectedToken.value,
         TxHash: v.hash,
       };
     });
@@ -187,8 +247,8 @@ function exportKoinlyCsv() {
 
 function exportCsv() {
   const parser = new Parser();
-  const excludedHashes = store.excludedEntries.map((e) => e.hash);
-  const values = [...(store.paymentsCurrentToken?.values || [])]
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
+  const values = [...(paymentsCurrentToken.value?.payments || [])]
     .filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((v) => {
       return {
@@ -197,26 +257,24 @@ function exportCsv() {
       };
     });
   values[0] = {
-    Token: store.selectedToken,
-    Chain: store.paymentList?.chain,
-    Currency: store.paymentList?.currency,
-    'Wallet address': store.paymentList?.address,
+    Token: selectedToken.value,
+    Chain: paymentPortfolio.value?.chain,
+    Currency: paymentPortfolio.value?.currency,
+    'Wallet address': paymentPortfolio.value?.address,
     ...values[0],
-    totalAmount: store.paymentsCurrentToken?.summary!.amount,
-    totalValue: store.paymentsCurrentToken?.summary!.value,
-    totalValueNow: store.paymentsCurrentToken?.summary?.valueNow,
+    totalAmount: paymentsCurrentToken.value?.summary!.amount,
+    totalValue: paymentsCurrentToken.value?.summary!.value,
+    totalValueNow: paymentsCurrentToken.value?.summary?.valueNow,
   } as any;
   const csv = parser.parse(values);
   saveAs(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'payments.csv');
 }
 
 function exportJson() {
-  const excludedHashes = store.excludedEntries.map((e) => e.hash);
-  const filteredPayments = store
-    .paymentsCurrentToken!.values.filter(
-      (v) => excludedHashes.indexOf(v.hash) === -1
-    )
-    .map((p: Payment) => {
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
+  const filteredPayments = paymentsCurrentToken
+    .value!.payments.filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .map((p: TokenPayment) => {
       return {
         ...p,
         date: formatDateUTC(p.date * 1000),
@@ -227,7 +285,7 @@ function exportJson() {
     new Blob(
       [
         JSON.stringify({
-          ...store.paymentsCurrentToken,
+          ...(paymentsCurrentToken.value || {}),
           values: filteredPayments,
         }),
       ],

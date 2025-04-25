@@ -12,17 +12,29 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onUnmounted, ref, Ref } from 'vue';
 import { usePaymentsStore } from '../../store/payments.store';
+import { PaymentPortfolio } from '../../model/payments';
 
 const store = usePaymentsStore();
 
-const selectedToken = computed(() => {
-  return store.selectedToken;
+const selectedToken: Ref<string | undefined> = ref(undefined);
+const paymentPortfolio: Ref<PaymentPortfolio | undefined> = ref(undefined);
+
+const tokenSubscription = store.selectedToken$.subscribe(
+  (token) => (selectedToken.value = token)
+);
+const paymentSubscription = store.paymentList$.subscribe(
+  (paymentReq) => (paymentPortfolio.value = paymentReq.data)
+);
+
+onUnmounted(() => {
+  tokenSubscription.unsubscribe();
+  paymentSubscription.unsubscribe();
 });
 
 const tokens = computed(() => {
-  return Object.keys(store.paymentList?.tokens || {}).sort((a, b) =>
+  return Object.keys(paymentPortfolio.value?.tokens || {}).sort((a, b) =>
     a > b ? 1 : -1
   );
 });
@@ -32,6 +44,6 @@ function capitalize(input: string) {
 }
 
 function onListItemClick(selectedToken: string) {
-  store.selectedToken = selectedToken;
+  store.selectToken(selectedToken);
 }
 </script>

@@ -3,12 +3,14 @@
     <span>Filter trades according to type of swap</span>
     <div class="col">
       <q-checkbox
-        v-model="store.swapTypeFilter.twoAssets"
+        :modelValue="swapTypeFilter?.twoAssets"
+        @update:model-value="toggleTwoAssets"
         label="Show trades with two assets"
       />
       <q-checkbox
-        v-model="store.swapTypeFilter.multipleAssets"
+        :modelValue="swapTypeFilter?.multipleAssets"
         label="Show trades with more than two assets"
+        @update:model-value="toggleMultipleAssets"
       >
         <q-icon name="info">
           <q-tooltip
@@ -30,31 +32,68 @@
         @update:model-value="toggleAll"
         label="All"
       />
-      <div v-for="token in store.visibleSwapTokens" v-bind:key="token">
-        <q-checkbox v-model="token.value" :label="token.name.toUpperCase()" />
+      <div v-for="token in visibleSwapTokens" v-bind:key="token.name">
+        <q-checkbox
+          :model-value="token.value"
+          :label="token.name.toUpperCase()"
+          @update:model-value="(value) => toggleOne(token.name, value)"
+        />
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { usePaymentsStore } from 'src/transfers-module/store/payments.store';
-import { computed } from 'vue';
+import { usePaymentsStore } from '../../../transfers-module/store/payments.store';
+import { computed, onUnmounted, ref, Ref } from 'vue';
 
 const store = usePaymentsStore();
+const visibleSwapTokens: Ref<{ name: string; value: boolean }[]> = ref([]);
+const swapTypeFilter: Ref<
+  | {
+      twoAssets: boolean;
+      multipleAssets: boolean;
+    }
+  | undefined
+> = ref(undefined);
+
+const visibleSwapTokensSub = store.visibleSwapTokens$.subscribe(
+  (visibleTokens) => {
+    visibleSwapTokens.value = visibleTokens;
+  }
+);
+
+function toggleOne(token: string, visible: boolean) {
+  store.updateSwapAssetVisibility(token, visible);
+}
+
+const filterSub = store.swapTypeFilter$.subscribe((filter) => {
+  swapTypeFilter.value = filter;
+});
+
+onUnmounted(() => {
+  visibleSwapTokensSub.unsubscribe();
+  filterSub.unsubscribe();
+});
+
+function toggleTwoAssets(event: boolean) {
+  store.setSwapsFilter({
+    twoAssets: event,
+    multipleAssets: swapTypeFilter.value?.multipleAssets || false,
+  });
+}
+
+function toggleMultipleAssets(event: boolean) {
+  store.setSwapsFilter({
+    twoAssets: swapTypeFilter.value?.twoAssets || false,
+    multipleAssets: event,
+  });
+}
 
 const all = computed(() => {
-  return store.visibleSwapTokens.every((t: { value: boolean }) => t.value);
+  return visibleSwapTokens.value.every((t: { value: boolean }) => t.value);
 });
 
 function toggleAll() {
-  if (all.value) {
-    store.visibleSwapTokens.forEach(
-      (t: { value: boolean }) => (t.value = false)
-    );
-  } else {
-    store.visibleSwapTokens.forEach(
-      (t: { value: boolean }) => (t.value = true)
-    );
-  }
+  store.toggleAllVisibleSwapTokens();
 }
 </script>

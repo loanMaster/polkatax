@@ -1,5 +1,5 @@
 import { HttpError } from "../error/HttpError";
-import {formatDate} from "./format-date";
+import { formatDate } from "./date-utils";
 
 export const validateDates = (startDate: Date, endDate?: Date) => {
     if (startDate > (endDate || Date.now())) {

@@ -46,56 +46,43 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, Ref } from 'vue';
-import {
-  NominationPool,
-  NominationPoolService,
-} from '../../service/nomination-pool.service';
+import { computed, onUnmounted, ref, Ref } from 'vue';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
+import { NominationPool } from '../../model/nomination-pool';
 
 const rewardsStore = useStakingRewardsStore();
 const nominationPools: Ref<NominationPool[]> = ref([]);
-const chain = ref(rewardsStore.chain);
 const model: Ref<NominationPool | undefined> = ref(undefined);
+const showLoading = ref(false);
+const nominationPoolsDisabled: Ref<boolean> = ref(false);
+const filteredPools = ref(nominationPools.value);
 
-onMounted(() => {
-  refreshPools();
+const chainSubscription = rewardsStore.chain$.subscribe((c) => {
+  nominationPoolsDisabled.value =
+    !c || (c.domain !== 'kusama' && c.domain !== 'polkadot');
 });
 
-const showLoading = ref(false);
-
-async function refreshPools() {
-  if (chain.value !== rewardsStore.chain) {
-    model.value = undefined;
-    onNewValueSelected(model.value);
-    if (rewardsStore.chain === 'polkadot' || rewardsStore.chain === 'kusama') {
-      showLoading.value = true;
-      try {
-        nominationPools.value =
-          await new NominationPoolService().fetchNominationPools(
-            rewardsStore.chain
-          );
-      } finally {
-        showLoading.value = false;
-      }
+const nominationPoolSubscription = rewardsStore.nominationPools$.subscribe(
+  (dataRequest) => {
+    if (!dataRequest.pending) {
+      showLoading.value = false;
     } else {
-      nominationPools.value = [];
+      showLoading.value = true;
     }
-    chain.value = rewardsStore.chain;
+    nominationPools.value = dataRequest.data || [];
+    filteredPools.value = nominationPools.value;
+    model.value = undefined;
   }
-}
+);
 
-rewardsStore.$subscribe(async () => refreshPools());
-
-const filteredPools = ref(nominationPools.value);
+onUnmounted(() => {
+  chainSubscription.unsubscribe();
+  nominationPoolSubscription.unsubscribe();
+});
 
 function onNewValueSelected(value: NominationPool | undefined) {
   rewardsStore.nominationPoolId = value?.pool_id || 0;
 }
-
-const nominationPoolsDisabled = computed(() => {
-  return rewardsStore.chain !== 'kusama' && rewardsStore.chain !== 'polkadot';
-});
 
 function filterFn(val: string, update: (cb: () => void) => void) {
   if (val.trim() === '') {

@@ -4,7 +4,11 @@
       class="q-my-md flex justify-between align-center items-center column-md row-lg row-xl column-xs column-sm"
     >
       <div class="dropdown">
-        <token-dropdown v-model="rewardsStore.chain" />
+        <token-dropdown
+          v-model="selectedChain"
+          :chains="chainList"
+          @update:model-value="newChainSelected"
+        />
       </div>
       <div class="dropdown">
         <currency-dropdown v-model="rewardsStore.currency" />
@@ -22,19 +26,19 @@
         :disable="isDisabled"
       />
     </div>
-    <div class="text-center q-my-xl" v-if="rewardsStore.rewards">
+    <div class="text-center q-my-xl" v-if="rewards">
       <reward-summary />
     </div>
-    <div class="justify-around items-center column" v-if="rewardsStore.rewards">
+    <div class="justify-around items-center column" v-if="rewards">
       <rewards-chart :currency="false" chartType="ColumnChart" />
       <rewards-chart :currency="false" chartType="LineChart" />
       <rewards-chart :currency="true" chartType="ColumnChart" />
       <rewards-chart :currency="true" chartType="LineChart" />
     </div>
-    <div class="table q-my-md" v-if="rewardsStore.rewards">
+    <div class="table q-my-md" v-if="rewards">
       <staking-rewards-table />
     </div>
-    <div v-if="!rewardsStore.rewards" class="q-my-xl">
+    <div v-if="!rewards" class="q-my-xl">
       <div class="text-h6 text-center">
         Export your staking rewards as CSV or JSON
       </div>
@@ -65,52 +69,82 @@ import StakingRewardsTable from './staking-rewards-table/StakingRewardsTable.vue
 import TimeFrameDropdown from '../../shared-module/components/time-frame-dropdown/TimeFrameDropdown.vue';
 import RewardSummary from './reward-summary/RewardSummary.vue';
 import NominationPoolDropdown from './nomination-pool-dropdown/NominationPoolDropdown.vue';
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useStakingRewardsStore } from '../store/staking-rewards.store';
+import { Rewards } from '../model/rewards';
+import { Chain } from '../../shared-module/model/chain';
+import { take } from 'rxjs';
 const $q = useQuasar();
 
 const rewardsStore = useStakingRewardsStore();
 
-async function fetchRewards() {
-  if (!isDisabled.value) {
-    try {
-      $q.loading.show({
-        message:
-          'Fetching staking rewards. This may take a while. Please be patient...',
-        html: true,
-        boxClass: 'bg-grey-2 text-grey-9',
-        spinnerColor: 'primary',
-      });
-      await rewardsStore.fetchRewards();
-    } catch (error: any) {
-      const message =
-        error.status && (error.status === 429 || error.status === 503)
-          ? 'Too many requests. Please try again in some minutes'
-          : error.status && error.status === 400
-          ? await error.text()
-          : 'There was an error fetching your data. Please try again later';
-      $q.dialog({
-        title:
-          error.status && error.status === 429
-            ? 'Request limit exceeded'
-            : error.status && error.status === 503
-            ? 'Server overloaded'
-            : 'An error occurred',
-        message,
-        persistent: true,
-      });
-    } finally {
-      $q.loading.hide();
-    }
+const rewards: Ref<Rewards | undefined> = ref(undefined);
+const chainList: Ref<Chain[]> = ref([]);
+const selectedChain: Ref<Chain | undefined> = ref(undefined);
+rewardsStore.chain$.pipe(take(1)).subscribe((c) => (selectedChain.value = c));
+
+const rewardsSubscription = rewardsStore.rewards$.subscribe(async (r) => {
+  rewards.value = r.data;
+  if (r.pending) {
+    $q.loading.show({
+      message:
+        'Fetching staking rewards. This may take a while. Please be patient...',
+      html: true,
+      boxClass: 'bg-grey-2 text-grey-9',
+      spinnerColor: 'primary',
+    });
+  } else if (r.error) {
+    const error = r.error;
+    const message =
+      r.error.status && (error.status === 429 || error.status === 503)
+        ? 'Too many requests. Please try again in some minutes'
+        : error.status && error.status === 400
+        ? await error.text()
+        : 'There was an error fetching your data. Please try again later';
+    $q.dialog({
+      title:
+        error.status && error.status === 429
+          ? 'Request limit exceeded'
+          : error.status && error.status === 503
+          ? 'Server overloaded'
+          : 'An error occurred',
+      message,
+      persistent: true,
+    });
+  } else {
+    $q.loading.hide();
   }
+});
+
+const chainListSubscription = rewardsStore.chainList$.subscribe(
+  (chainsList) => {
+    chainList.value = chainsList.chains.sort((a: Chain, b: Chain) =>
+      a.label > b.label ? 1 : -1
+    );
+  }
+);
+
+onUnmounted(() => {
+  rewardsSubscription.unsubscribe();
+  chainListSubscription.unsubscribe();
+});
+
+function fetchRewards() {
+  if (!isDisabled.value) {
+    rewardsStore.fetchRewards();
+  }
+}
+
+function newChainSelected(chain: Chain) {
+  rewardsStore.selectChain(chain);
 }
 
 const isDisabled = computed(() => {
   return (
     rewardsStore.address.trim() === '' ||
     !rewardsStore.currency ||
-    !rewardsStore.chain
+    !selectedChain.value
   );
 });
 

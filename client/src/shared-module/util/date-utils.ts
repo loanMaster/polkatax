@@ -18,45 +18,48 @@ export const getFirstDayOfYear = () => {
   return temp;
 };
 
-export const getStartDate = (timeFrame: string) => {
+export const getStartDate = (timeFrameKey: string) => {
+  const timeFrame = TimeFrames[timeFrameKey];
   const temp = getStartOfCurrentDay();
-  switch (timeFrame) {
-    case TimeFrames.currentMonth:
-      temp.setDate(1);
-      break;
-    case TimeFrames.currentYear:
-      temp.setDate(1);
-      temp.setMonth(0);
-      break;
-    case TimeFrames.lastSevenDays:
-      temp.setDate(temp.getDate() - 6);
-      break;
-    case TimeFrames.lastThirtyDays:
-      temp.setDate(temp.getDate() - 29);
-      break;
-    case TimeFrames.lastMonth:
-      temp.setDate(1);
-      temp.setMonth(temp.getMonth() - 1);
-      break;
-    default:
-      temp.setDate(1);
-      temp.setMonth(0);
-      temp.setFullYear(Number(timeFrame));
-      break;
+  if (typeof timeFrame === 'string') {
+    switch (timeFrame) {
+      case TimeFrames['This Month']:
+        temp.setDate(1);
+        break;
+      case TimeFrames['This Year']:
+        temp.setDate(1);
+        temp.setMonth(0);
+        break;
+      case TimeFrames['Last 7 days']:
+        temp.setDate(temp.getDate() - 6);
+        break;
+      case TimeFrames['Last 30 days']:
+        temp.setDate(temp.getDate() - 29);
+        break;
+      case TimeFrames['Last Month']:
+        temp.setDate(1);
+        temp.setMonth(temp.getMonth() - 1);
+        break;
+    }
+  } else {
+    temp.setDate(1);
+    temp.setMonth(0);
+    temp.setFullYear(Number(timeFrame));
   }
   return temp.getTime();
 };
 
-export const getEndDate = (timeFrame: string) => {
+export const getEndDate = (timeFrameKey: string) => {
+  const timeFrame = TimeFrames[timeFrameKey];
   const temp = getStartOfCurrentDay();
   switch (timeFrame) {
-    case TimeFrames.currentMonth:
-    case TimeFrames.currentYear:
-    case TimeFrames.lastSevenDays:
-    case TimeFrames.lastThirtyDays:
+    case TimeFrames['This Month']:
+    case TimeFrames['This Year']:
+    case TimeFrames['Last 7 days']:
+    case TimeFrames['Last 30 days']:
       temp.setDate(temp.getDate() + 1);
       break;
-    case TimeFrames.lastMonth:
+    case TimeFrames['Last Month']:
       temp.setDate(1);
       break;
     default:

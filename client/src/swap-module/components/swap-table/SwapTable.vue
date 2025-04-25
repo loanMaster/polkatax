@@ -9,7 +9,7 @@
     >
       <template v-slot:top>
         <span class="text-h6" style="line-break: anywhere"
-          >Trades on {{ store.swaps.chain }}</span
+          >Trades on {{ swaps?.chain }}</span
         >
         <q-space />
 
@@ -97,19 +97,48 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue';
 import { saveAs } from 'file-saver';
 import { Parser } from '@json2csv/plainjs';
 import {
   formatTokenAmount,
   formatValue,
 } from '../../../shared-module/util/number-formatters';
-import { usePaymentsStore } from 'src/transfers-module/store/payments.store';
-import { Swap, SwappedTokens } from 'app/client/src/swap-module/model/swaps';
-import { formatDate, formatDateUTC } from 'src/shared-module/util/date-utils';
-import { getTxLink } from 'src/shared-module/util/tx-link';
+import { usePaymentsStore } from '../../../transfers-module/store/payments.store';
+import {
+  Swap,
+  SwapList,
+  SwappedTokens,
+  TradingSummary,
+} from '../../../swap-module/model/swaps';
+import {
+  formatDate,
+  formatDateUTC,
+} from '../../../shared-module/util/date-utils';
+import { getTxLink } from '../../../shared-module/util/tx-link';
 
 const store = usePaymentsStore();
+const swaps: Ref<SwapList | undefined> = ref(undefined);
+const swapSummary: Ref<TradingSummary[]> = ref([]);
+const filteredSwaps: Ref<Swap[]> = ref([]);
+
+const swapListSub = store.swaps$.subscribe((swapListReq) => {
+  swaps.value = swapListReq.data;
+});
+
+const swapSummarySub = store.swapSummary$.subscribe((tradingSummary) => {
+  swapSummary.value = tradingSummary;
+});
+
+const filteredSwapSub = store.filteredSwaps$.subscribe((swaps) => {
+  filteredSwaps.value = swaps;
+});
+
+onUnmounted(() => {
+  swapListSub.unsubscribe();
+  swapSummarySub.unsubscribe();
+  filteredSwapSub.unsubscribe();
+});
 
 const filterSwappedTokens = (tokens: SwappedTokens, sales = true) =>
   Object.keys(tokens).filter(
@@ -183,7 +212,7 @@ const columns = computed(() => [
   {
     name: 'pricesold',
     align: 'right',
-    label: `Price (${store.swaps?.currency})`,
+    label: `Price (${swaps.value?.currency})`,
     field: 'priceSold',
     format: (amounts: number[]) => amounts.map((amount) => formatValue(amount)),
     sort: sortAmounts,
@@ -210,7 +239,7 @@ const columns = computed(() => [
   {
     name: 'pricebought',
     align: 'right',
-    label: `Price (${store.swaps?.currency})`,
+    label: `Price (${swaps.value?.currency})`,
     format: (value: number[]) => value.map((value) => formatValue(value)),
     sort: sortAmounts,
     field: 'priceBought',
@@ -219,7 +248,7 @@ const columns = computed(() => [
   {
     name: 'value',
     align: 'right',
-    label: `Transaction Value (${store.swaps?.currency})`,
+    label: `Transaction Value (${swaps.value?.currency})`,
     format: (value: number) => formatValue(value),
     field: 'value',
     sortable: true,
@@ -237,14 +266,14 @@ const columns = computed(() => [
     align: 'center',
     label: 'Transaction',
     field: 'hash',
-    format: (hash: string) => getTxLink(hash, store.swaps.chain),
+    format: (hash: string) => getTxLink(hash, swaps.value?.chain || ''),
     sortable: false,
   },
 ]);
 
 const rows = computed(() => {
   const flattened: any[] = [];
-  store.filteredSwaps.forEach((swap: Swap) => {
+  filteredSwaps.value.forEach((swap: Swap) => {
     flattened.push({
       block: swap.block,
       date: swap.date,
@@ -331,16 +360,16 @@ function extractRowForCSVExport(swap: Swap) {
 function exportCsv() {
   const parser = new Parser();
   const flattened: any[] = [];
-  store.filteredSwaps.forEach((swap: Swap) => {
+  filteredSwaps.value.forEach((swap: Swap) => {
     const [firstTokenPair, otherTokens] = extractRowForCSVExport(swap);
     flattened.push(firstTokenPair);
     otherTokens.forEach((t: any) => flattened.push(t));
   });
   const values = [...flattened];
   values[0] = {
-    Chain: store.swaps.chain,
-    Currency: store.swaps.currency,
-    'Wallet address': store.swaps.address,
+    Chain: swaps.value?.chain,
+    Currency: swaps.value?.currency,
+    'Wallet address': swaps.value?.address,
     ...values[0],
   } as any;
   const csv = parser.parse(values);
@@ -350,7 +379,7 @@ function exportCsv() {
 function exportKoinlyCsv() {
   const parser = new Parser();
   const flattened: any[] = [];
-  store.filteredSwaps.forEach((swap: Swap) => {
+  filteredSwaps.value.forEach((swap: Swap) => {
     const [firstTokenPair, otherTokens] = extractRowForCSVExport(swap);
     flattened.push({
       Date: firstTokenPair.date,
@@ -378,7 +407,7 @@ function exportKoinlyCsv() {
 }
 
 function exportJson() {
-  const swapsWithDateCol = store.filteredSwaps.map((s: Swap) => {
+  const swapsWithDateCol = filteredSwaps.value.map((s: Swap) => {
     return {
       ...s,
       date: formatDateUTC(s.date * 1000),
@@ -388,7 +417,7 @@ function exportJson() {
     new Blob(
       [
         JSON.stringify({
-          ...store.swaps,
+          ...(swaps.value || {}),
           swaps: swapsWithDateCol,
         }),
       ],

@@ -2,7 +2,7 @@ export interface SwappedTokens {
   [token: string]: {
     amount: number;
     value: number;
-    valueNow: number;
+    valueNow: number | undefined;
     price: number;
     type: 'sell' | 'buy';
   };
@@ -12,7 +12,6 @@ export interface Swap {
   date: number;
   block: number;
   hash: string;
-  amount: number;
   contract: string;
   functionName: string;
   tokens: SwappedTokens;
@@ -20,8 +19,8 @@ export interface Swap {
 
 export interface SummaryPosition {
   amount: number;
-  value: number;
-  valueNow: number;
+  value?: number;
+  valueNow?: number;
 }
 
 export interface TradingSummary {

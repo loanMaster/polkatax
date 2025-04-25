@@ -3,7 +3,13 @@
     <div
       class="q-my-md flex justify-between align-center items-center column-md row-lg row-xl column-xs column-sm"
     >
-      <div class="dropdown"><chain-dropdown v-model="store.chain" /></div>
+      <div class="dropdown">
+        <chain-dropdown
+          v-model="selectedChain"
+          :chains="chainList"
+          @update:model-value="newChainSelected"
+        />
+      </div>
       <div class="dropdown"><currency-dropdown v-model="store.currency" /></div>
       <div class="dropdown">
         <date-picker
@@ -45,11 +51,9 @@
       <q-tab name="swaps" label="Swaps" />
     </q-tabs>
     <div>
-      <token-transfers
-        v-if="store.paymentList !== undefined && tab === 'payments'"
-      />
-      <token-swaps v-if="store.paymentList !== undefined && tab === 'swaps'" />
-      <div v-if="store.paymentList === undefined" class="q-my-xl">
+      <token-transfers v-if="paymentList !== undefined && tab === 'payments'" />
+      <token-swaps v-if="paymentList !== undefined && tab === 'swaps'" />
+      <div v-if="paymentList === undefined" class="q-my-xl">
         <div class="text-h6 text-center">
           ⚠ This is an Alpha version and subject to change ⚠
         </div>
@@ -86,18 +90,31 @@ import DatePicker from '../../shared-module/components/date-picker/DatePicker.vu
 import TokenTransfers from './TokenTransfers.vue';
 import TokenSwaps from '../../swap-module/components/TokenSwaps.vue';
 
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue';
 import { date, useQuasar } from 'quasar';
 import { usePaymentsStore } from '../store/payments.store';
+import { PaymentPortfolio } from '../model/payments';
+import { Chain } from '../../shared-module/model/chain';
+import { take } from 'rxjs';
 const $q = useQuasar();
 
 const store = usePaymentsStore();
 const tab = ref('payments');
 const dateValidationError = ref('');
 
-async function fetchRewards() {
-  if (!isDisabled.value) {
-    try {
+const paymentList: Ref<PaymentPortfolio | undefined> = ref(undefined);
+const chainList: Ref<Chain[]> = ref([]);
+const selectedChain: Ref<Chain | undefined> = ref(undefined);
+store.chain$.pipe(take(1)).subscribe((c) => (selectedChain.value = c));
+
+const chainSubscription = store.chainList$.subscribe((chains) => {
+  chainList.value = chains;
+});
+
+const paymentSubscription = store.paymentList$.subscribe(
+  async (paymentsRequest) => {
+    paymentList.value = paymentsRequest.data;
+    if (paymentsRequest.pending) {
       $q.loading.show({
         message:
           'Fetching transfers. This may take a while. Please be patient...',
@@ -105,8 +122,8 @@ async function fetchRewards() {
         boxClass: 'bg-grey-2 text-grey-9',
         spinnerColor: 'primary',
       });
-      await store.fetchTransfers();
-    } catch (error: any) {
+    } else if (paymentsRequest.error) {
+      const error = paymentsRequest.error;
       const message =
         error.status && (error.status === 429 || error.status === 503)
           ? 'Too many requests. Please try again in some minutes'
@@ -123,17 +140,32 @@ async function fetchRewards() {
         message,
         persistent: true,
       });
-    } finally {
+    } else {
       $q.loading.hide();
     }
   }
+);
+
+onUnmounted(() => {
+  paymentSubscription.unsubscribe();
+  chainSubscription.unsubscribe();
+});
+
+function fetchRewards() {
+  if (!isDisabled.value) {
+    store.fetchTransfers();
+  }
+}
+
+function newChainSelected(chain: Chain) {
+  store.selectChain(chain);
 }
 
 const isDisabled = computed(() => {
   return (
     store.address.trim() === '' ||
     !store.currency ||
-    !store.chain ||
+    !selectedChain.value ||
     !validateDate()
   );
 });
