@@ -75,10 +75,13 @@ To run the server locally you should provide multiple API keys as environment va
 | polyscan | POLYSCAN_API_KEY |  transactions / trades on Polygon |
 
 
-## Add a new token
+## Update substrate chain list
 
-Both the client and server have a list of tokens / chains, which need to be updated
-(substrate-chains.json in the server project, tokenList.ts in the client project).
+Run 
+```bash
+npm generate-subscan-chain-list
+```
+This will generate a new list of substrate chains in the `res/gen/` folder.
 
 ## coingecko
 
