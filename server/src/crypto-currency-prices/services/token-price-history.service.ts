@@ -89,10 +89,12 @@ export class TokenPriceHistoryService {
                     }
                 } catch (error) {
                     if (error.statusCode === 404) {
+                        this.removeFromSyncList(symbol)
                         tokensToSync.tokens.splice(tokensToSync.tokens.findIndex(t => t === symbol), 1)
                     }
                     logger.warn(`Error syncing token ${symbol} for currency ${currency}`, error)
                     logger.warn(error)
+                    this.removeFromSyncList(symbol)
                     break;
                 }
             }
@@ -114,6 +116,11 @@ export class TokenPriceHistoryService {
             tokensToSync.tokens.push(symbol)
             fs.writeFileSync(data_folder + 'tokens-to-sync.json', JSON.stringify(tokensToSync), 'utf-8')
         }
+    }
+
+    private removeFromSyncList(symbol: string) {
+        const tokensToSync = this.getTokensToSync().tokens.filter(t => t !== symbol)
+        fs.writeFileSync(data_folder + 'tokens-to-sync.json', JSON.stringify({ tokens: tokensToSync }), 'utf-8')
     }
 
     private informationUpToDate(symbol: string, currency: string) {

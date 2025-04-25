@@ -42,7 +42,7 @@ const chainList$ = from(fetchSubscanChains()).pipe(
 const swaps$ = new ReplaySubject<DataRequest<SwapList>>(1);
 const payments$ = new ReplaySubject<DataRequest<PaymentPortfolio>>(1);
 const paymentsFilter$ = new BehaviorSubject<string>('All transfers');
-const excludedEntries$ = new BehaviorSubject([]);
+const excludedPayments$ = new BehaviorSubject<{ hash: string }[]>([]);
 const swapTypeFilter$ = new BehaviorSubject({
   twoAssets: true,
   multipleAssets: true,
@@ -65,7 +65,7 @@ export const usePaymentsStore = defineStore('payments', {
       paymentsFilter$: paymentsFilter$.asObservable(),
       startDate: date.formatDate(getFirstDayOfYear().getTime(), 'YYYY/MM/DD'),
       endDate: date.formatDate(Date.now(), 'YYYY/MM/DD'),
-      excludedEntries$: excludedEntries$.asObservable(),
+      excludedPayments$: excludedPayments$.asObservable(),
       swapTypeFilter$: swapTypeFilter$.asObservable(),
       visibleSwapTokens$: visibleSwapTokens$.asObservable(),
     };
@@ -79,7 +79,7 @@ export const usePaymentsStore = defineStore('payments', {
         payments$,
         selectedToken$,
         paymentsFilter$,
-        excludedEntries$,
+        excludedPayments$,
       ]).pipe(map(filterPayments));
     },
     filteredSwaps$(): Observable<Swap[]> {
@@ -108,6 +108,30 @@ export const usePaymentsStore = defineStore('payments', {
     setSwapsFilter(newFilter: { twoAssets: boolean; multipleAssets: boolean }) {
       swapTypeFilter$.next(newFilter);
     },
+    async toggleAllExcludedPayments() {
+      const excludedPayments = await firstValueFrom(excludedPayments$);
+      if (excludedPayments.length === 0) {
+        const payments = await firstValueFrom(this.paymentsCurrentToken$);
+        excludedPayments$.next(
+          (payments?.payments || [])
+            .filter((p) => p.hash)
+            .map((p) => ({ hash: p.hash! }))
+        );
+      } else {
+        excludedPayments$.next([]);
+      }
+    },
+    async toggleExcludedPayment(hash: string) {
+      const excludedPayments = await firstValueFrom(excludedPayments$);
+      const isExcluded = excludedPayments.filter((e) => e.hash === hash).length;
+      if (isExcluded) {
+        excludedPayments$.next([
+          ...excludedPayments.filter((p) => p.hash !== hash),
+        ]);
+      } else {
+        excludedPayments$.next([...excludedPayments, { hash }]);
+      }
+    },
     async toggleAllVisibleSwapTokens() {
       const swapTokens = await firstValueFrom(visibleSwapTokens$);
       const allActive = swapTokens.filter((t) => t.value).length > 0;
@@ -135,54 +159,59 @@ export const usePaymentsStore = defineStore('payments', {
       swaps$.next({ data: undefined, pending: true });
       payments$.next({ data: undefined, pending: true });
 
-      const chain = await firstValueFrom(chain$);
-      const startDate = new Date(this.startDate).getTime();
-      const endDate = new Date(this.endDate);
-      endDate.setHours(23);
-      endDate.setMinutes(59);
-      endDate.setSeconds(59);
-      const metadata = {
-        chain: chain.domain,
-        address: this.address,
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate.getTime()),
-        currency: this.currency,
-      };
-      const { swaps, transfers, currentPrices }: PaymentsResponseDto =
-        await fetchSwapsAndTransfers(
-          chain.domain,
-          this.address.trim(),
-          this.currency,
+      try {
+        const chain = await firstValueFrom(chain$);
+        const startDate = new Date(this.startDate).getTime();
+        const endDate = new Date(this.endDate);
+        endDate.setHours(23);
+        endDate.setMinutes(59);
+        endDate.setSeconds(59);
+        const metadata = {
+          chain: chain.domain,
+          address: this.address,
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate.getTime()),
+          currency: this.currency,
+        };
+        const { swaps, transfers, currentPrices }: PaymentsResponseDto =
+          await fetchSwapsAndTransfers(
+            chain.domain,
+            this.address.trim(),
+            this.currency,
+            startDate,
+            endDate.getTime()
+          );
+
+        const paymentList: PaymentPortfolio = {
+          ...metadata,
+          tokens: addCurrentValueAndSummaryToTransfers(transfers),
+        };
+
+        const selectedToken = Object.keys(paymentList.tokens).sort((a, b) =>
+          a > b ? 1 : -1
+        )[0];
+
+        const swapList: SwapList = {
+          ...metadata,
           startDate,
-          endDate.getTime()
-        );
+          endDate: endDate.getTime(),
+          swaps: addCurrentValueToSwappedTokens(swaps, currentPrices),
+          currentPrices,
+        };
 
-      const paymentList: PaymentPortfolio = {
-        ...metadata,
-        tokens: addCurrentValueAndSummaryToTransfers(transfers),
-      };
+        const visibleSwapTokens = extractTokensFromSwaps(swapList).map((t) => ({
+          name: t,
+          value: true,
+        }));
 
-      const selectedToken = Object.keys(paymentList.tokens).sort((a, b) =>
-        a > b ? 1 : -1
-      )[0];
-
-      const swapList: SwapList = {
-        ...metadata,
-        startDate,
-        endDate: endDate.getTime(),
-        swaps: addCurrentValueToSwappedTokens(swaps, currentPrices),
-        currentPrices,
-      };
-
-      const visibleSwapTokens = extractTokensFromSwaps(swapList).map((t) => ({
-        name: t,
-        value: true,
-      }));
-
-      swaps$.next({ data: swapList, pending: false });
-      visibleSwapTokens$.next(visibleSwapTokens);
-      payments$.next({ data: paymentList, pending: false });
-      selectedToken$.next(selectedToken);
+        swaps$.next({ data: swapList, pending: false });
+        visibleSwapTokens$.next(visibleSwapTokens);
+        payments$.next({ data: paymentList, pending: false });
+        selectedToken$.next(selectedToken);
+      } catch (error) {
+        swaps$.next({ data: undefined, pending: false, error });
+        payments$.next({ data: undefined, pending: false, error });
+      }
     },
   },
 });

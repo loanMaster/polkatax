@@ -6,7 +6,7 @@ export const filterPayments = ([
   paymentsRequest,
   selectedToken,
   paymentsFilter,
-  excludedEntries,
+  excludedPayments,
 ]: [DataRequest<PaymentPortfolio>, string, string, any[]]) => {
   const payments = paymentsRequest.data;
   if (!payments || !payments?.tokens?.[selectedToken]) {
@@ -23,7 +23,7 @@ export const filterPayments = ([
   );
   paymentsForToken.summary = calculatePaymentsSummary(
     paymentsForToken.payments,
-    excludedEntries
+    excludedPayments
   );
   return paymentsForToken;
 };

@@ -1,6 +1,6 @@
 import { logger } from "../../common/logger/logger"
 import { Swap } from "../../common/model/swap"
-import { formatDate } from "../../common/util/format-date"
+import { formatDate } from "../../common/util/date-utils"
 import { CurrencyQuotes } from "../../crypto-currency-prices/model/crypto-currency-quotes"
 
 export const addFiatValuesToSwaps = (swaps: Swap[], quotes: { [token: string]: CurrencyQuotes }): Swap[] => {

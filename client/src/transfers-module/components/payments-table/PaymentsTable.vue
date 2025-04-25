@@ -7,14 +7,21 @@
       no-data-label="No payments found"
       :pagination="initialPagination"
       selection="multiple"
-      v-model:selected="excludedEntries"
+      v-model:selected="excludedPayments"
     >
-      <template v-slot:header-selection="scope">
-        Excluded <q-toggle v-model="scope.selected" />
+      <template v-slot:header-selection>
+        Excluded
+        <q-toggle
+          :model-value="allExcluded"
+          @update:model-value="toggleAllExcludedPayments"
+        />
       </template>
 
       <template v-slot:body-selection="scope">
-        <q-toggle v-model="scope.selected" />
+        <q-toggle
+          :model-value="isExcluded(scope.row.hash)"
+          @update:model-value="() => toggleExcludedPayment(scope.row.hash)"
+        />
       </template>
 
       <template v-slot:top>
@@ -76,7 +83,7 @@ const sortAmounts = (value1: number, value2: number) =>
   Math.abs(value1) > Math.abs(value2) ? 1 : -1;
 
 const paymentsCurrentToken: Ref<TokenPaymentsData | undefined> = ref(undefined);
-const excludedEntries: Ref<TokenPayment[]> = ref([]);
+const excludedPayments: Ref<TokenPayment[]> = ref([]);
 const selectedToken: Ref<string | undefined> = ref(undefined);
 const paymentPortfolio: Ref<PaymentPortfolio | undefined> = ref(undefined);
 
@@ -84,8 +91,8 @@ const subscription = store.paymentsCurrentToken$.subscribe((payments) => {
   paymentsCurrentToken.value = payments;
 });
 
-const excludedEntriesSub = store.excludedEntries$.subscribe((excluded) => {
-  excludedEntries.value = excluded;
+const excludedPaymentsSub = store.excludedPayments$.subscribe((excluded) => {
+  excludedPayments.value = excluded;
 });
 
 const selectedTokenSub = store.selectedToken$.subscribe((token) => {
@@ -96,9 +103,22 @@ const paymentPortfolioSub = store.paymentList$.subscribe((portfolioReq) => {
   paymentPortfolio.value = portfolioReq.data;
 });
 
+const allExcluded = computed(() => {
+  return (
+    paymentsCurrentToken.value &&
+    excludedPayments.value.length === paymentsCurrentToken.value.payments.length
+  );
+});
+
+function isExcluded(hash: string) {
+  return (
+    hash && excludedPayments.value.filter((p) => p.hash === hash).length > 0
+  );
+}
+
 onUnmounted(() => {
   subscription.unsubscribe();
-  excludedEntriesSub.unsubscribe();
+  excludedPaymentsSub.unsubscribe();
   selectedTokenSub.unsubscribe();
   paymentPortfolioSub.unsubscribe();
 });
@@ -193,6 +213,14 @@ const rows = computed(() => {
   return paymentsCurrentToken.value?.payments || [];
 });
 
+function toggleAllExcludedPayments() {
+  store.toggleAllExcludedPayments();
+}
+
+function toggleExcludedPayment(hash: string) {
+  store.toggleExcludedPayment(hash);
+}
+
 const initialPagination = ref({
   sortBy: 'block',
   descending: true,
@@ -202,7 +230,7 @@ const initialPagination = ref({
 
 function exportKoinlyCsv() {
   const parser = new Parser();
-  const excludedHashes = excludedEntries.value.map((e) => e.hash);
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const values = [...(paymentsCurrentToken.value?.payments || [])]
     .filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((v) => {
@@ -219,7 +247,7 @@ function exportKoinlyCsv() {
 
 function exportCsv() {
   const parser = new Parser();
-  const excludedHashes = excludedEntries.value.map((e) => e.hash);
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const values = [...(paymentsCurrentToken.value?.payments || [])]
     .filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((v) => {
@@ -243,7 +271,7 @@ function exportCsv() {
 }
 
 function exportJson() {
-  const excludedHashes = excludedEntries.value.map((e) => e.hash);
+  const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const filteredPayments = paymentsCurrentToken
     .value!.payments.filter((v) => excludedHashes.indexOf(v.hash) === -1)
     .map((p: TokenPayment) => {

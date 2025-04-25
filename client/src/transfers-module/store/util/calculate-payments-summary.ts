@@ -3,9 +3,9 @@ import { sumOrNaN } from './sum-or-nan';
 
 export const calculatePaymentsSummary = (
   payments: TokenPayment[],
-  excludedEntries: { hash: string }[] = []
+  excludedPayments: { hash: string }[] = []
 ) => {
-  const excludedHashes = excludedEntries.map((e) => e.hash);
+  const excludedHashes = excludedPayments.map((e) => e.hash);
   const summary: any = { value: 0, amount: 0, valueNow: 0 };
   payments
     .filter((v) => !v.hash || excludedHashes.indexOf(v.hash) === -1)
