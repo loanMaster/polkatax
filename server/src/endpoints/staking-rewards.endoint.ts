@@ -10,7 +10,7 @@ export const stakingRewardsEndpoint: RouteOptions = {
     schema: {
         params: Joi.object({
             chain: Joi.string().custom((value) => {
-                const result = subscanChains.chains.find(p => p.label.toLowerCase() === value.toLowerCase())
+                const result = subscanChains.chains.find(p => p.domain.toLowerCase() === value.toLowerCase())
                 if (!result) {
                     throw new HttpError(400, "Chain " + value + " not found")
                 }
