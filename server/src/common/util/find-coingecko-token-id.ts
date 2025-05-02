@@ -1,7 +1,7 @@
 import coingeckoTokens from "../../../res/coingecko-tokens.json";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import * as substrateTokenToCoingeckoId from "../../../res/substrate-token-to-coingecko-id.json";
-import { logger } from "../logger/logger";
+import pino from "pino";
 
 const supportsPlatform = (
   platform,
@@ -15,6 +15,7 @@ const supportsPlatform = (
 export const findCoingeckoToken = (
   symbol: string,
   chain: string,
+  logger: pino.Logger,
 ): { id: string; symbol: string } | undefined => {
   const substrateMainToken = substrateTokenToCoingeckoId.tokens.find(
     (p) => p.token.toLowerCase() === symbol.toLowerCase(),
@@ -39,10 +40,7 @@ export const findCoingeckoToken = (
       p.id.indexOf("-peg-") == -1,
   );
   if (tokens.length === 0) {
-    logger.warn(
-      "Coingecko token for symbol " + symbol + " not found",
-      new Error().stack,
-    );
+    logger.info("No coingecko id found for token " + symbol);
     return undefined;
   }
   const polkadotTokens = tokens.filter((p) => supportsPlatform("polkadot", p));

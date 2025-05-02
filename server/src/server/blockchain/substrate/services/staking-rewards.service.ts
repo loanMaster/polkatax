@@ -4,7 +4,7 @@ import { SubscanService } from "../api/subscan.service";
 import { StakingReward } from "../model/staking-reward";
 import { Transfer } from "../../../../model/transfer";
 import { HttpError } from "../../../../common/error/HttpError";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 
 export class StakingRewardsService {
   constructor(

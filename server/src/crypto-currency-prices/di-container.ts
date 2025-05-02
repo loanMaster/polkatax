@@ -1,5 +1,4 @@
 import { asClass, Lifetime, InjectionMode, createContainer } from "awilix";
-import { CryptoCurrencyPricesFacade } from "./crypto-currency-prices.facade";
 import { TokenPriceHistoryService } from "./services/token-price-history.service";
 import { TokenPriceService } from "./services/token-price.service";
 import { CoingeckoRestService } from "./coingecko-api/coingecko.rest-service";
@@ -9,9 +8,6 @@ export const DIContainer = createContainer({
   strict: true,
 }).register({
   coingeckoRestService: asClass(CoingeckoRestService, {
-    lifetime: Lifetime.SINGLETON,
-  }),
-  cryptoCurrencyPricesFacade: asClass(CryptoCurrencyPricesFacade, {
     lifetime: Lifetime.SINGLETON,
   }),
   tokenPriceHistoryService: asClass(TokenPriceHistoryService, {

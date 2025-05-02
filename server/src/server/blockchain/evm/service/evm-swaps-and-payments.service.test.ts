@@ -3,11 +3,11 @@ import { extractSwaps } from "../util/extract-swaps";
 import { extractPayments } from "../util/extract-payments";
 import { EvmTxService } from "./evm-tx.service";
 import { EvmSwapsAndPaymentsService } from "./evm-swaps-and-payments.service";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 
 jest.mock("../util/extract-swaps");
 jest.mock("../util/extract-payments");
-jest.mock("../../../../common/logger/logger", () => ({
+jest.mock("../../../logger/logger", () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),

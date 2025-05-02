@@ -1,6 +1,6 @@
 import { Block } from "../model/block";
 import { SubscanApi } from "../api/subscan.api";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 
 export class BlockTimeService {
   constructor(private subscanApi: SubscanApi) {}

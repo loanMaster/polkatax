@@ -1,4 +1,4 @@
-import { logger } from "../../common/logger/logger";
+import { logger } from "../logger/logger";
 import { CoingeckoRestService } from "../coingecko-api/coingecko.rest-service";
 import { findCoingeckoToken } from "../../common/util/find-coingecko-token-id";
 import {
@@ -127,7 +127,7 @@ export class TokenPriceHistoryService {
     if (this.informationUpToDate(symbol, currency)) {
       return this.cachedPrices[this.combine(symbol, currency)];
     }
-    const token = findCoingeckoToken(symbol, "polkadot");
+    const token = findCoingeckoToken(symbol, "polkadot", logger);
     if (!token) {
       throw new Error("Token " + symbol + " not found in coingecko list.");
     }

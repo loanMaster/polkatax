@@ -3,7 +3,7 @@ import { Transfers } from "../model/transfer";
 import { Transaction } from "../model/transaction";
 import { StakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 import { mergeListElements } from "../../../../common/util/merge-list";
 
 export class SubscanService {

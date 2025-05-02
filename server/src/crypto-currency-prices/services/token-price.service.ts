@@ -1,5 +1,6 @@
 import { findCoingeckoToken } from "../../common/util/find-coingecko-token-id";
 import { CoingeckoRestService } from "../coingecko-api/coingecko.rest-service";
+import { logger } from "../logger/logger";
 
 const MAX_AGE = 6 * 60 * 60 * 1000;
 
@@ -43,7 +44,7 @@ export class TokenPriceService {
     chain: string,
     currency: string,
   ): Promise<{ [symbol: string]: number }> {
-    const tokens = symbols.map((s) => findCoingeckoToken(s, chain));
+    const tokens = symbols.map((s) => findCoingeckoToken(s, chain, logger));
     const refresh = !this.hasAllQuotes(tokens, currency);
     const response = refresh
       ? await this.coingeckoRestService.fetchPrices(

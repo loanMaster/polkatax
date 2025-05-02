@@ -1,4 +1,4 @@
-import { logger } from "../../../common/logger/logger";
+import { logger } from "../../logger/logger";
 import { formatDate } from "../../../common/util/date-utils";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { Swap } from "../../../model/swap";

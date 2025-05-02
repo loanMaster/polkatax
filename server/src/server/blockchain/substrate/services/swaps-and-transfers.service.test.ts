@@ -9,7 +9,7 @@ import { Swap } from "../../../../model/swap";
 import { Transaction } from "../model/transaction";
 import { Transfers } from "../model/transfer";
 
-jest.mock("../../../../common/logger/logger", () => ({
+jest.mock("../../../logger/logger", () => ({
   logger: {
     info: jest.fn(),
   },

@@ -2,7 +2,7 @@ import { evmChainConfigs } from "../constants/evm-chains.config";
 import { extractSwaps } from "../util/extract-swaps";
 import { extractPayments } from "../util/extract-payments";
 import { EvmTxService } from "./evm-tx.service";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 import { Swap } from "../../../../model/swap";
 import { TokenTransfers } from "../../../../model/token-transfer";
 

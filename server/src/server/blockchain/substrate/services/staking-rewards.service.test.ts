@@ -6,7 +6,7 @@ import { expect, test, jest, describe, beforeEach } from "@jest/globals";
 import { Token } from "../model/token";
 import { BigNumber } from "bignumber.js";
 
-jest.mock("../../../../common/logger/logger", () => ({
+jest.mock("../../../logger/logger", () => ({
   logger: { info: jest.fn() },
 }));
 

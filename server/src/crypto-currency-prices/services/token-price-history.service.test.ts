@@ -7,11 +7,11 @@ import {
   afterEach,
 } from "@jest/globals";
 import { CoingeckoRestService } from "../coingecko-api/coingecko.rest-service";
-import { logger } from "../../common/logger/logger";
+import { logger } from "../logger/logger";
 import * as findCoingeckoToken from "../../common/util/find-coingecko-token-id";
 import { TokenPriceHistoryService } from "./token-price-history.service";
 
-jest.mock("../../common/logger/logger");
+jest.mock("../logger/logger");
 jest.mock("../coingecko-api/coingecko.rest-service");
 jest.mock("../../common/util/find-coingecko-token-id");
 jest.mock("../../common/util/date-utils", () => ({

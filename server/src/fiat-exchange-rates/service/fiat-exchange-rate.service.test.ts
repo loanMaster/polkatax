@@ -8,11 +8,11 @@ import {
 } from "@jest/globals";
 import { ExchangeRateRestService } from "../exchange-rate-api/exchange-rate.rest-service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
-import { logger } from "../../common/logger/logger";
+import { logger } from "../logger/logger";
 import * as dateUtils from "../../common/util/date-utils";
 
 jest.useFakeTimers();
-jest.mock("../../common/logger/logger", () => ({
+jest.mock("../logger/logger", () => ({
   logger: {
     info: jest.fn(),
     error: jest.fn(),

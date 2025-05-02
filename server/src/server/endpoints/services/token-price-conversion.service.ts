@@ -1,4 +1,4 @@
-import { logger } from "../../../common/logger/logger";
+import { logger } from "../../logger/logger";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";

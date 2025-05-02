@@ -1,4 +1,4 @@
-import { logger } from "../../../common/logger/logger";
+import { logger } from "../../logger/logger";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { TokenTransfers } from "../../../model/token-transfer";
 import { Transfer } from "../../../model/transfer";

@@ -1,6 +1,6 @@
 import { ExchangeRateRestService } from "../exchange-rate-api/exchange-rate.rest-service";
 import { ExchangeRates } from "../../model/fiat-exchange-rates/exchange-rates";
-import { logger } from "../../common/logger/logger";
+import { logger } from "../logger/logger";
 import { formatDate } from "../../common/util/date-utils";
 
 export class FiatExchangeRateService {

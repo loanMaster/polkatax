@@ -1,17 +1,17 @@
+import { HttpError } from "../../common/error/HttpError";
+import { Swap } from "../../model/swap";
+import { Transfer } from "../../model/transfer";
+import { coingeckoSupportsToken } from "../../server/endpoints/helper/coingecko-supports-token";
+import { validateDates } from "../../common/util/validate-dates";
 import { addFiatValuesToNestedTransfers } from "../helper/addFiatValuesToNestedTransfers";
 import { addFiatValuesToSwaps } from "../helper/addFiatValuesToSwaps";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { PaymentsRequest } from "../model/payments.request";
 import { PaymentsResponse } from "../model/payments.response";
 import { evmChainConfigs } from "../../blockchain/evm/constants/evm-chains.config";
 import { SwapsAndTransfersService } from "../../blockchain/substrate/services/swaps-and-transfers.service";
 import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swaps-and-payments.service";
-import { Swap } from "../../../model/swap";
-import { validateDates } from "../../../common/util/validate-dates";
-import { HttpError } from "../../../common/error/HttpError";
-import { coingeckoSupportsToken } from "../helper/coingecko-supports-token";
-import { Transfer } from "../../../model/transfer";
-import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 
 export class PaymentsService {
   constructor(

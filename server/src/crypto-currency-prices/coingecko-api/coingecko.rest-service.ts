@@ -1,6 +1,6 @@
 import "node-fetch";
 import { parse } from "node-html-parser";
-import { logger } from "../../common/logger/logger";
+import { logger } from "../logger/logger";
 import { HttpError } from "../../common/error/HttpError";
 import { Quotes } from "../../model/crypto-currency-prices/crypto-currency-quotes";
 

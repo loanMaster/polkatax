@@ -3,7 +3,7 @@ import { SubscanService } from "../api/subscan.service";
 import { Transfers } from "../model/transfer";
 import { BlockTimeService } from "./block-time.service";
 import { Transaction } from "../model/transaction";
-import { logger } from "../../../../common/logger/logger";
+import { logger } from "../../../logger/logger";
 import { Swap } from "../../../../model/swap";
 import { TokenTransfers } from "../../../../model/token-transfer";
 import { TransferClassifier } from "../util/transfer-classifier";
