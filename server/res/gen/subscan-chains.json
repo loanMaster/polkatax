@@ -1,454 +1,454 @@
 {
-    "chains": [
-        {
-            "domain": "acala",
-            "label": "Acala",
-            "token": "ACA"
-        },
-        {
-            "domain": "acala-testnet",
-            "label": "Acala Mandala",
-            "token": "ACA"
-        },
-        {
-            "domain": "ajuna",
-            "label": "Ajuna",
-            "token": "AJUN"
-        },
-        {
-            "domain": "alephzero",
-            "label": "Aleph Zero",
-            "token": "AZERO"
-        },
-        {
-            "domain": "altair",
-            "label": "Altair",
-            "token": "AIR"
-        },
-        {
-            "domain": "assethub-kusama",
-            "label": "AssetHub Kusama",
-            "token": "KSM"
-        },
-        {
-            "domain": "assethub-paseo",
-            "label": "AssetHub Paseo",
-            "token": "PAS"
-        },
-        {
-            "domain": "assethub-polkadot",
-            "label": "AssetHub Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "assethub-westend",
-            "label": "AssetHub Westend",
-            "token": "WND"
-        },
-        {
-            "domain": "astar",
-            "label": "Astar",
-            "token": "ASTR"
-        },
-        {
-            "domain": "autonomys",
-            "label": "Autonomys",
-            "token": "AI3"
-        },
-        {
-            "domain": "avail",
-            "label": "Avail",
-            "token": "AVAIL"
-        },
-        {
-            "domain": "avail-turing",
-            "label": "Avail Turing",
-            "token": "AVAIL"
-        },
-        {
-            "domain": "basilisk",
-            "label": "Basilisk",
-            "token": "BSX"
-        },
-        {
-            "domain": "bifrost-kusama",
-            "label": "Bifrost Kusama",
-            "token": "BNC"
-        },
-        {
-            "domain": "bifrost",
-            "label": "Bifrost",
-            "token": "BNC"
-        },
-        {
-            "domain": "bridgehub-kusama",
-            "label": "BridgeHub Kusama",
-            "token": "KSM"
-        },
-        {
-            "domain": "bridgehub-paseo",
-            "label": "BridgeHub Paseo",
-            "token": "PAS"
-        },
-        {
-            "domain": "bridgehub-polkadot",
-            "label": "BridgeHub Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "bridgehub-westend",
-            "label": "BridgeHub Westend",
-            "token": "WND"
-        },
-        {
-            "domain": "calamari",
-            "label": "Calamari",
-            "token": "KMA"
-        },
-        {
-            "domain": "centrifuge",
-            "label": "Centrifuge",
-            "token": "CFG"
-        },
-        {
-            "domain": "clover",
-            "label": "Clover",
-            "token": "CLV"
-        },
-        {
-            "domain": "collectives-polkadot",
-            "label": "Collectives Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "continuum",
-            "label": "Continuum",
-            "token": "NUUM"
-        },
-        {
-            "domain": "coretime-kusama",
-            "label": "Coretime Kusama",
-            "token": "KSM"
-        },
-        {
-            "domain": "coretime-polkadot",
-            "label": "Coretime Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "coretime-westend",
-            "label": "Coretime Westend",
-            "token": "WND"
-        },
-        {
-            "domain": "cc-enterprise",
-            "label": "CC Enterprise",
-            "token": "CTC"
-        },
-        {
-            "domain": "creditcoin",
-            "label": "Creditcoin",
-            "token": "CTC"
-        },
-        {
-            "domain": "creditcoin3-testnet",
-            "label": "Creditcoin Testnet",
-            "token": "CTC"
-        },
-        {
-            "domain": "creditcoin3-dev",
-            "label": "Creditcoin3 Dev",
-            "token": "CTC"
-        },
-        {
-            "domain": "crust",
-            "label": "Crust",
-            "token": "CRU"
-        },
-        {
-            "domain": "crust-parachain",
-            "label": "Crust Parachain",
-            "token": "CRU"
-        },
-        {
-            "domain": "darwinia",
-            "label": "Darwinia",
-            "token": "RING"
-        },
-        {
-            "domain": "dbc",
-            "label": "DeepBrain Chain",
-            "token": "DBC"
-        },
-        {
-            "domain": "dock",
-            "label": "Dock",
-            "token": "DOCK"
-        },
-        {
-            "domain": "energywebx",
-            "label": "Energy Web X",
-            "token": "EWT"
-        },
-        {
-            "domain": "energywebx-testnet",
-            "label": "Energy Web X Paseo",
-            "token": "EWT"
-        },
-        {
-            "domain": "canary-matrix",
-            "label": "Canary Matrix",
-            "token": "cENJ"
-        },
-        {
-            "domain": "canary",
-            "label": "Canary Relay",
-            "token": "cENJ"
-        },
-        {
-            "domain": "matrix",
-            "label": "Enjin Matrix",
-            "token": "ENJ"
-        },
-        {
-            "domain": "enjin",
-            "label": "Enjin Relay",
-            "token": "ENJ"
-        },
-        {
-            "domain": "gasp",
-            "label": "Gasp",
-            "token": "GASP"
-        },
-        {
-            "domain": "heima",
-            "label": "Heima",
-            "token": "HEI"
-        },
-        {
-            "domain": "humanode",
-            "label": "Humanode",
-            "token": "HMND"
-        },
-        {
-            "domain": "hydration",
-            "label": "Hydration",
-            "token": "HDX"
-        },
-        {
-            "domain": "integritee",
-            "label": "IntegriTEE",
-            "token": "TEER"
-        },
-        {
-            "domain": "interlay",
-            "label": "Interlay",
-            "token": "INTR"
-        },
-        {
-            "domain": "karura",
-            "label": "Karura",
-            "token": "KAR"
-        },
-        {
-            "domain": "khala",
-            "label": "Khala (Archived)",
-            "token": "PHA"
-        },
-        {
-            "domain": "kintsugi",
-            "label": "Kintsugi",
-            "token": "KINT"
-        },
-        {
-            "domain": "krest",
-            "label": "krest",
-            "token": "KREST"
-        },
-        {
-            "domain": "kusama",
-            "label": "Kusama",
-            "token": "KSM"
-        },
-        {
-            "domain": "mangatax",
-            "label": "Mangata",
-            "token": "MGX"
-        },
-        {
-            "domain": "manta",
-            "label": "Manta Atlantic",
-            "token": "MANTA"
-        },
-        {
-            "domain": "moonbase",
-            "label": "Moonbase",
-            "token": "DEV"
-        },
-        {
-            "domain": "moonbeam",
-            "label": "Moonbeam",
-            "token": "GLMR"
-        },
-        {
-            "domain": "moonriver",
-            "label": "Moonriver",
-            "token": "MOVR"
-        },
-        {
-            "domain": "mythos",
-            "label": "Mythos",
-            "token": "MYTH"
-        },
-        {
-            "domain": "nodle",
-            "label": "Nodle",
-            "token": "NODL"
-        },
-        {
-            "domain": "opal",
-            "label": "Opal",
-            "token": "OPL"
-        },
-        {
-            "domain": "neuroweb",
-            "label": "NeuroWeb",
-            "token": "NEURO"
-        },
-        {
-            "domain": "neuroweb-testnet",
-            "label": "NeuroWeb Testnet",
-            "token": "NEURO"
-        },
-        {
-            "domain": "paseo",
-            "label": "Paseo",
-            "token": "PAS"
-        },
-        {
-            "domain": "agung-testnet",
-            "label": "agung",
-            "token": "AGUNG"
-        },
-        {
-            "domain": "peaq",
-            "label": "peaq",
-            "token": "PEAQ"
-        },
-        {
-            "domain": "pendulum",
-            "label": "Pendulum",
-            "token": "PEN"
-        },
-        {
-            "domain": "people-kusama",
-            "label": "People Kusama",
-            "token": "KSM"
-        },
-        {
-            "domain": "people-polkadot",
-            "label": "People Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "phala",
-            "label": "Phala",
-            "token": "PHA"
-        },
-        {
-            "domain": "pioneer",
-            "label": "Pioneer",
-            "token": "NEER"
-        },
-        {
-            "domain": "polkadot",
-            "label": "Polkadot",
-            "token": "DOT"
-        },
-        {
-            "domain": "polymesh",
-            "label": "Polymesh",
-            "token": "POLYX"
-        },
-        {
-            "domain": "polymesh-testnet",
-            "label": "Polymesh Testnet",
-            "token": "POLYX"
-        },
-        {
-            "domain": "robonomics-freemium",
-            "label": "Robonomics Freemium",
-            "token": "XRT"
-        },
-        {
-            "domain": "robonomics",
-            "label": "Robonomics",
-            "token": "XRT"
-        },
-        {
-            "domain": "shadow",
-            "label": "Crust Shadow",
-            "token": "CSM"
-        },
-        {
-            "domain": "shibuya",
-            "label": "Shibuya",
-            "token": "SBY"
-        },
-        {
-            "domain": "shiden",
-            "label": "Shiden",
-            "token": "SDN"
-        },
-        {
-            "domain": "sora",
-            "label": "SORA",
-            "token": "XOR"
-        },
-        {
-            "domain": "spiritnet",
-            "label": "KILT Spiritnet",
-            "token": "KILT"
-        },
-        {
-            "domain": "stafi",
-            "label": "Stafi",
-            "token": "FIS"
-        },
-        {
-            "domain": "dancebox",
-            "label": "Dancebox",
-            "token": "DANCE"
-        },
-        {
-            "domain": "turing",
-            "label": "Turing",
-            "token": "TUR"
-        },
-        {
-            "domain": "unique",
-            "label": "Unique",
-            "token": "UNQ"
-        },
-        {
-            "domain": "vara",
-            "label": "Vara",
-            "token": "VARA"
-        },
-        {
-            "domain": "westend",
-            "label": "Westend",
-            "token": "WND"
-        },
-        {
-            "domain": "zeitgeist",
-            "label": "Zeitgeist",
-            "token": "ZTG"
-        },
-        {
-            "domain": "zkverify-testnet",
-            "label": "zkVerify Testnet",
-            "token": "tVFY"
-        }
-    ]
+  "chains": [
+    {
+      "domain": "acala",
+      "label": "Acala",
+      "token": "ACA"
+    },
+    {
+      "domain": "acala-testnet",
+      "label": "Acala Mandala",
+      "token": "ACA"
+    },
+    {
+      "domain": "ajuna",
+      "label": "Ajuna",
+      "token": "AJUN"
+    },
+    {
+      "domain": "alephzero",
+      "label": "Aleph Zero",
+      "token": "AZERO"
+    },
+    {
+      "domain": "altair",
+      "label": "Altair",
+      "token": "AIR"
+    },
+    {
+      "domain": "assethub-kusama",
+      "label": "AssetHub Kusama",
+      "token": "KSM"
+    },
+    {
+      "domain": "assethub-paseo",
+      "label": "AssetHub Paseo",
+      "token": "PAS"
+    },
+    {
+      "domain": "assethub-polkadot",
+      "label": "AssetHub Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "assethub-westend",
+      "label": "AssetHub Westend",
+      "token": "WND"
+    },
+    {
+      "domain": "astar",
+      "label": "Astar",
+      "token": "ASTR"
+    },
+    {
+      "domain": "autonomys",
+      "label": "Autonomys",
+      "token": "AI3"
+    },
+    {
+      "domain": "avail",
+      "label": "Avail",
+      "token": "AVAIL"
+    },
+    {
+      "domain": "avail-turing",
+      "label": "Avail Turing",
+      "token": "AVAIL"
+    },
+    {
+      "domain": "basilisk",
+      "label": "Basilisk",
+      "token": "BSX"
+    },
+    {
+      "domain": "bifrost-kusama",
+      "label": "Bifrost Kusama",
+      "token": "BNC"
+    },
+    {
+      "domain": "bifrost",
+      "label": "Bifrost",
+      "token": "BNC"
+    },
+    {
+      "domain": "bridgehub-kusama",
+      "label": "BridgeHub Kusama",
+      "token": "KSM"
+    },
+    {
+      "domain": "bridgehub-paseo",
+      "label": "BridgeHub Paseo",
+      "token": "PAS"
+    },
+    {
+      "domain": "bridgehub-polkadot",
+      "label": "BridgeHub Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "bridgehub-westend",
+      "label": "BridgeHub Westend",
+      "token": "WND"
+    },
+    {
+      "domain": "calamari",
+      "label": "Calamari",
+      "token": "KMA"
+    },
+    {
+      "domain": "centrifuge",
+      "label": "Centrifuge",
+      "token": "CFG"
+    },
+    {
+      "domain": "clover",
+      "label": "Clover",
+      "token": "CLV"
+    },
+    {
+      "domain": "collectives-polkadot",
+      "label": "Collectives Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "continuum",
+      "label": "Continuum",
+      "token": "NUUM"
+    },
+    {
+      "domain": "coretime-kusama",
+      "label": "Coretime Kusama",
+      "token": "KSM"
+    },
+    {
+      "domain": "coretime-polkadot",
+      "label": "Coretime Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "coretime-westend",
+      "label": "Coretime Westend",
+      "token": "WND"
+    },
+    {
+      "domain": "cc-enterprise",
+      "label": "CC Enterprise",
+      "token": "CTC"
+    },
+    {
+      "domain": "creditcoin",
+      "label": "Creditcoin",
+      "token": "CTC"
+    },
+    {
+      "domain": "creditcoin3-testnet",
+      "label": "Creditcoin Testnet",
+      "token": "CTC"
+    },
+    {
+      "domain": "creditcoin3-dev",
+      "label": "Creditcoin3 Dev",
+      "token": "CTC"
+    },
+    {
+      "domain": "crust",
+      "label": "Crust",
+      "token": "CRU"
+    },
+    {
+      "domain": "crust-parachain",
+      "label": "Crust Parachain",
+      "token": "CRU"
+    },
+    {
+      "domain": "darwinia",
+      "label": "Darwinia",
+      "token": "RING"
+    },
+    {
+      "domain": "dbc",
+      "label": "DeepBrain Chain",
+      "token": "DBC"
+    },
+    {
+      "domain": "dock",
+      "label": "Dock",
+      "token": "DOCK"
+    },
+    {
+      "domain": "energywebx",
+      "label": "Energy Web X",
+      "token": "EWT"
+    },
+    {
+      "domain": "energywebx-testnet",
+      "label": "Energy Web X Paseo",
+      "token": "EWT"
+    },
+    {
+      "domain": "canary-matrix",
+      "label": "Canary Matrix",
+      "token": "cENJ"
+    },
+    {
+      "domain": "canary",
+      "label": "Canary Relay",
+      "token": "cENJ"
+    },
+    {
+      "domain": "matrix",
+      "label": "Enjin Matrix",
+      "token": "ENJ"
+    },
+    {
+      "domain": "enjin",
+      "label": "Enjin Relay",
+      "token": "ENJ"
+    },
+    {
+      "domain": "gasp",
+      "label": "Gasp",
+      "token": "GASP"
+    },
+    {
+      "domain": "heima",
+      "label": "Heima",
+      "token": "HEI"
+    },
+    {
+      "domain": "humanode",
+      "label": "Humanode",
+      "token": "HMND"
+    },
+    {
+      "domain": "hydration",
+      "label": "Hydration",
+      "token": "HDX"
+    },
+    {
+      "domain": "integritee",
+      "label": "IntegriTEE",
+      "token": "TEER"
+    },
+    {
+      "domain": "interlay",
+      "label": "Interlay",
+      "token": "INTR"
+    },
+    {
+      "domain": "karura",
+      "label": "Karura",
+      "token": "KAR"
+    },
+    {
+      "domain": "khala",
+      "label": "Khala (Archived)",
+      "token": "PHA"
+    },
+    {
+      "domain": "kintsugi",
+      "label": "Kintsugi",
+      "token": "KINT"
+    },
+    {
+      "domain": "krest",
+      "label": "krest",
+      "token": "KREST"
+    },
+    {
+      "domain": "kusama",
+      "label": "Kusama",
+      "token": "KSM"
+    },
+    {
+      "domain": "mangatax",
+      "label": "Mangata",
+      "token": "MGX"
+    },
+    {
+      "domain": "manta",
+      "label": "Manta Atlantic",
+      "token": "MANTA"
+    },
+    {
+      "domain": "moonbase",
+      "label": "Moonbase",
+      "token": "DEV"
+    },
+    {
+      "domain": "moonbeam",
+      "label": "Moonbeam",
+      "token": "GLMR"
+    },
+    {
+      "domain": "moonriver",
+      "label": "Moonriver",
+      "token": "MOVR"
+    },
+    {
+      "domain": "mythos",
+      "label": "Mythos",
+      "token": "MYTH"
+    },
+    {
+      "domain": "nodle",
+      "label": "Nodle",
+      "token": "NODL"
+    },
+    {
+      "domain": "opal",
+      "label": "Opal",
+      "token": "OPL"
+    },
+    {
+      "domain": "neuroweb",
+      "label": "NeuroWeb",
+      "token": "NEURO"
+    },
+    {
+      "domain": "neuroweb-testnet",
+      "label": "NeuroWeb Testnet",
+      "token": "NEURO"
+    },
+    {
+      "domain": "paseo",
+      "label": "Paseo",
+      "token": "PAS"
+    },
+    {
+      "domain": "agung-testnet",
+      "label": "agung",
+      "token": "AGUNG"
+    },
+    {
+      "domain": "peaq",
+      "label": "peaq",
+      "token": "PEAQ"
+    },
+    {
+      "domain": "pendulum",
+      "label": "Pendulum",
+      "token": "PEN"
+    },
+    {
+      "domain": "people-kusama",
+      "label": "People Kusama",
+      "token": "KSM"
+    },
+    {
+      "domain": "people-polkadot",
+      "label": "People Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "phala",
+      "label": "Phala",
+      "token": "PHA"
+    },
+    {
+      "domain": "pioneer",
+      "label": "Pioneer",
+      "token": "NEER"
+    },
+    {
+      "domain": "polkadot",
+      "label": "Polkadot",
+      "token": "DOT"
+    },
+    {
+      "domain": "polymesh",
+      "label": "Polymesh",
+      "token": "POLYX"
+    },
+    {
+      "domain": "polymesh-testnet",
+      "label": "Polymesh Testnet",
+      "token": "POLYX"
+    },
+    {
+      "domain": "robonomics-freemium",
+      "label": "Robonomics Freemium",
+      "token": "XRT"
+    },
+    {
+      "domain": "robonomics",
+      "label": "Robonomics",
+      "token": "XRT"
+    },
+    {
+      "domain": "shadow",
+      "label": "Crust Shadow",
+      "token": "CSM"
+    },
+    {
+      "domain": "shibuya",
+      "label": "Shibuya",
+      "token": "SBY"
+    },
+    {
+      "domain": "shiden",
+      "label": "Shiden",
+      "token": "SDN"
+    },
+    {
+      "domain": "sora",
+      "label": "SORA",
+      "token": "XOR"
+    },
+    {
+      "domain": "spiritnet",
+      "label": "KILT Spiritnet",
+      "token": "KILT"
+    },
+    {
+      "domain": "stafi",
+      "label": "Stafi",
+      "token": "FIS"
+    },
+    {
+      "domain": "dancebox",
+      "label": "Dancebox",
+      "token": "DANCE"
+    },
+    {
+      "domain": "turing",
+      "label": "Turing",
+      "token": "TUR"
+    },
+    {
+      "domain": "unique",
+      "label": "Unique",
+      "token": "UNQ"
+    },
+    {
+      "domain": "vara",
+      "label": "Vara",
+      "token": "VARA"
+    },
+    {
+      "domain": "westend",
+      "label": "Westend",
+      "token": "WND"
+    },
+    {
+      "domain": "zeitgeist",
+      "label": "Zeitgeist",
+      "token": "ZTG"
+    },
+    {
+      "domain": "zkverify-testnet",
+      "label": "zkVerify Testnet",
+      "token": "tVFY"
+    }
+  ]
 }

@@ -1,3 +1,3 @@
 export const processFunctionName = (functionName: string) => {
-    return functionName ? functionName.replace(/\(.*\)/g, '') : functionName
-}
+  return functionName ? functionName.replace(/\(.*\)/g, "") : functionName;
+};
