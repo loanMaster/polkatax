@@ -117,7 +117,7 @@ Only the SUBSCAN_API_KEY is absolutely mandatory (see stubs in section above).
 
 Run 
 ```bash
-npm generate-subscan-chain-list
+npm run generate-subscan-chain-list
 ```
 This will generate a new list of substrate chains in the `res/gen/` folder.
 
