@@ -3,10 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "pm2": "pm2 start std.config.js",
+    "pm2-stub": "pm2 start stub.config.js",
+    "pm2-stop": "pm2 stop all",
     "start:server": "ts-node src/server/main.ts",
     "start:crypto-currency-prices": "ts-node src/crypto-currency-prices/main.ts",
+    "start:crypto-currency-prices-stub": "ts-node src/fiat-exchange-rates/stub.ts",
     "start:fiat-exchange-rates": "ts-node src/fiat-exchange-rates/main.ts",
+    "start:fiat-exchange-rates-stub": "ts-node src/fiat-exchange-rates/stub.ts",
     "start": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates\"",
+    "start-with-stubs": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices-stub\" \"npm run start:fiat-exchange-rates-stub\"",
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test-watch": "jest --watch --verbose false",
     "test": "jest",
@@ -17,6 +23,7 @@
   "dependencies": {
     "@fastify/rate-limit": "^8.0.3",
     "@fastify/static": "^6.10.2",
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot/api": "^10.7.1",
     "awilix": "^12.0.5",
     "bignumber.js": "^9.1.1",
@@ -29,6 +36,7 @@
     "node-html-parser": "^6.1.13",
     "pino-pretty": "^10.2.0",
     "pm2": "^6.0.5",
+    "polkadot-api": "^1.10.0",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {

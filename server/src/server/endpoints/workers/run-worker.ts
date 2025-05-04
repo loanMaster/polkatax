@@ -1,6 +1,7 @@
 import path from "path";
 import { Worker } from "worker_threads";
 import { HttpError } from "../../../common/error/HttpError";
+import { logger } from "../../logger/logger";
 
 const MAX_WORKERS = 2;
 let activeWorkers = 0;
@@ -25,6 +26,7 @@ export const runWorker = (fileName: string, data: any): Promise<any> => {
     });
     worker.on("error", (err) => {
       activeWorkers--;
+      logger.error(err);
       reject(err);
     });
     worker.on("exit", (code) => {

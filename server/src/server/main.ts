@@ -26,14 +26,17 @@ const init = async () => {
   fastify.addHook("onRequest", (request, reply, done) => {
     if (
       JSON.parse(
-        fs.readFileSync(__dirname + "/../res/realtime-config.json", "utf-8"),
+        fs.readFileSync(__dirname + "/../../res/realtime-config.json", "utf-8"),
       ).maintenanceMode &&
       request.url.indexOf("/maintenance") == -1
     ) {
       reply.header("Content-Type", "text/html");
       reply
         .send(
-          fs.readFileSync(__dirname + "/../public/maintenance.html", "utf-8"),
+          fs.readFileSync(
+            __dirname + "/../../public/maintenance.html",
+            "utf-8",
+          ),
         )
         .status(200);
     }
@@ -46,7 +49,10 @@ const init = async () => {
   });
 
   fastify.get("/api/res/subscan-chains", function (req, reply) {
-    reply.sendFile("subscan-chains.json", path.join(__dirname, "../res/gen"));
+    reply.sendFile(
+      "subscan-chains.json",
+      path.join(__dirname, "../../res/gen"),
+    );
   });
 
   fastify.setErrorHandler((error, request, reply) => {

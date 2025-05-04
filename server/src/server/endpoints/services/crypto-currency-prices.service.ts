@@ -11,8 +11,13 @@ export class CryptoCurrencyPricesService {
     chain: string,
     currency: string,
   ): Promise<{ [symbol: string]: number }> {
-    return new RequestHelper().req(
-      `https://localhost:${this.port}/current-prices`,
+    const helper = new RequestHelper();
+    helper.defaultHeader = {
+      ...helper.defaultHeader,
+      "Content-Type": "application/json",
+    };
+    return helper.req(
+      `http://localhost:${this.port}/crypto-current-prices`,
       "POST",
       { symbols, chain, currency },
     );
@@ -23,9 +28,8 @@ export class CryptoCurrencyPricesService {
     currency: string,
   ): Promise<CurrencyQuotes> {
     return new RequestHelper().req(
-      `https://localhost:${this.port}/historic-prices/${symbol}?currency=${currency}`,
+      `http://localhost:${this.port}/crypto-historic-prices/${symbol}?currency=${currency}`,
       "GET",
-      {},
     );
   }
 }

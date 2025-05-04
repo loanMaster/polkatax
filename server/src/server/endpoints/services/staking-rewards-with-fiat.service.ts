@@ -1,5 +1,4 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
-import { BlockTimeService } from "../../blockchain/substrate/services/block-time.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { addFiatValuesToTransfers } from "../helper/addFiatValuesToTransfers";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
@@ -12,7 +11,6 @@ export class StakingRewardsWithFiatService {
     private stakingRewardsService: StakingRewardsService,
     private tokenPriceConversionService: TokenPriceConversionService,
     private subscanService: SubscanService,
-    private blockTimeService: BlockTimeService,
   ) {}
 
   private async fetchQuotesForToken(

@@ -8,7 +8,7 @@ export class FiatExchangeRateService {
 
   fetchExchangeRates(): Promise<ExchangeRates> {
     return new RequestHelper().req(
-      `https://localhost:${this.port}/exchange-rates`,
+      `http://localhost:${this.port}/fiat-exchange-rates`,
       "GET",
       {},
     );
