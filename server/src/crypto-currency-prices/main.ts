@@ -1,7 +1,7 @@
 import Fastify, { FastifyRequest } from "fastify";
 import { logger } from "./logger/logger";
 import dotenv from "dotenv";
-dotenv.config({ path: __dirname + "/../.env" });
+dotenv.config({ path: __dirname + "/../../.env" });
 import { TokenPriceHistoryService } from "./services/token-price-history.service";
 import { TokenPriceService } from "./services/token-price.service";
 import { CurrentPriceRequest } from "../model/crypto-currency-prices/current-price-request";

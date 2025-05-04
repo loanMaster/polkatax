@@ -28,6 +28,7 @@
     "node-fetch": "^2.6.12",
     "node-html-parser": "^6.1.13",
     "pino-pretty": "^10.2.0",
+    "pm2": "^6.0.5",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import path from "path";
 import { logger } from "./logger/logger";
 import dotenv from "dotenv";
-dotenv.config({ path: __dirname + "/../.env" });
+dotenv.config({ path: __dirname + "/../../.env" });
 
 import * as fs from "fs";
 import { stakingRewardsEndpoint } from "./endpoints/staking-rewards.endoint";

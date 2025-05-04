@@ -6,6 +6,7 @@ import { BigNumber } from "bignumber.js";
 import { Transaction } from "../model/transaction";
 import { Transfers } from "../model/transfer";
 import { RequestHelper } from "../../../../common/util/request.helper";
+import { RuntimeMetaData } from "../model/runtime-meta-data";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -47,6 +48,15 @@ export class SubscanApi {
       avgBlockTime: Number(meta.avgBlockTime) || Number(meta.blockTime),
       blockNum: Number(meta.blockNum),
     };
+  }
+
+  async fetchRuntimeMetadata(chainName: string): Promise<RuntimeMetaData> {
+    const response = await this.requestHelper.req(
+      `https://${chainName}.api.subscan.io/api/scan/runtime/metadata`,
+      `post`,
+      {},
+    );
+    return response.data;
   }
 
   async fetchNativeToken(chainName: string): Promise<Token> {

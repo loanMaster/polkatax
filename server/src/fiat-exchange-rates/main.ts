@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import { logger } from "./logger/logger";
 import dotenv from "dotenv";
-dotenv.config({ path: __dirname + "/../.env" });
+dotenv.config({ path: __dirname + "/../../.env" });
 import { DIContainer } from "./di-container";
 import { FiatExchangeRateService } from "./service/fiat-exchange-rate.service";
 

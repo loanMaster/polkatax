@@ -2,6 +2,9 @@ import { parse } from "node-html-parser";
 import "node-fetch";
 import * as fs from "fs";
 import * as substrateTokenToCoingeckoId from "../../res/substrate-token-to-coingecko-id.json";
+import dotenv from "dotenv";
+dotenv.config({ path: __dirname + "/../../.env" });
+import { SubscanApi } from "../server/blockchain/substrate/api/subscan.api";
 
 const determineTokenAndChainName = async (domain) => {
   const response = await fetch(`https://${domain}.subscan.io/`);
@@ -26,10 +29,19 @@ const fetchListOfSupportedChains = async () => {
     console.log("Processing " + domain);
     try {
       const { label, token } = await determineTokenAndChainName(domain);
+      const runtimeMetadata = await fetchRuntimeMetadata(domain);
+      const pallets = runtimeMetadata.info.metadata.map((m) => m.name);
       result.push({
         domain,
         label,
         token,
+        stakingPallets: pallets.filter(
+          (name) => name.toLowerCase().indexOf("staking") > -1,
+        ),
+        evmPallet: pallets.indexOf("EVM") > -1,
+        standardStaking: pallets.indexOf("Staking") > -1,
+        parachainStaking: pallets.indexOf("ParachainStaking") > -1,
+        delegatedStaking: pallets.indexOf("DelegatedStaking") > -1,
       });
       console.log("Done processing " + domain);
     } catch (error) {
@@ -66,7 +78,11 @@ const verifySubstrateToCoingeckoIdMapping = (
   });
 };
 
-fetchListOfSupportedChains().then((chains) => {
+const fetchRuntimeMetadata = async (domain: string) => {
+  return new SubscanApi().fetchRuntimeMetadata(domain);
+};
+
+fetchListOfSupportedChains().then(async (chains) => {
   console.log(JSON.stringify(chains));
   console.log("Writing file...");
   fs.writeFileSync(
