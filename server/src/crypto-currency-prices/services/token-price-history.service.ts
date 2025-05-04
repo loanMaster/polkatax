@@ -7,6 +7,10 @@ import {
 } from "../../model/crypto-currency-prices/crypto-currency-quotes";
 import * as substrateTokenToCoingeckoId from "../../../res/substrate-token-to-coingecko-id.json";
 import { formatDate } from "../../common/util/date-utils";
+import {
+  PreferredQuoteCurrency,
+  preferredQuoteCurrencyValues,
+} from "../../model/preferred-quote-currency";
 
 const MAX_AGE = 4 * 60 * 60 * 1000;
 
@@ -43,7 +47,7 @@ export class TokenPriceHistoryService {
 
   async getHistoricPrices(
     symbol: string,
-    currency: "usd" | "chf" | "eur" = "usd",
+    currency: PreferredQuoteCurrency = "usd",
   ): Promise<CurrencyQuotes> {
     symbol = symbol.toLowerCase();
     if (this.synonyms[symbol]) {
@@ -54,7 +58,7 @@ export class TokenPriceHistoryService {
     return { quotes: result, currency };
   }
 
-  private currenciesToSync = ["usd", "eur", "chf"];
+  private currenciesToSync = preferredQuoteCurrencyValues;
 
   private synonyms = {
     wglmr: "glmr",

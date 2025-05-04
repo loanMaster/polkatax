@@ -65,16 +65,14 @@ export class CoingeckoRestService {
     const response = await fetch("https://www.coingecko.com" + dataUrl);
     const csv = await response.text();
     let json = this.csvToJson(csv).filter((d) => d["snapped_at"] && d["price"]);
-    const result: { timestamp: number; latest: number } = {
-      timestamp: -1,
-      latest: -1,
+    const result: { timestamp: number } = {
+      timestamp: Date.now(),
     };
     for (let dataPoint of json) {
       result[dataPoint["snapped_at"].substring(0, 10)] = Number(
         dataPoint["price"],
       );
     }
-    result["timestamp"] = Date.now();
     return result;
   }
 }

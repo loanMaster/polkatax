@@ -6,6 +6,7 @@ import { TokenPriceHistoryService } from "./services/token-price-history.service
 import { TokenPriceService } from "./services/token-price.service";
 import { CurrentPriceRequest } from "../model/crypto-currency-prices/current-price-request";
 import { DIContainer } from "./di-container";
+import { PreferredQuoteCurrency } from "../model/preferred-quote-currency";
 
 const init = async () => {
   const tokenPriceHistoryService: TokenPriceHistoryService =
@@ -21,7 +22,7 @@ const init = async () => {
 
   fastify.route({
     method: "POST",
-    url: "/current-prices",
+    url: "/crypto-current-prices",
     handler: async (request: FastifyRequest<{ Body: CurrentPriceRequest }>) => {
       const { symbols, chain, currency } = request.body;
       return tokenPriceService.fetchCurrentPrices(symbols, chain, currency);
@@ -30,11 +31,11 @@ const init = async () => {
 
   fastify.route({
     method: "GET",
-    url: "/historic-prices",
+    url: "/crypto-historic-prices/:symbol",
     handler: async (
       request: FastifyRequest<{
         Params: { symbol: string };
-        Querystring: { currency: "usd" | "chf" | "eur" };
+        Querystring: { currency: PreferredQuoteCurrency };
       }>,
     ) => {
       const { symbol } = request.params;

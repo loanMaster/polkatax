@@ -2,6 +2,7 @@ import { logger } from "../../logger/logger";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
+import { PreferredQuoteCurrency } from "../../../model/preferred-quote-currency";
 
 export class TokenPriceConversionService {
   private supportedQuoteCurrencies = ["usd", "eur", "chf"];
@@ -60,7 +61,7 @@ export class TokenPriceConversionService {
         result[tokens[i]] =
           await this.cryptoCurrencyPricesService.fetchHistoricalPrices(
             tokens[i],
-            quotesCurrency as "usd" | "chf" | "eur",
+            quotesCurrency as PreferredQuoteCurrency,
           );
         result[tokens[i]].quotes.latest = latestPrices[tokens[i]];
       } catch (e) {

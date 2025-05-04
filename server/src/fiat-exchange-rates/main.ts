@@ -20,7 +20,7 @@ const init = async () => {
 
   fastify.route({
     method: "GET",
-    url: "/exchange-rates",
+    url: "/fiat-exchange-rates",
     handler: async () => {
       return fiatExchangeRateService.exchangeRates;
     },

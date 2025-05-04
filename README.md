@@ -25,17 +25,13 @@ cd ../server
 npm install
 ```
 
+## The client
+
 ### Start the client in development mode (hot-code reloading, error reporting, etc.)
 
 ```bash
 cd client
 npm run dev
-```
-
-### Start the server
-
-```bash
-npm run serve
 ```
 
 ### Lint the client files
@@ -59,10 +55,52 @@ npm run build
 ```
 
 
+## The server
+
+### Services
+
+The server-side of the application consists of three distinct services, each running in its own process and communicating via HTTP.
+
+| Name                     | Function                                                                                      | Port | Port Env                         |
+|--------------------------|-----------------------------------------------------------------------------------------------|------|----------------------------------|
+| crypto-currency-prices   | Fetches current and historical crypto currency prices                                         | 3002 | CRYPTO_CURRENCY_PRICES_PORT     |
+| fiat-exchange-rates      | Fetches historical exchange rates of all fiat currencies                                      | 3003 | FIAT_EXCHANGE_RATES_PORT        |
+| server                   | Serves the frontend, fetches tax relevant data and enriches data with help of the other two services | 3001 |                                  |
+
+### Running the Services
+
+To start all services in parallel, use:
+```bash
+npm run start
+```
+
+To start a single service, use:
+```bash
+npm run start:<service-name>
+```
+
+For example:
+To start a single service, use:
+```bash
+npm run start:fiat-exchange-rates 
+```
+
+To run the app with stubbed services for local testing:
+```bash
+npm run start-with-stubs
+```
+This will provide dummy values for fiat and crypto prices, allowing you to test without needing an EXCHANGERATE_HOST_API_KEY.
+
+### Production setup
+
+For production environments, it's recommended to use PM2 for process management:
+```bash
+pm2 start std.config.js
+```
 
 ## Prerequisites
 To run the server locally you should provide multiple API keys as environment variables.
-
+Only the SUBSCAN_API_KEY is absolutely mandatory (see stubs in section above). 
 
 | API   |      Environment variable name      |  Required for |
 |----------|:-------------:|:-------------:|
