@@ -113,7 +113,7 @@ Only the SUBSCAN_API_KEY is absolutely mandatory (see stubs in section above).
 | polyscan | POLYSCAN_API_KEY |  transactions / trades on Polygon |
 
 
-## Update substrate chain list
+## Create substrate chain list
 
 Run 
 ```bash
