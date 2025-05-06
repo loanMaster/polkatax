@@ -3,7 +3,7 @@ export default {
   extensionsToTreatAsEsm: [".ts"],
   globals: {
     "ts-jest": {
-      useESM: true
-    }
-  }
+      useESM: true,
+    },
+  },
 };

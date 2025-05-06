@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia';
-import { Rewards } from '../model/rewards';
-import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
 import {
   BehaviorSubject,
   filter,
@@ -11,23 +9,30 @@ import {
   of,
   ReplaySubject,
   switchMap,
+  map,
 } from 'rxjs';
 import { Chain } from '../../shared-module/model/chain';
-import { fetchSubscanChains } from '../../shared-module/service/fetch-subscan-chains';
-import { fetchNominationPools } from '../service/fetch-nomination-pools';
-import { calculateRewardSummary } from './util/calculate-reward-summary';
-import { groupRewardsByDay } from './util/group-rewards-by-day';
-import { addIsoDateAndCurrentValue } from './util/add-iso-date-and-current-value';
-import { NominationPool } from '../model/nomination-pool';
 import {
   CompletedRequest,
   DataRequest,
   PendingRequest,
 } from '../../shared-module/model/data-request';
+import { fetchSubscanChains } from '../../shared-module/service/fetch-subscan-chains';
 import { wrapDataRequest } from '../../shared-module/service/wrap-data-request';
+import { getEndDate, getStartDate } from '../../shared-module/util/date-utils';
+import { NominationPool } from '../model/nomination-pool';
+import { Rewards } from '../model/rewards';
+import { fetchNominationPools } from '../service/fetch-nomination-pools';
 import { fetchStakingRewards } from '../service/fetch-staking-rewards';
+import { addIsoDateAndCurrentValue } from './util/add-iso-date-and-current-value';
+import { calculateRewardSummary } from './util/calculate-reward-summary';
+import { groupRewardsByDay } from './util/group-rewards-by-day';
 
-const chainList$ = from(fetchSubscanChains());
+const chainList$ = from(fetchSubscanChains()).pipe(
+  map((chainList) => ({
+    chains: chainList.chains.filter((c) => c.stakingPallets.length > 0),
+  }))
+);
 const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
   domain: 'polkadot',
   label: 'Polkadot',

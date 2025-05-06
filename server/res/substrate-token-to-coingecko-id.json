@@ -1,259 +1,260 @@
-{ "tokens": [
+{
+  "tokens": [
     {
-        "token": "FIS",
-        "coingeckoId": "stafi"
+      "token": "FIS",
+      "coingeckoId": "stafi"
     },
     {
-        "token": "SDN",
-        "coingeckoId": "shiden-network"
+      "token": "SDN",
+      "coingeckoId": "shiden-network"
     },
     {
-        "token": "PEAQ",
-        "coingeckoId": "peaq"
+      "token": "PEAQ",
+      "coingeckoId": "peaq"
     },
     {
-        "token": "MGX",
-        "coingeckoId": "mangata-x"
+      "token": "MGX",
+      "coingeckoId": "mangata-x"
     },
     {
-        "token": "HEI",
-        "coingeckoId": "heima"
+      "token": "HEI",
+      "coingeckoId": "heima"
     },
     {
-        "token": "GASP",
-        "coingeckoId": "gasp-2"
+      "token": "GASP",
+      "coingeckoId": "gasp-2"
     },
     {
-        "token": "CLV",
-        "coingeckoId": "clover-finance"
+      "token": "CLV",
+      "coingeckoId": "clover-finance"
     },
     {
-        "token": "KMA",
-        "coingeckoId": "calamari-network"
+      "token": "KMA",
+      "coingeckoId": "calamari-network"
     },
     {
-        "token": "AI3",
-        "coingeckoId": "autonomys-network"
+      "token": "AI3",
+      "coingeckoId": "autonomys-network"
     },
     {
-        "token": "AIR",
-        "coingeckoId": "altair"
+      "token": "AIR",
+      "coingeckoId": "altair"
     },
     {
-        "token": "JOY",
-        "coingeckoId": "joystream"
+      "token": "JOY",
+      "coingeckoId": "joystream"
     },
     {
-        "token": "ENJ",
-        "coingeckoId": "enjincoin"
+      "token": "ENJ",
+      "coingeckoId": "enjincoin"
     },
     {
-        "token": "VARA",
-        "coingeckoId": "vara-network"
+      "token": "VARA",
+      "coingeckoId": "vara-network"
     },
     {
-        "token": "POLYX",
-        "coingeckoId": "polymesh"
+      "token": "POLYX",
+      "coingeckoId": "polymesh"
     },
     {
-        "token": "DOCK",
-        "coingeckoId": "dock"
+      "token": "DOCK",
+      "coingeckoId": "dock"
     },
     {
-        "token": "CTC",
-        "coingeckoId": "creditcoin-2"
+      "token": "CTC",
+      "coingeckoId": "creditcoin-2"
     },
     {
-        "token": "AVAIL",
-        "coingeckoId": "avail"
+      "token": "AVAIL",
+      "coingeckoId": "avail"
     },
     {
-        "token": "TUR",
-        "coingeckoId": "turing-network"
+      "token": "TUR",
+      "coingeckoId": "turing-network"
     },
     {
-        "token": "KREST",
-        "coingeckoId": "krest"
+      "token": "KREST",
+      "coingeckoId": "krest"
     },
     {
-        "token": "PHA",
-        "coingeckoId": "pha"
+      "token": "PHA",
+      "coingeckoId": "pha"
     },
     {
-        "token": "KAR",
-        "coingeckoId": "karura"
+      "token": "KAR",
+      "coingeckoId": "karura"
     },
     {
-        "token": "TEER",
-        "coingeckoId": "integritee"
+      "token": "TEER",
+      "coingeckoId": "integritee"
     },
     {
-        "token": "CSM",
-        "coingeckoId": "crust-storage-market"
+      "token": "CSM",
+      "coingeckoId": "crust-storage-market"
     },
     {
-        "token": "BSX",
-        "coingeckoId": "basilisk"
+      "token": "BSX",
+      "coingeckoId": "basilisk"
     },
     {
-        "token": "BAJU",
-        "coingeckoId": "ajuna-network"
+      "token": "BAJU",
+      "coingeckoId": "ajuna-network"
     },
     {
-        "token": "PEN",
-        "coingeckoId": "pendulum-chain"
+      "token": "PEN",
+      "coingeckoId": "pendulum-chain"
     },
     {
-        "token": "NEURO",
-        "coingeckoId": "neurowebai"
+      "token": "NEURO",
+      "coingeckoId": "neurowebai"
     },
     {
-        "token": "MYTH",
-        "coingeckoId": "mythos"
+      "token": "MYTH",
+      "coingeckoId": "mythos"
     },
     {
-        "token": "MANTA",
-        "coingeckoId": "manta-network"
+      "token": "MANTA",
+      "coingeckoId": "manta-network"
     },
     {
-        "token": "NUUM",
-        "coingeckoId": "mnet-continuum"
+      "token": "NUUM",
+      "coingeckoId": "mnet-continuum"
     },
     {
-        "token": "EWT",
-        "coingeckoId": "energy-web-token"
+      "token": "EWT",
+      "coingeckoId": "energy-web-token"
     },
     {
-        "token": "AJUN",
-        "coingeckoId": "ajuna-network-2"
+      "token": "AJUN",
+      "coingeckoId": "ajuna-network-2"
     },
     {
-        "token": "DOT",
-        "coingeckoId": "polkadot"
+      "token": "DOT",
+      "coingeckoId": "polkadot"
     },
     {
-        "token": "KSM",
-        "coingeckoId": "kusama"
+      "token": "KSM",
+      "coingeckoId": "kusama"
     },
     {
-        "token": "GLMR",
-        "coingeckoId": "moonbeam"
+      "token": "GLMR",
+      "coingeckoId": "moonbeam"
     },
     {
-        "token": "ASTR",
-        "coingeckoId": "astar"
+      "token": "ASTR",
+      "coingeckoId": "astar"
     },
     {
-        "token": "ASTR",
-        "coingeckoId": "astar"
+      "token": "ASTR",
+      "coingeckoId": "astar"
     },
     {
-        "token": "PHA",
-        "coingeckoId": "pha"
+      "token": "PHA",
+      "coingeckoId": "pha"
     },
     {
-        "token": "CRU",
-        "coingeckoId": "crust-network"
+      "token": "CRU",
+      "coingeckoId": "crust-network"
     },
     {
-        "token": "HDX",
-        "coingeckoId": "hydradx"
+      "token": "HDX",
+      "coingeckoId": "hydradx"
     },
     {
-        "token": "KILT",
-        "coingeckoId": "kilt-protocol"
+      "token": "KILT",
+      "coingeckoId": "kilt-protocol"
     },
     {
-        "token": "ACA",
-        "coingeckoId": "acala"
+      "token": "ACA",
+      "coingeckoId": "acala"
     },
     {
-        "token": "BNC",
-        "coingeckoId": "bifrost"
+      "token": "BNC",
+      "coingeckoId": "bifrost"
     },
     {
-        "token": "CFG",
-        "coingeckoId": "centrifuge"
+      "token": "CFG",
+      "coingeckoId": "centrifuge"
     },
     {
-        "token": "CRU",
-        "coingeckoId": "crust-network"
+      "token": "CRU",
+      "coingeckoId": "crust-network"
     },
     {
-        "token": "EQ",
-        "coingeckoId": "equilibrium-token"
+      "token": "EQ",
+      "coingeckoId": "equilibrium-token"
     },
     {
-        "token": "RING",
-        "coingeckoId": "darwinia-network-native-token"
+      "token": "RING",
+      "coingeckoId": "darwinia-network-native-token"
     },
     {
-        "token": "PARA",
-        "coingeckoId": "parallel-finance"
+      "token": "PARA",
+      "coingeckoId": "parallel-finance"
     },
     {
-        "token": "PDEX",
-        "coingeckoId": "polkadex"
+      "token": "PDEX",
+      "coingeckoId": "polkadex"
     },
     {
-        "token": "ZTG",
-        "coingeckoId": "zeitgeist"
+      "token": "ZTG",
+      "coingeckoId": "zeitgeist"
     },
     {
-        "token": "UNQ",
-        "coingeckoId": "unique-network"
+      "token": "UNQ",
+      "coingeckoId": "unique-network"
     },
     {
-        "token": "NODL",
-        "coingeckoId": "nodle-network"
+      "token": "NODL",
+      "coingeckoId": "nodle-network"
     },
     {
-        "token": "TRAC",
-        "coingeckoId": "origintrail"
+      "token": "TRAC",
+      "coingeckoId": "origintrail"
     },
     {
-        "token": "INTR",
-        "coingeckoId": "interlay"
+      "token": "INTR",
+      "coingeckoId": "interlay"
     },
     {
-        "token": "PHA",
-        "coingeckoId": "pha"
+      "token": "PHA",
+      "coingeckoId": "pha"
     },
     {
-        "token": "MOVR",
-        "coingeckoId": "moonriver"
+      "token": "MOVR",
+      "coingeckoId": "moonriver"
     },
     {
-        "token": "KINT",
-        "coingeckoId": "kintsugi"
+      "token": "KINT",
+      "coingeckoId": "kintsugi"
     },
     {
-        "token": "XRT",
-        "coingeckoId": "robonomics-network"
+      "token": "XRT",
+      "coingeckoId": "robonomics-network"
     },
     {
-        "token": "DBC",
-        "coingeckoId": "deepbrain-chain"
+      "token": "DBC",
+      "coingeckoId": "deepbrain-chain"
     },
     {
-        "token": "EDG",
-        "coingeckoId": "edgeware"
+      "token": "EDG",
+      "coingeckoId": "edgeware"
     },
     {
-        "token": "XOR",
-        "coingeckoId": "sora"
+      "token": "XOR",
+      "coingeckoId": "sora"
     },
     {
-        "token": "HMND",
-        "coingeckoId": "humanode"
+      "token": "HMND",
+      "coingeckoId": "humanode"
     },
     {
-        "token": "AZERO",
-        "coingeckoId": "aleph-zero"
+      "token": "AZERO",
+      "coingeckoId": "aleph-zero"
     },
     {
-        "token": "PICA",
-        "coingeckoId": "picasso"
+      "token": "PICA",
+      "coingeckoId": "picasso"
     }
-]
+  ]
 }
