@@ -8,7 +8,7 @@
     "pm2-stop": "pm2 stop all",
     "start:server": "ts-node src/server/main.ts",
     "start:crypto-currency-prices": "ts-node src/crypto-currency-prices/main.ts",
-    "start:crypto-currency-prices-stub": "ts-node src/fiat-exchange-rates/stub.ts",
+    "start:crypto-currency-prices-stub": "ts-node src/crypto-currency-prices/stub.ts",
     "start:fiat-exchange-rates": "ts-node src/fiat-exchange-rates/main.ts",
     "start:fiat-exchange-rates-stub": "ts-node src/fiat-exchange-rates/stub.ts",
     "start": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates\"",
