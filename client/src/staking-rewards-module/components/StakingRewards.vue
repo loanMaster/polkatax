@@ -95,13 +95,14 @@ const rewardsSubscription = rewardsStore.rewards$.subscribe(async (r) => {
       spinnerColor: 'primary',
     });
   } else if (r.error) {
+    $q.loading.hide();
     const error = r.error;
+    const text = await error.text();
     const message =
       r.error.status && (error.status === 429 || error.status === 503)
         ? 'Too many requests. Please try again in some minutes'
-        : error.status && error.status === 400
-        ? await error.text()
-        : 'There was an error fetching your data. Please try again later';
+        : text ||
+          'There was an error fetching your data. Please try again later';
     $q.dialog({
       title:
         error.status && error.status === 429

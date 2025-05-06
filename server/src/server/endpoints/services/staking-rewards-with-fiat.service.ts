@@ -33,12 +33,13 @@ export class StakingRewardsWithFiatService {
     let { chain, address, poolId, startDay, endDay } = stakingRewardsRequest;
     const isEvmAddress = address.length <= 42;
     if (isEvmAddress) {
-      address = await this.subscanService.mapToSubstrateAccount(
-        chain.domain,
-        address,
-      );
+      address =
+        (await this.subscanService.mapToSubstrateAccount(
+          chain.domain,
+          address,
+        )) || address;
     }
-    return poolId > 0
+    return poolId !== undefined
       ? this.stakingRewardsService.fetchNominationPoolRewards(
           chain.domain,
           address,

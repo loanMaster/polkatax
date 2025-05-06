@@ -55,7 +55,7 @@ export const useStakingRewardsStore = defineStore('rewards', {
   state: () => {
     return {
       rewards$: rewards$.asObservable(),
-      nominationPoolId: 0,
+      nominationPoolId: undefined,
       currency: 'USD',
       address: '',
       timeFrame: 'This Month',

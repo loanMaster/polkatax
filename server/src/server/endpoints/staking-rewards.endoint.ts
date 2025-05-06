@@ -24,7 +24,7 @@ export const stakingRewardsEndpoint: RouteOptions = {
       currency: Joi.string().min(1).max(5).default("usd").lowercase(),
       startdate: Joi.date(),
       enddate: Joi.date(),
-      poolid: Joi.number().default(0),
+      poolid: Joi.number().optional(),
     }),
   },
   validatorCompiler: ({ schema, method, url, httpPart }) => {

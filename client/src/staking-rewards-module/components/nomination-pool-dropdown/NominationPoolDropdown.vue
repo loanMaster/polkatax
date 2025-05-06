@@ -81,7 +81,7 @@ onUnmounted(() => {
 });
 
 function onNewValueSelected(value: NominationPool | undefined) {
-  rewardsStore.nominationPoolId = value?.pool_id || 0;
+  rewardsStore.nominationPoolId = value?.pool_id;
 }
 
 function filterFn(val: string, update: (cb: () => void) => void) {

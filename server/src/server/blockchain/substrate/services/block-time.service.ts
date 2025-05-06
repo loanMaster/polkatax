@@ -1,6 +1,9 @@
 import { Block } from "../model/block";
 import { SubscanApi } from "../api/subscan.api";
 import { logger } from "../../../logger/logger";
+import { HttpError } from "../../../../common/error/HttpError";
+
+const MAX_DEPTH = 20;
 
 export class BlockTimeService {
   constructor(private subscanApi: SubscanApi) {}
@@ -11,7 +14,14 @@ export class BlockTimeService {
     minBlock: Block,
     maxBlock: Block,
     tolerance = 3 * 24 * 60 * 60,
+    depth = 0,
   ): Promise<number> {
+    if (depth > MAX_DEPTH) {
+      throw new HttpError(
+        500,
+        "The block matching the given date could not be found. Please try again later or raise a github issue",
+      );
+    }
     const estimate = this.estimateBlockNum(minBlock, maxBlock, date);
     const currentBlock: Block = await this.subscanApi.fetchBlock(
       chainName,
@@ -19,9 +29,23 @@ export class BlockTimeService {
     );
     if (Math.abs(currentBlock.block_timestamp - date / 1000) > tolerance) {
       if (currentBlock?.block_timestamp * 1000 > date) {
-        return this.searchBlock(chainName, date, minBlock, currentBlock);
+        return this.searchBlock(
+          chainName,
+          date,
+          minBlock,
+          currentBlock,
+          tolerance,
+          depth + 1,
+        );
       } else {
-        return this.searchBlock(chainName, date, currentBlock, maxBlock);
+        return this.searchBlock(
+          chainName,
+          date,
+          currentBlock,
+          maxBlock,
+          tolerance,
+          depth + 1,
+        );
       }
     }
     return currentBlock.block_num;
