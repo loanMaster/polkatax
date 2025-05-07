@@ -12,6 +12,7 @@ import { HttpError } from "../../../common/error/HttpError";
 import { coingeckoSupportsToken } from "../helper/coingecko-supports-token";
 import { Transfer } from "../../../model/transfer";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
+import { logger } from "../../logger/logger";
 
 export class PaymentsService {
   constructor(
@@ -35,15 +36,14 @@ export class PaymentsService {
   async processTask(
     paymentsRequest: PaymentsRequest,
   ): Promise<PaymentsResponse> {
+    logger.info("PaymentsService: Enter processess Task");
     let { startDay, endDay, chainName, address, currency } = paymentsRequest;
 
     validateDates(startDay, endDay);
     endDay = endDay && endDay < new Date() ? endDay : new Date();
     if (
       !evmChainConfigs[chainName.toLocaleLowerCase()] &&
-      !subscanChains.chains.find(
-        (p) => p.label.toLowerCase() === chainName.toLowerCase(),
-      )
+      !subscanChains.chains.find((p) => p.domain === chainName)
     ) {
       throw new HttpError(400, "Chain " + chainName + " not found");
     }
@@ -86,6 +86,7 @@ export class PaymentsService {
       (token) => (currentPrices[token] = quotes[token].quotes.latest),
     );
     const swapsExtended = addFiatValuesToSwaps(swaps, quotes);
+    logger.info("PaymentsService: Exit processess Task");
     return { currentPrices, swaps: swapsExtended, transfers: listOfTransfers };
   }
 }

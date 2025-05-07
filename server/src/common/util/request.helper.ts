@@ -18,7 +18,7 @@ export class RequestHelper {
   async handleError(fetchRequest: Promise<any>) {
     const response = await fetchRequest;
     if (!response.ok) {
-      throw new HttpError(response.status, await response.text());
+      throw new HttpError(response.status, await response.text(), response.url);
     }
     return response;
   }

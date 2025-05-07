@@ -7,6 +7,7 @@ dotenv.config({ path: __dirname + "/../../.env" });
 import * as fs from "fs";
 import { stakingRewardsEndpoint } from "./endpoints/staking-rewards.endoint";
 import { paymentsEndpoint } from "./endpoints/payments.endpoint";
+import { HttpError } from "../common/error/HttpError";
 
 const init = async () => {
   const fastify = Fastify({
@@ -57,8 +58,8 @@ const init = async () => {
 
   fastify.setErrorHandler((error, request, reply) => {
     if (error.statusCode) {
-      logger.info(
-        `Error: Status ${error.statusCode}, Message: ${error.message}`,
+      logger.error(
+        `Error: Status ${error.statusCode}, Message: ${error.message}${(error as HttpError)?.requestUrl ? ", Request Url: " + (error as HttpError)?.requestUrl : ""}`,
         error,
       );
       reply.status(error.statusCode).send(error.message);

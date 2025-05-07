@@ -17,6 +17,13 @@ const knownTestNets = [
   "moonbase",
 ];
 
+const knownChainProperties = [
+  { domain: "hydration", pseudoStaking: true },
+  { domain: "interlay", pseudoStaking: true },
+  { domain: "kintsugi", pseudoStaking: true },
+  { domain: "basilisk", pseudoStaking: true },
+];
+
 const determineTokenAndChainName = async (domain) => {
   const response = await fetch(`https://${domain}.subscan.io/`);
   const html = await response.text();
@@ -50,6 +57,8 @@ const fetchListOfSupportedChains = async () => {
       const { label, token } = await determineTokenAndChainName(domain);
       const runtimeMetadata = await fetchRuntimeMetadata(domain);
       const pallets = runtimeMetadata.info.metadata.map((m) => m.name);
+      const knownProperties =
+        knownChainProperties.find((c) => c.domain === domain) ?? {};
       result.push({
         domain,
         label,
@@ -61,6 +70,7 @@ const fetchListOfSupportedChains = async () => {
         standardStaking: pallets.indexOf("Staking") > -1,
         parachainStaking: pallets.indexOf("ParachainStaking") > -1,
         delegatedStaking: pallets.indexOf("DelegatedStaking") > -1,
+        ...knownProperties,
       });
       console.log("Done processing " + domain);
     } catch (error) {

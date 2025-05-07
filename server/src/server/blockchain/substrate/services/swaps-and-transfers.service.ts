@@ -9,6 +9,7 @@ import { TokenTransfers } from "../../../../model/token-transfer";
 import { TransferClassifier } from "../util/transfer-classifier";
 import { TransferMerger } from "../util/transfer-merger";
 import { ChainAdjustments } from "../util/chain-adjustments";
+import { hasChainEvmSupport } from "../util/has-chain-evm-support";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
@@ -73,7 +74,7 @@ export class SwapsAndTransfersService {
         )
       : { transactions: [], transfers: {} };
 
-    if (evmAddress) {
+    if (evmAddress && hasChainEvmSupport(chainName)) {
       const evmData = await this.fetchTxAndTransfers(
         chainName,
         evmAddress,

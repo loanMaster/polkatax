@@ -98,7 +98,8 @@
       "evmPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "pseudoStaking": true
     },
     {
       "domain": "bifrost-kusama",
@@ -346,7 +347,8 @@
       "evmPallet": true,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "pseudoStaking": true
     },
     {
       "domain": "integritee",
@@ -366,7 +368,8 @@
       "evmPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "pseudoStaking": true
     },
     {
       "domain": "karura",
@@ -396,7 +399,8 @@
       "evmPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "pseudoStaking": true
     },
     {
       "domain": "krest",
