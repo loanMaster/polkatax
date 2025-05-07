@@ -64,7 +64,7 @@ describe("StakingRewardsService", () => {
       ]);
     });
 
-    test("should throw error on Slash event", async () => {
+    test("should handle Slash event", async () => {
       blockTimeService.getMinMaxBlock.mockResolvedValue({
         blockMin: 100,
         blockMax: 200,
@@ -82,9 +82,20 @@ describe("StakingRewardsService", () => {
         token_decimals: 12,
       } as Token);
 
-      await expect(
-        service.fetchStakingRewards("kusama", "addr2", 1699999999000),
-      ).rejects.toThrow(HttpError);
+      const result = await service.fetchStakingRewards(
+        "kusama",
+        "addr2",
+        1699999999000,
+      );
+
+      expect(result).toEqual([
+        {
+          block: 150,
+          date: 1700000000,
+          amount: -1,
+          hash: "abc",
+        },
+      ]);
     });
   });
 

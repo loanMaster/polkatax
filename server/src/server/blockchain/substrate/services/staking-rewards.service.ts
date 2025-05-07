@@ -26,20 +26,12 @@ export class StakingRewardsService {
           (!maxDate || r.block_timestamp < maxDate / 1000) &&
           r.block_timestamp >= minDate / 1000,
       )
-      .map((r) => {
-        if (r.event_id === "Slash") {
-          throw new HttpError(
-            500,
-            `Program can't handle slashes, yet. The slashed amount was ${r.amount}`,
-          );
-        }
-        return r;
-      })
       .map((reward) => ({
         ...reward,
-        amount: BigNumber(reward.amount)
-          .dividedBy(Math.pow(10, token.token_decimals))
-          .toNumber(),
+        amount:
+          BigNumber(reward.amount)
+            .dividedBy(Math.pow(10, token.token_decimals))
+            .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
       }))
       .map((reward) => ({
         block: reward.block_num,
