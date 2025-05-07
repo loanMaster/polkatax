@@ -6,6 +6,17 @@ import dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/../../.env" });
 import { SubscanApi } from "../server/blockchain/substrate/api/subscan.api";
 
+const testNetPostfixes = ["paseo", "westend", "testnet"];
+
+const knownTestNets = [
+  "acala-testnet",
+  "avail-turing",
+  "creditcoin3-dev",
+  "canary-matrix",
+  "canary",
+  "moonbase",
+];
+
 const determineTokenAndChainName = async (domain) => {
   const response = await fetch(`https://${domain}.subscan.io/`);
   const html = await response.text();
@@ -27,6 +38,14 @@ const fetchListOfSupportedChains = async () => {
   for (let endpointElement of apis) {
     const domain = endpointElement.innerText.split(".")[0];
     console.log("Processing " + domain);
+    if (
+      testNetPostfixes.filter((postFix) => domain.endsWith(postFix)).length >
+        0 ||
+      knownTestNets.indexOf(domain) > -1
+    ) {
+      console.log("Skipping " + domain + " because it is a test net");
+      continue;
+    }
     try {
       const { label, token } = await determineTokenAndChainName(domain);
       const runtimeMetadata = await fetchRuntimeMetadata(domain);
@@ -82,6 +101,14 @@ const fetchRuntimeMetadata = async (domain: string) => {
   return new SubscanApi().fetchRuntimeMetadata(domain);
 };
 
+const chainsBefore = [];
+if (fs.existsSync(__dirname + "/../../res/gen/subscan-chains.json")) {
+  const chainInfoRaw = JSON.parse(
+    fs.readFileSync(__dirname + "/../../res/gen/subscan-chains.json", "utf-8"),
+  );
+  chainInfoRaw.chains.forEach((c) => chainsBefore.push(c.domain));
+}
+
 fetchListOfSupportedChains().then(async (chains) => {
   console.log(JSON.stringify(chains));
   console.log("Writing file...");
@@ -94,4 +121,20 @@ fetchListOfSupportedChains().then(async (chains) => {
     "Verifying completeness of subscan token to coingecko id mapping",
   );
   verifySubstrateToCoingeckoIdMapping(chains);
+
+  const chainsNow = chains.map((c) => c.domain);
+  if (chainsBefore.length > 0) {
+    const newlyAddedChains = chainsNow.filter(
+      (c) => chainsBefore.indexOf(c) === -1,
+    );
+    const removedChains = chainsBefore.filter(
+      (c) => chainsNow.indexOf(c) === -1,
+    );
+    console.log(
+      `The following chains were added: ${newlyAddedChains.join(", ")}`,
+    );
+    console.log(
+      `The following chains were removed: ${removedChains.join(", ")}`,
+    );
+  }
 });

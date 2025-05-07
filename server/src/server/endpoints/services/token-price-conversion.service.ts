@@ -2,11 +2,12 @@ import { logger } from "../../logger/logger";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
-import { PreferredQuoteCurrency } from "../../../model/preferred-quote-currency";
+import {
+  PreferredQuoteCurrency,
+  preferredQuoteCurrencyValues,
+} from "../../../model/preferred-quote-currency";
 
 export class TokenPriceConversionService {
-  private supportedQuoteCurrencies = ["usd", "eur", "chf"];
-
   constructor(
     private cryptoCurrencyPricesService: CryptoCurrencyPricesService,
     private fiatExchangeRateService: FiatExchangeRateService,
@@ -46,7 +47,7 @@ export class TokenPriceConversionService {
     currency: string,
   ): Promise<{ [token: string]: CurrencyQuotes }> {
     const quotesCurrency =
-      this.supportedQuoteCurrencies.indexOf(currency.toLowerCase()) > -1
+      preferredQuoteCurrencyValues.indexOf(currency.toLowerCase()) > -1
         ? currency
         : "usd";
     const result = {};
@@ -69,7 +70,7 @@ export class TokenPriceConversionService {
         logger.error(e);
       }
     }
-    if (this.supportedQuoteCurrencies.indexOf(currency.toLowerCase()) > -1) {
+    if (preferredQuoteCurrencyValues.indexOf(currency.toLowerCase()) > -1) {
       return result;
     }
     return this.fetchQuotesInOtherCurrency(result, currency);
