@@ -1,10 +1,10 @@
 import { Token } from "../model/token";
-import { Transfers } from "../model/transfer";
 import { Transaction } from "../model/transaction";
 import { StakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
 import { logger } from "../../../logger/logger";
-import { mergeListElements } from "../../../../common/util/merge-list";
+import { SubscanEvent } from "../model/subscan-event";
+import { RawTransferDto } from "../model/raw-transfer";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -26,6 +26,50 @@ export class SubscanService {
 
   async fetchNativeToken(chainName: string): Promise<Token> {
     return this.subscanApi.fetchNativeToken(chainName);
+  }
+
+  async searchAllEvents(
+    chainName: string,
+    address: string,
+    module: string,
+    event_id: string,
+    block_min?: number,
+    block_max?: number,
+  ): Promise<SubscanEvent[]> {
+    return this.iterateOverPages<SubscanEvent>((page, count) =>
+      this.subscanApi.searchEvents(
+        chainName,
+        address,
+        module,
+        event_id,
+        count,
+        page,
+        block_min,
+        block_max,
+      ),
+    );
+  }
+
+  async searchAllExtrinsics(
+    chainName: string,
+    address: string,
+    module: string,
+    call: string,
+    block_min?: number,
+    block_max?: number,
+  ): Promise<Transaction[]> {
+    return this.iterateOverPages<Transaction>((page, count) =>
+      this.subscanApi.searchExtrinsics(
+        chainName,
+        address,
+        module,
+        call,
+        count,
+        page,
+        block_min,
+        block_max,
+      ),
+    );
   }
 
   async fetchAllPoolStakingRewards(
@@ -133,31 +177,27 @@ export class SubscanService {
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<Transfers> {
+  ): Promise<RawTransferDto[]> {
     logger.info(
-      `fetchAllTransfers for ${chainName} and account ${account}. Evm: ${evm}`,
+      `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );
-    const addresses = await this.subscanApi.fetchAccounts(account, chainName);
-    const isMyAccount = (address: string) =>
-      address.toLowerCase() === account.toLowerCase() ||
-      addresses.indexOf(address.toLowerCase()) > -1;
-    const result = mergeListElements(
-      await this.iterateOverPages<any>((page, count) =>
-        this.subscanApi.fetchTransfers(
-          chainName,
-          account,
-          isMyAccount,
-          count,
-          page,
-          block_min,
-          block_max,
-          evm,
-        ),
+    const result = await this.iterateOverPages<any>((page, count) =>
+      this.subscanApi.fetchTransfers(
+        chainName,
+        account,
+        count,
+        page,
+        block_min,
+        block_max,
       ),
     );
     logger.info(
-      `Exit fetchAllTransfers for ${chainName} and account ${account}`,
+      `Exit fetchAllTransfersAs for ${chainName} and account ${account}`,
     );
     return result;
+  }
+
+  fetchAccounts(address: string, chainName: string): Promise<string[]> {
+    return this.subscanApi.fetchAccounts(address, chainName);
   }
 }

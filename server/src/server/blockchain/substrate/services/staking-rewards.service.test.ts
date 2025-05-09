@@ -5,6 +5,7 @@ import { HttpError } from "../../../../common/error/HttpError";
 import { expect, test, jest, describe, beforeEach } from "@jest/globals";
 import { Token } from "../model/token";
 import { BigNumber } from "bignumber.js";
+import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
 jest.mock("../../../logger/logger", () => ({
   logger: { info: jest.fn() },
@@ -14,6 +15,7 @@ describe("StakingRewardsService", () => {
   let service: StakingRewardsService;
   let blockTimeService: jest.Mocked<BlockTimeService>;
   let subscanService: jest.Mocked<SubscanService>;
+  let stakingRewardsViaEventsService: jest.Mocked<StakingRewardsViaEventsService>;
 
   beforeEach(() => {
     blockTimeService = {
@@ -26,7 +28,11 @@ describe("StakingRewardsService", () => {
       fetchNativeToken: jest.fn(),
     } as any;
 
-    service = new StakingRewardsService(blockTimeService, subscanService);
+    service = new StakingRewardsService(
+      blockTimeService,
+      subscanService,
+      stakingRewardsViaEventsService,
+    );
   });
 
   describe("fetchStakingRewards", () => {

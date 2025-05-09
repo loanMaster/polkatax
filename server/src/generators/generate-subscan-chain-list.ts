@@ -121,6 +121,7 @@ if (fs.existsSync(__dirname + "/../../res/gen/subscan-chains.json")) {
 
 fetchListOfSupportedChains().then(async (chains) => {
   console.log(JSON.stringify(chains));
+  chains = chains.sort((a, b) => (a.label < b.label ? 1 : -1));
   console.log("Writing file...");
   fs.writeFileSync(
     __dirname + "/../../res/gen/subscan-chains.json",

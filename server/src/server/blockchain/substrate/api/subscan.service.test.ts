@@ -151,26 +151,18 @@ test("should fetchAllTx", async () => {
 
 test("should fetchAllTransfers", async () => {
   const subscanApi = {
-    fetchAccounts: async () => {
-      return ["alice", "alise"];
-    },
     fetchTransfers: async (
       chainName: string,
       account: string,
-      isMyAccount: (string) => boolean,
       row: number = 100,
       page: number = 0,
       block_min?: number,
       block_max?: number,
       evm = false,
     ) => {
-      expect(isMyAccount("bob")).toBeFalsy();
-      expect(isMyAccount("alice")).toBeTruthy();
-      expect(isMyAccount("Alise")).toBeTruthy();
-      expect(isMyAccount("Ally")).toBeTruthy();
       if (page === 0) {
         return {
-          list: [{ a: 0, b: 1 }],
+          list: [{ a: 0 }, { b: 1 }],
           hasNext: true,
         };
       } else {
@@ -189,9 +181,5 @@ test("should fetchAllTransfers", async () => {
     20,
     false,
   );
-  expect(tx).toEqual({
-    a: 0,
-    b: 1,
-    c: 3,
-  });
+  expect(tx).toEqual([{ a: 0 }, { b: 1 }, { c: 3 }]);
 });
