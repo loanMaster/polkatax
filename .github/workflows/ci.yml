@@ -60,4 +60,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./client/dist
           external_repository: polkatax/polkatax.github.io
-        publish_branch: main
+          publish_branch: main
