@@ -201,8 +201,18 @@ function exportJson() {
       date: formatDateUTC(v.date * 1000),
     };
   });
+  const summary = {
+    'Reward token': rewards.value?.token,
+    Chain: rewards.value?.chain,
+    Currency: rewards.value?.currency,
+    'Wallet address': rewards.value?.address,
+    'NominationPool Id': rewards.value?.nominationPoolId || '',
+    totalAmount: rewards.value?.summary.amount,
+    totalValue: rewards.value?.summary.value,
+    totalValueNow: rewards.value?.summary?.valueNow,
+  };
   saveAs(
-    new Blob([JSON.stringify({ ...rewardsStore.rewards$, values: values })], {
+    new Blob([JSON.stringify({ summary, values: values })], {
       type: 'text/plain;charset=utf-8',
     }),
     'staking-rewards.json'

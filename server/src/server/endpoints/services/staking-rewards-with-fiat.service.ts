@@ -13,20 +13,6 @@ export class StakingRewardsWithFiatService {
     private subscanService: SubscanService,
   ) {}
 
-  private async fetchQuotesForToken(
-    symbol: string,
-    chainName: string,
-    currency: string,
-  ): Promise<CurrencyQuotes> {
-    return (
-      await this.tokenPriceConversionService.fetchQuotesForTokens(
-        [symbol],
-        chainName,
-        currency,
-      )
-    )[symbol];
-  }
-
   private async fetchRawStakingRewards(
     stakingRewardsRequest: StakingRewardsRequest,
   ) {
@@ -59,17 +45,18 @@ export class StakingRewardsWithFiatService {
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<StakingRewardsResponse> {
     let { chain, currency } = stakingRewardsRequest;
-    const quotes = await this.fetchQuotesForToken(
-      chain.token,
-      chain.domain,
-      currency,
-    );
-    return {
-      values: addFiatValuesToTransfers(
-        await this.fetchRawStakingRewards(stakingRewardsRequest),
-        quotes,
+
+    const [quotes, rewards] = await Promise.all([
+      this.tokenPriceConversionService.fetchQuotesForTokens(
+        [chain.token],
+        chain.domain,
+        currency,
       ),
-      currentPrice: quotes.quotes?.latest ?? 0,
+      this.fetchRawStakingRewards(stakingRewardsRequest),
+    ]);
+    return {
+      values: addFiatValuesToTransfers(rewards, quotes[chain.token]),
+      currentPrice: quotes[chain.token].quotes?.latest ?? 0,
       token: chain.token,
     };
   }

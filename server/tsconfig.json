@@ -7,7 +7,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2020",
-    "types": ["reflect-metadata", "node"],
+    "types": ["node"],
     "paths": {
       "*": ["*"]
     },

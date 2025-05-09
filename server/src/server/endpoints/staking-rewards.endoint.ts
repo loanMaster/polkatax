@@ -31,7 +31,7 @@ export const stakingRewardsEndpoint: RouteOptions = {
     return (data) => (schema as any).validate(data);
   },
   handler: async (request, reply) => {
-    return runWorker("staking-rewards.worker.ts", {
+    return runWorker("staking-rewards.worker", {
       chain: request.params["chain"],
       address: request.params["address"],
       currency: request.query["currency"],

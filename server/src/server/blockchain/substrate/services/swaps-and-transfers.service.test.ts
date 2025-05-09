@@ -32,6 +32,7 @@ describe("SwapsAndTransfersService", () => {
       fetchAllTx: jest.fn(),
       fetchAllTransfers: jest.fn(),
       mapToSubstrateAccount: jest.fn(),
+      fetchAccounts: jest.fn((adress) => [adress]),
     } as any;
 
     mockTransferMerger = {

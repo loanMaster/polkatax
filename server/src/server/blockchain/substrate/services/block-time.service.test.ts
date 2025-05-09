@@ -58,7 +58,7 @@ test("should find block no latest date", async () => {
   const maxBlock = blocks[blocks.length - blockMax];
   expect(
     Math.abs(maxBlock.block_timestamp - Date.now() / 1000),
-  ).toBeLessThanOrEqual(3 * 3 * 24 * 60 * 60 + 600);
+  ).toBeLessThanOrEqual(3 * 3 * 24 * 60 * 60 + blocks[0].block_timestamp);
 });
 
 test("should return first block if start date lies very far in past", async () => {

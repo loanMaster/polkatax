@@ -125,11 +125,13 @@ const paymentSubscription = store.paymentList$.subscribe(
     } else if (paymentsRequest.error) {
       $q.loading.hide();
       const error = paymentsRequest.error;
-      const errorMsg = await error.text()
+      const errorMsg = await error.text();
       const message =
         error.status && (error.status === 429 || error.status === 503)
           ? 'Too many requests. Please try again in some minutes'
-          : errorMsg ? errorMsg : 'There was an error fetching your data. Please try again later';
+          : errorMsg
+          ? errorMsg
+          : 'There was an error fetching your data. Please try again later';
       $q.dialog({
         title:
           error.status && error.status === 429

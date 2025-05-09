@@ -213,7 +213,6 @@ describe("staking rewards", () => {
     const stakingRewards = await subscanApi.fetchStakingRewards(
       "kusama",
       "bla",
-      100,
       1,
       true,
       1000,
@@ -246,16 +245,7 @@ describe("staking rewards", () => {
         block_range: "1000-2000",
       },
     );
-    const stakingRewards2 = await subscanApi.fetchStakingRewards(
-      "kusama",
-      "bla",
-      2,
-      2,
-      true,
-      1000,
-      2000,
-    );
-    expect(stakingRewards2.hasNext).toBeTruthy();
+    expect(stakingRewards.hasNext).toBeFalsy();
   });
 });
 
@@ -307,7 +297,6 @@ test("should fetchExtrinsics", async () => {
   const extrinsics = await subscanApi.fetchExtrinsics(
     "polkadot",
     "bla",
-    100,
     0,
     100,
     200,
@@ -398,7 +387,6 @@ test("should fetchTransfers", async () => {
   const transfers = await subscanApi.fetchTransfers(
     "polkadot",
     "alice",
-    100,
     4,
     200,
     300,

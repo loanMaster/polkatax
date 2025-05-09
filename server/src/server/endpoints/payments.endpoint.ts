@@ -20,7 +20,7 @@ export const paymentsEndpoint: RouteOptions = {
     return (data) => (schema as any).validate(data);
   },
   handler: async (request, reply) => {
-    return runWorker("payment.worker.ts", {
+    return runWorker("payment.worker", {
       chainName: request.params["chain"],
       address: request.params["address"],
       currency: request.query["currency"],

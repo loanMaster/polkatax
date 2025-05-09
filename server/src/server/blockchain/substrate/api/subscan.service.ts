@@ -36,13 +36,12 @@ export class SubscanService {
     block_min?: number,
     block_max?: number,
   ): Promise<SubscanEvent[]> {
-    return this.iterateOverPages<SubscanEvent>((page, count) =>
+    return this.iterateOverPagesParallel<SubscanEvent>((page) =>
       this.subscanApi.searchEvents(
         chainName,
         address,
         module,
         event_id,
-        count,
         page,
         block_min,
         block_max,
@@ -58,13 +57,12 @@ export class SubscanService {
     block_min?: number,
     block_max?: number,
   ): Promise<Transaction[]> {
-    return this.iterateOverPages<Transaction>((page, count) =>
+    return this.iterateOverPagesParallel<Transaction>((page) =>
       this.subscanApi.searchExtrinsics(
         chainName,
         address,
         module,
         call,
-        count,
         page,
         block_min,
         block_max,
@@ -77,14 +75,8 @@ export class SubscanService {
     address: string,
     poolId: number,
   ): Promise<StakingReward[]> {
-    return this.iterateOverPages<StakingReward>((page, count) =>
-      this.subscanApi.fetchPoolStakingRewards(
-        chainName,
-        address,
-        poolId,
-        count,
-        page,
-      ),
+    return this.iterateOverPagesParallel<StakingReward>((page) =>
+      this.subscanApi.fetchPoolStakingRewards(chainName, address, poolId, page),
     );
   }
 
@@ -104,21 +96,26 @@ export class SubscanService {
     }
   }
 
-  private async iterateOverPages<T>(
-    fetchPage: (page, count) => Promise<{ list: T[]; hasNext: boolean }>,
+  private async iterateOverPagesParallel<T>(
+    fetchPages: (page) => Promise<{ list: T[]; hasNext: boolean }>,
+    count = 5,
   ): Promise<T[]> {
+    const parallelFn = [...Array(count).keys()].map(
+      (offset) => (page) => fetchPages(page + offset),
+    );
     let page = 0;
-    const count = 100;
     const result = [];
-    let intermediate: { list: T[]; hasNext: boolean } = {
-      list: [],
-      hasNext: false,
-    };
+    let hasNext = false;
     do {
-      intermediate = await this.retry(() => fetchPage(page, count));
-      result.push(...intermediate.list);
-      page++;
-    } while (intermediate.hasNext);
+      const intermediate_results = await Promise.all(
+        parallelFn.map((fn) => this.retry(() => fn(page))),
+      );
+      intermediate_results.forEach((intermediate) =>
+        result.push(...intermediate.list),
+      );
+      hasNext = intermediate_results[intermediate_results.length - 1].hasNext;
+      page += count;
+    } while (hasNext);
     return result;
   }
 
@@ -131,11 +128,10 @@ export class SubscanService {
     logger.info(
       `fetchAllStakingRewards for ${chainName}, address ${address}, from ${block_min} to ${block_max}`,
     );
-    return this.iterateOverPages<StakingReward>((page, count) =>
+    return this.iterateOverPagesParallel((page) =>
       this.subscanApi.fetchStakingRewards(
         chainName,
         address,
-        count,
         page,
         true,
         block_min,
@@ -154,11 +150,10 @@ export class SubscanService {
     logger.info(
       `fetchAllExtrinsics for ${chainName} and address ${address}. Evm ${evm}`,
     );
-    const result = this.iterateOverPages<Transaction>((page, count) =>
+    const result = this.iterateOverPagesParallel<Transaction>((page) =>
       this.subscanApi.fetchExtrinsics(
         chainName,
         address,
-        count,
         page,
         block_min,
         block_max,
@@ -181,11 +176,10 @@ export class SubscanService {
     logger.info(
       `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );
-    const result = await this.iterateOverPages<any>((page, count) =>
+    const result = await this.iterateOverPagesParallel<any>((page) =>
       this.subscanApi.fetchTransfers(
         chainName,
         account,
-        count,
         page,
         block_min,
         block_max,

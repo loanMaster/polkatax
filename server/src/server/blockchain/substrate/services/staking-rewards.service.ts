@@ -49,7 +49,7 @@ export class StakingRewardsService {
     maxDate?: number,
   ): Promise<Transfer[]> {
     logger.info(
-      `Exit fetchStakingRewards for address ${address} and chain ${chainName}`,
+      `Entry fetchStakingRewards for address ${address} and chain ${chainName}`,
     );
     const { blockMin, blockMax } = await this.blockTimeService.getMinMaxBlock(
       chainName,

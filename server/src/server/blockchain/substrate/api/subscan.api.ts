@@ -43,7 +43,6 @@ export class SubscanApi {
     address: string,
     module: string,
     event_id: string,
-    row: number,
     page: number,
     block_min: number,
     block_max?: number,
@@ -52,7 +51,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/v2/scan/events`,
       "post",
       {
-        row,
+        row: 100,
         page,
         address,
         module,
@@ -68,7 +67,7 @@ export class SubscanApi {
     const data = response.data;
     return {
       list: data?.events ?? [],
-      hasNext: (data?.events ?? []).length >= row,
+      hasNext: (data?.events ?? []).length >= 100,
     };
   }
 
@@ -77,7 +76,6 @@ export class SubscanApi {
     address: string,
     module: string,
     call: string,
-    row: number,
     page: number,
     block_min: number,
     block_max?: number,
@@ -86,7 +84,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address,
         module,
@@ -109,7 +107,7 @@ export class SubscanApi {
           callModule: entry.call_module,
         };
       }),
-      hasNext: (responseBody.data?.extrinsics ?? []).length >= row,
+      hasNext: (responseBody.data?.extrinsics ?? []).length >= 100,
     };
   }
 
@@ -210,7 +208,6 @@ export class SubscanApi {
   async fetchStakingRewards(
     chainName: string,
     address: string,
-    row: number = 100,
     page: number = 0,
     isStash: boolean,
     block_min?: number,
@@ -220,7 +217,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/scan/account/reward_slash`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address,
         is_stash: isStash,
@@ -232,7 +229,7 @@ export class SubscanApi {
     );
     return {
       list: this.mapStakingRewards(responseBody.data?.list),
-      hasNext: (responseBody.data?.list || []).length >= row,
+      hasNext: (responseBody.data?.list || []).length >= 100,
     };
   }
 
@@ -257,7 +254,6 @@ export class SubscanApi {
   async fetchExtrinsics(
     chainName: string,
     address: string,
-    row: number = 100,
     page: number = 0,
     block_min?: number,
     block_max?: number,
@@ -270,7 +266,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/${endpoint}`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address,
         success: true,
@@ -308,14 +304,13 @@ export class SubscanApi {
       }),
       hasNext:
         (responseBody.data?.extrinsics || responseBody.data?.list || [])
-          .length >= row,
+          .length >= 100,
     };
   }
 
   async fetchTransfers(
     chainName: string,
     account: string,
-    row: number = 100,
     page: number = 0,
     block_min?: number,
     block_max?: number,
@@ -328,7 +323,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/${endpoint}`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address: account,
         success: true,
@@ -341,7 +336,7 @@ export class SubscanApi {
     const list = responseBody.data?.transfers || responseBody.data?.list || [];
     return {
       list,
-      hasNext: list.length >= row,
+      hasNext: list.length >= 100,
     };
   }
 }

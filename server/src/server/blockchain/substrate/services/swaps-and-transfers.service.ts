@@ -37,22 +37,20 @@ export class SwapsAndTransfersService {
       address.toLowerCase() === account.toLowerCase() ||
       accounts.indexOf(address.toLowerCase()) > -1;
 
-    const [transactions, transfersList] = await Promise.all([
-      this.subscanService.fetchAllTx(
-        chainName,
-        address,
-        blockMin,
-        blockMax,
-        evm,
-      ),
-      this.subscanService.fetchAllTransfers(
-        chainName,
-        address,
-        blockMin,
-        blockMax,
-        evm,
-      ),
-    ]);
+    const transactions = await this.subscanService.fetchAllTx(
+      chainName,
+      address,
+      blockMin,
+      blockMax,
+      evm,
+    );
+    const transfersList = await this.subscanService.fetchAllTransfers(
+      chainName,
+      address,
+      blockMin,
+      blockMax,
+      evm,
+    );
     const transfers = this.transferMerger.mergeTranferListToObject(
       transfersList,
       address,
