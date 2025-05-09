@@ -93,7 +93,7 @@ This will provide dummy values for fiat and crypto prices, allowing you to test 
 
 ### Production setup
 
-For production environments, it's recommended to use first build the application:
+For production environments, it's recommended to first build the application:
 ```bash
 npm run build
 ```
