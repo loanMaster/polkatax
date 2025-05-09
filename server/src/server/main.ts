@@ -22,8 +22,6 @@ const init = async () => {
 
   await fastify.register(import("@fastify/rate-limit"), { global: false });
 
-  const staticFilesFolder = path.join(process.cwd(), "public");
-
   fastify.addHook("onRequest", (request, reply, done) => {
     if (
       JSON.parse(
@@ -44,10 +42,15 @@ const init = async () => {
     done();
   });
 
-  fastify.log.info("Static files are served from folder " + staticFilesFolder);
-  await fastify.register(import("@fastify/static"), {
-    root: staticFilesFolder,
-  });
+  const staticFilesFolder = path.join(process.cwd(), "public");
+  if (fs.existsSync(staticFilesFolder)) {
+    fastify.log.info(
+      "Static files are served from folder " + staticFilesFolder,
+    );
+    await fastify.register(import("@fastify/static"), {
+      root: staticFilesFolder,
+    });
+  }
 
   fastify.get("/api/res/subscan-chains", function (req, reply) {
     reply.sendFile(
