@@ -15,3 +15,16 @@ jobs:
     steps:
       - name: Trigger Render Deploy Hook
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Install dependencies & build
+        working-directory: ./client
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./client/dist
+          publish_branch: main
