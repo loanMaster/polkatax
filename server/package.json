@@ -7,7 +7,7 @@
     "pm2-prod": "pm2 start prod.config.js",
     "pm2-stub": "pm2 start stub.config.js",
     "pm2-stop": "pm2 stop all",
-    "build": "tsc && cp .env ./dist",
+    "build": "tsc && npm run copy-env-to-dist",
     "start:server": "ts-node src/server/main.ts",
     "start:crypto-currency-prices": "ts-node src/crypto-currency-prices/main.ts",
     "start:crypto-currency-prices-stub": "ts-node src/crypto-currency-prices/stub.ts",
@@ -18,7 +18,8 @@
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test-watch": "jest --watch --verbose false",
     "test": "jest",
-    "format": "prettier --write . --ignore-path ../.gitignore"
+    "format": "prettier --write . --ignore-path ../.gitignore",
+    "copy-env-to-dist": "if [ -f .env ]; then cp .env ./dist; fi"
   },
   "author": "",
   "license": "ISC",
