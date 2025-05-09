@@ -46,13 +46,34 @@ jobs:
       - name: Build client
         working-directory: client
         run: npm run build
-  deploy:
+  deploy-server:
     if: github.ref == 'refs/heads/main'
     needs: test  # Only run if test job passes
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy Hook
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+  deploy-client:
+    if: github.ref == 'refs/heads/main'
+    needs: test  # Only run if test job passes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Client Dependencies
+        working-directory: client
+        run: npm install
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
