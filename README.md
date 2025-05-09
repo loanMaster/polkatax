@@ -93,9 +93,15 @@ This will provide dummy values for fiat and crypto prices, allowing you to test 
 
 ### Production setup
 
-For production environments, it's recommended to use PM2 for process management:
+For production environments, it's recommended to use first build the application:
 ```bash
-pm2 start std.config.js
+npm run build
+```
+
+And run with pm2:
+```bash
+cd server
+pm2 start prod.config.js
 ```
 
 ## Prerequisites
