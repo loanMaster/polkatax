@@ -1,0 +1,44 @@
+name: CI - Client & Server
+
+on:
+  push:
+    branches:
+      - '**'  # Trigger on push to any branch
+  pull_request:
+    branches:
+      - '**'  # Trigger on PR to any branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # ===== Server =====
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run Server Tests
+        working-directory: server
+        run: npm run test
+
+      - name: Build server
+        working-directory: server
+        run: npm run build
+
+      # ===== Client =====
+      - name: Install Client Dependencies
+        working-directory: client
+        run: npm install
+
+      - name: Build client
+        working-directory: client
+        run: npm run build
