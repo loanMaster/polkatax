@@ -46,6 +46,9 @@ export class TokenPriceConversionService {
     chain: string,
     currency: string,
   ): Promise<{ [token: string]: CurrencyQuotes }> {
+    logger.info(
+      `Entry fetchQuotesForTokens ${tokens.join(", ")} on ${chain} in ${currency}`,
+    );
     const quotesCurrency =
       preferredQuoteCurrencyValues.indexOf(currency.toLowerCase()) > -1
         ? currency
@@ -71,8 +74,14 @@ export class TokenPriceConversionService {
       }
     }
     if (preferredQuoteCurrencyValues.indexOf(currency.toLowerCase()) > -1) {
+      logger.info(`Exit fetchQuotesForTokens`);
       return result;
     }
-    return this.fetchQuotesInOtherCurrency(result, currency);
+    const resultConverted = await this.fetchQuotesInOtherCurrency(
+      result,
+      currency,
+    );
+    logger.info(`Exit fetchQuotesForTokens`);
+    return resultConverted;
   }
 }

@@ -7,6 +7,7 @@ import { Transaction } from "../model/transaction";
 import { Transfers } from "../model/transfer";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
+import { SubscanEvent } from "../model/subscan-event";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -35,6 +36,79 @@ export class SubscanApi {
     );
     const info = response.data;
     return info?.account?.substrate_account?.address;
+  }
+
+  async searchEvents(
+    chainName: string,
+    address: string,
+    module: string,
+    event_id: string,
+    page: number,
+    block_min: number,
+    block_max?: number,
+  ): Promise<{ list: SubscanEvent[]; hasNext: boolean }> {
+    const response = await this.requestHelper.req(
+      `https://${chainName}.api.subscan.io/api/v2/scan/events`,
+      "post",
+      {
+        row: 100,
+        page,
+        address,
+        module,
+        event_id,
+        success: true,
+        block_range:
+          block_min !== undefined && block_max !== undefined
+            ? `${block_min}-${block_max}`
+            : undefined,
+        finalized: true,
+      },
+    );
+    const data = response.data;
+    return {
+      list: data?.events ?? [],
+      hasNext: (data?.events ?? []).length >= 100,
+    };
+  }
+
+  async searchExtrinsics(
+    chainName: string,
+    address: string,
+    module: string,
+    call: string,
+    page: number,
+    block_min: number,
+    block_max?: number,
+  ): Promise<{ list: Transaction[]; hasNext: boolean }> {
+    const responseBody = await this.requestHelper.req(
+      `https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`,
+      `post`,
+      {
+        row: 100,
+        page,
+        address,
+        module,
+        call,
+        success: true,
+        block_range:
+          block_min !== undefined && block_max !== undefined
+            ? `${block_min}-${block_max}`
+            : undefined,
+      },
+    );
+    return {
+      list: (responseBody.data?.extrinsics ?? []).map((entry) => {
+        return {
+          hash: entry.extrinsic_hash,
+          account: entry.account_display.address,
+          block_timestamp: entry.block_timestamp,
+          block_num: entry.block_num,
+          functionName: entry.call_module_function,
+          callModule: entry.call_module,
+        };
+      }),
+      hasNext: (responseBody.data?.extrinsics ?? []).length >= 100,
+    };
   }
 
   async fetchMetadata(chainName: string): Promise<MetaData> {
@@ -134,7 +208,6 @@ export class SubscanApi {
   async fetchStakingRewards(
     chainName: string,
     address: string,
-    row: number = 100,
     page: number = 0,
     isStash: boolean,
     block_min?: number,
@@ -144,7 +217,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/scan/account/reward_slash`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address,
         is_stash: isStash,
@@ -156,7 +229,7 @@ export class SubscanApi {
     );
     return {
       list: this.mapStakingRewards(responseBody.data?.list),
-      hasNext: (responseBody.data?.list || []).length >= row,
+      hasNext: (responseBody.data?.list || []).length >= 100,
     };
   }
 
@@ -181,7 +254,6 @@ export class SubscanApi {
   async fetchExtrinsics(
     chainName: string,
     address: string,
-    row: number = 100,
     page: number = 0,
     block_min?: number,
     block_max?: number,
@@ -194,7 +266,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/${endpoint}`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address,
         success: true,
@@ -232,20 +304,18 @@ export class SubscanApi {
       }),
       hasNext:
         (responseBody.data?.extrinsics || responseBody.data?.list || [])
-          .length >= row,
+          .length >= 100,
     };
   }
 
   async fetchTransfers(
     chainName: string,
     account: string,
-    isMyAccount: (string) => boolean,
-    row: number = 100,
     page: number = 0,
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<{ list: Transfers[]; hasNext: boolean }> {
+  ): Promise<{ list: any[]; hasNext: boolean }> {
     const endpoint = evm
       ? "api/scan/evm/token/transfer"
       : "api/v2/scan/transfers";
@@ -253,7 +323,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/${endpoint}`,
       `post`,
       {
-        row,
+        row: 100,
         page,
         address: account,
         success: true,
@@ -263,60 +333,10 @@ export class SubscanApi {
             : undefined,
       },
     );
-    const transfers: any = {};
-    (responseBody.data?.transfers || responseBody.data?.list || []).forEach(
-      (entry) => {
-        if (!entry.hash) {
-          return;
-        }
-        if (evm) {
-          entry = {
-            ...entry,
-            asset_symbol: entry.symbol,
-            module: entry.to_display?.evm_contract?.contract_name,
-            amount: BigNumber(entry.value)
-              .dividedBy(BigNumber(10).pow(entry.decimals))
-              .toNumber(),
-            block_timestamp: entry.create_at,
-          };
-        }
-        const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
-        if (!transfers[entry.hash]) {
-          transfers[entry.hash] = {};
-        }
-        if (!transfers[entry.hash][entry.asset_symbol]) {
-          transfers[entry.hash][entry.asset_symbol] = { amount: 0 };
-        }
-        transfers[entry.hash][entry.asset_symbol].functionName = entry.module;
-        if (isMyAccount(entry.to)) {
-          transfers[entry.hash][entry.asset_symbol].amount += Number(
-            entry.amount,
-          );
-        } else if (isMyAccount(entry.from)) {
-          transfers[entry.hash][entry.asset_symbol].amount -= Number(
-            entry.amount,
-          );
-        } else {
-          console.warn("no match for transfer!");
-        }
-        if (transfers[entry.hash][entry.asset_symbol].amount > 0) {
-          transfers[entry.hash][entry.asset_symbol].to = account;
-          transfers[entry.hash][entry.asset_symbol].from = otherAddress;
-        } else {
-          transfers[entry.hash][entry.asset_symbol].from = account;
-          transfers[entry.hash][entry.asset_symbol].to = otherAddress;
-        }
-        transfers[entry.hash][entry.asset_symbol].block = entry.block_num;
-        transfers[entry.hash][entry.asset_symbol].timestamp =
-          entry.block_timestamp;
-        transfers[entry.hash][entry.asset_symbol].hash = entry.hash;
-      },
-    );
+    const list = responseBody.data?.transfers || responseBody.data?.list || [];
     return {
-      list: [transfers],
-      hasNext:
-        (responseBody.data?.transfers || responseBody.data?.list || [])
-          .length >= row,
+      list,
+      hasNext: list.length >= 100,
     };
   }
 }

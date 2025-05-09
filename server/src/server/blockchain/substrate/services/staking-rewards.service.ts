@@ -3,13 +3,14 @@ import { BigNumber } from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
 import { StakingReward } from "../model/staking-reward";
 import { Transfer } from "../../../../model/transfer";
-import { HttpError } from "../../../../common/error/HttpError";
 import { logger } from "../../../logger/logger";
+import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
 export class StakingRewardsService {
   constructor(
     private blockTimeService: BlockTimeService,
     private subscanService: SubscanService,
+    private stakingRewardsViaEventsService: StakingRewardsViaEventsService,
   ) {}
 
   private async filterRewards(
@@ -26,20 +27,12 @@ export class StakingRewardsService {
           (!maxDate || r.block_timestamp < maxDate / 1000) &&
           r.block_timestamp >= minDate / 1000,
       )
-      .map((r) => {
-        if (r.event_id === "Slash") {
-          throw new HttpError(
-            500,
-            `Program can't handle slashes, yet. The slashed amount was ${r.amount}`,
-          );
-        }
-        return r;
-      })
       .map((reward) => ({
         ...reward,
-        amount: BigNumber(reward.amount)
-          .dividedBy(Math.pow(10, token.token_decimals))
-          .toNumber(),
+        amount:
+          BigNumber(reward.amount)
+            .dividedBy(Math.pow(10, token.token_decimals))
+            .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
       }))
       .map((reward) => ({
         block: reward.block_num,
@@ -56,19 +49,60 @@ export class StakingRewardsService {
     maxDate?: number,
   ): Promise<Transfer[]> {
     logger.info(
-      `Exit fetchStakingRewards for address ${address} and chain ${chainName}`,
+      `Entry fetchStakingRewards for address ${address} and chain ${chainName}`,
     );
     const { blockMin, blockMax } = await this.blockTimeService.getMinMaxBlock(
       chainName,
       minDate,
       maxDate,
     );
-    const rewardsSlashes = await this.subscanService.fetchAllStakingRewards(
-      chainName,
-      address,
-      blockMin,
-      blockMax,
-    );
+    const rewardsSlashes = await (() => {
+      switch (chainName) {
+        case "mythos":
+          return this.stakingRewardsViaEventsService.fetchStakingRewards(
+            chainName,
+            address,
+            "collatorstaking",
+            "StakingRewardReceived",
+            blockMin,
+            blockMax,
+          );
+        case "energywebx":
+          return this.stakingRewardsViaEventsService.fetchStakingRewards(
+            chainName,
+            address,
+            "parachainstaking",
+            "Rewarded",
+            blockMin,
+            blockMax,
+          );
+        case "darwinia":
+          return this.stakingRewardsViaEventsService.fetchStakingRewards(
+            chainName,
+            address,
+            "darwiniastaking",
+            "RewardAllocated",
+            blockMin,
+            blockMax,
+          );
+        case "robonomics-freemium":
+          return this.stakingRewardsViaEventsService.fetchStakingRewards(
+            chainName,
+            address,
+            "staking",
+            "reward",
+            blockMin,
+            blockMax,
+          );
+        default:
+          return this.subscanService.fetchAllStakingRewards(
+            chainName,
+            address,
+            blockMin,
+            blockMax,
+          );
+      }
+    })();
     const filtered = await this.filterRewards(
       rewardsSlashes,
       chainName,

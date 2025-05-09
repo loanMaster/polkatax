@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "rimraf server/public && cd client && npm run build && cp -r ./dist/spa  ../server/public",
-    "serve": "cd server && npm run serve"
+    "build": "rimraf server/public && cd client && npm run build && cp -r ./dist/spa  ../server/public"
   },
   "author": "",
   "license": "ISC",

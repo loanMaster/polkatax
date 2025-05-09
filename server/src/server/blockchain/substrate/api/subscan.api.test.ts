@@ -213,7 +213,6 @@ describe("staking rewards", () => {
     const stakingRewards = await subscanApi.fetchStakingRewards(
       "kusama",
       "bla",
-      100,
       1,
       true,
       1000,
@@ -246,16 +245,7 @@ describe("staking rewards", () => {
         block_range: "1000-2000",
       },
     );
-    const stakingRewards2 = await subscanApi.fetchStakingRewards(
-      "kusama",
-      "bla",
-      2,
-      2,
-      true,
-      1000,
-      2000,
-    );
-    expect(stakingRewards2.hasNext).toBeTruthy();
+    expect(stakingRewards.hasNext).toBeFalsy();
   });
 });
 
@@ -307,7 +297,6 @@ test("should fetchExtrinsics", async () => {
   const extrinsics = await subscanApi.fetchExtrinsics(
     "polkadot",
     "bla",
-    100,
     0,
     100,
     200,
@@ -337,112 +326,72 @@ test("should fetchExtrinsics", async () => {
 });
 
 test("should fetchTransfers", async () => {
+  const mockTransfers = [
+    {
+      from: "alice",
+      to: "bob",
+      hash: "1",
+      asset_symbol: "dot",
+      amount: 100,
+      decimals: 18,
+      block_num: 10,
+      block_timestamp: 200,
+    },
+    {
+      from: "bob",
+      to: "alice",
+      hash: "1",
+      asset_symbol: "btc",
+      amount: 1,
+      decimals: 18,
+      block_num: 10,
+      block_timestamp: 200,
+    },
+    {
+      from: "alice",
+      to: "charley",
+      hash: "2",
+      asset_symbol: "usdt",
+      amount: 100,
+      decimals: 10,
+      block_num: 11,
+      block_timestamp: 300,
+    },
+    {
+      from: "charley",
+      to: "alice",
+      hash: "3",
+      asset_symbol: "usdc",
+      amount: 99,
+      decimals: 10,
+      block_num: 12,
+      block_timestamp: 300,
+    },
+    {
+      from: "charley",
+      to: "alice",
+      hash: "3",
+      asset_symbol: "usdc",
+      amount: 7,
+      decimals: 10,
+      block_num: 12,
+      block_timestamp: 300,
+    },
+  ];
   let { requestHelper, requestHelperSpy } = setUpRequestHelper({
     data: {
-      transfers: [
-        {
-          from: "alice",
-          to: "bob",
-          hash: "1",
-          asset_symbol: "dot",
-          amount: 100,
-          decimals: 18,
-          block_num: 10,
-          block_timestamp: 200,
-        },
-        {
-          from: "bob",
-          to: "alice",
-          hash: "1",
-          asset_symbol: "btc",
-          amount: 1,
-          decimals: 18,
-          block_num: 10,
-          block_timestamp: 200,
-        },
-        {
-          from: "alice",
-          to: "charley",
-          hash: "2",
-          asset_symbol: "usdt",
-          amount: 100,
-          decimals: 10,
-          block_num: 11,
-          block_timestamp: 300,
-        },
-        {
-          from: "charley",
-          to: "alice",
-          hash: "3",
-          asset_symbol: "usdc",
-          amount: 99,
-          decimals: 10,
-          block_num: 12,
-          block_timestamp: 300,
-        },
-        {
-          from: "charley",
-          to: "alice",
-          hash: "3",
-          asset_symbol: "usdc",
-          amount: 7,
-          decimals: 10,
-          block_num: 12,
-          block_timestamp: 300,
-        },
-      ],
+      transfers: mockTransfers,
     },
   });
   (subscanApi as any)["requestHelper"] = requestHelper;
   const transfers = await subscanApi.fetchTransfers(
     "polkadot",
     "alice",
-    (a) => a === "alice",
-    100,
     4,
     200,
     300,
     false,
   );
-  expect(transfers.list.length).toBe(1);
-  expect(transfers.list[0]).toEqual({
-    "1": {
-      dot: {
-        amount: -100,
-        from: "alice",
-        to: "bob",
-        block: 10,
-        timestamp: 200,
-        hash: "1",
-      },
-      btc: {
-        amount: 1,
-        to: "alice",
-        from: "bob",
-        block: 10,
-        timestamp: 200,
-        hash: "1",
-      },
-    },
-    "2": {
-      usdt: {
-        amount: -100,
-        from: "alice",
-        to: "charley",
-        block: 11,
-        timestamp: 300,
-        hash: "2",
-      },
-    },
-    "3": {
-      usdc: {
-        amount: 106,
-        to: "alice",
-        from: "charley",
-        block: 12,
-        timestamp: 300,
-        hash: "3",
-      },
-    },
-  });
+  expect(transfers.list.length).toBe(5);
+  expect(transfers.list).toEqual(mockTransfers);
 });

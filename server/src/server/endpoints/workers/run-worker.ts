@@ -2,8 +2,9 @@ import path from "path";
 import { Worker } from "worker_threads";
 import { HttpError } from "../../../common/error/HttpError";
 import { logger } from "../../logger/logger";
+import * as fs from "fs";
 
-const MAX_WORKERS = 2;
+const MAX_WORKERS = 1;
 let activeWorkers = 0;
 
 export const runWorker = (fileName: string, data: any): Promise<any> => {
@@ -14,7 +15,9 @@ export const runWorker = (fileName: string, data: any): Promise<any> => {
     }
     activeWorkers++;
 
-    const workerPath = path.resolve(__dirname, fileName); // Reference compiled worker file
+    const tsPath = path.resolve(__dirname, fileName + ".ts");
+    const jsPath = path.resolve(__dirname, fileName + ".js");
+    const workerPath = fs.existsSync(jsPath) ? jsPath : tsPath;
     const worker = new Worker(workerPath, {
       workerData: data,
       execArgv: ["-r", "ts-node/register"], // This allows TS execution

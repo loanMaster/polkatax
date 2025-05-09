@@ -13,38 +13,43 @@ test("should fetchAllStakingRewards", async () => {
     fetchStakingRewards: async (
       chainName: string,
       address: string,
-      row: number = 100,
       page: number = 0,
       isStash: boolean,
       block_min?: number,
       block_max?: number,
     ) => {
-      if (page === 0) {
-        return {
-          list: [
-            {
-              event_id: "Reward",
-              amount: BigNumber(1),
-              block_timestamp: 12,
-              block_num: 33,
-              hash: "1",
-            },
-          ],
-          hasNext: true,
-        };
-      } else {
-        return {
-          list: [
-            {
-              event_id: "Reward",
-              amount: BigNumber(1),
-              block_timestamp: 12,
-              block_num: 33,
-              hash: "2",
-            },
-          ],
-          hasNext: false,
-        };
+      switch (page) {
+        case 0:
+          return {
+            list: [
+              {
+                event_id: "Reward",
+                amount: BigNumber(1),
+                block_timestamp: 12,
+                block_num: 33,
+                hash: "1",
+              },
+            ],
+            hasNext: true,
+          };
+        case 1:
+          return {
+            list: [
+              {
+                event_id: "Reward",
+                amount: BigNumber(1),
+                block_timestamp: 12,
+                block_num: 33,
+                hash: "2",
+              },
+            ],
+            hasNext: false,
+          };
+        default:
+          return {
+            list: [],
+            hasNext: false,
+          };
       }
     },
   };
@@ -71,27 +76,26 @@ test("should fetchAllStakingRewards", async () => {
     block_num: 33,
     hash: "2",
   });
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 100, 0, true, 100, 200);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 100, 1, true, 100, 200);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 0, true, 100, 200);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 1, true, 100, 200);
 });
 
 test("should fetchAllPoolStakingRewards", async () => {
   const subscanApi = {
-    fetchPoolStakingRewards: async (
-      chainName,
-      address,
-      poolId,
-      count,
-      page,
-    ) => {
+    fetchPoolStakingRewards: async (chainName, address, poolId, page) => {
       if (page === 0) {
         return {
           list: ["a", "b"],
           hasNext: true,
         };
-      } else {
+      } else if (page === 1) {
         return {
           list: ["c"],
+          hasNext: false,
+        };
+      } else {
+        return {
+          list: [],
           hasNext: false,
         };
       }
@@ -106,8 +110,8 @@ test("should fetchAllPoolStakingRewards", async () => {
   );
   expect(stakingRewards.length).toBe(3);
   expect(stakingRewards).toEqual(["a", "b", "c"]);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 100, 0);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 100, 1);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 0);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 1);
 });
 
 test("should fetchAllTx", async () => {
@@ -115,7 +119,6 @@ test("should fetchAllTx", async () => {
     fetchExtrinsics: async (
       chainName: string,
       address: string,
-      row: number = 100,
       page: number = 0,
       block_min?: number,
       block_max?: number,
@@ -126,9 +129,14 @@ test("should fetchAllTx", async () => {
           list: ["a", "d"],
           hasNext: true,
         };
-      } else {
+      } else if (page === 1) {
         return {
           list: ["k"],
+          hasNext: false,
+        };
+      } else {
+        return {
+          list: [],
           hasNext: false,
         };
       }
@@ -145,37 +153,33 @@ test("should fetchAllTx", async () => {
   );
   expect(tx.length).toBe(3);
   expect(tx).toEqual(["a", "d", "k"]);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 100, 0, 10, 20, false);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 100, 1, 10, 20, false);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 0, 10, 20, false);
+  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 1, 10, 20, false);
 });
 
 test("should fetchAllTransfers", async () => {
   const subscanApi = {
-    fetchAccounts: async () => {
-      return ["alice", "alise"];
-    },
     fetchTransfers: async (
       chainName: string,
       account: string,
-      isMyAccount: (string) => boolean,
-      row: number = 100,
       page: number = 0,
       block_min?: number,
       block_max?: number,
       evm = false,
     ) => {
-      expect(isMyAccount("bob")).toBeFalsy();
-      expect(isMyAccount("alice")).toBeTruthy();
-      expect(isMyAccount("Alise")).toBeTruthy();
-      expect(isMyAccount("Ally")).toBeTruthy();
       if (page === 0) {
         return {
-          list: [{ a: 0, b: 1 }],
+          list: [{ a: 0 }, { b: 1 }],
           hasNext: true,
+        };
+      } else if (page === 1) {
+        return {
+          list: [{ c: 3 }],
+          hasNext: false,
         };
       } else {
         return {
-          list: [{ c: 3 }],
+          list: [],
           hasNext: false,
         };
       }
@@ -189,9 +193,5 @@ test("should fetchAllTransfers", async () => {
     20,
     false,
   );
-  expect(tx).toEqual({
-    a: 0,
-    b: 1,
-    c: 3,
-  });
+  expect(tx).toEqual([{ a: 0 }, { b: 1 }, { c: 3 }]);
 });

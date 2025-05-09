@@ -5,6 +5,7 @@ import { HttpError } from "../../../../common/error/HttpError";
 import { expect, test, jest, describe, beforeEach } from "@jest/globals";
 import { Token } from "../model/token";
 import { BigNumber } from "bignumber.js";
+import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
 jest.mock("../../../logger/logger", () => ({
   logger: { info: jest.fn() },
@@ -14,6 +15,7 @@ describe("StakingRewardsService", () => {
   let service: StakingRewardsService;
   let blockTimeService: jest.Mocked<BlockTimeService>;
   let subscanService: jest.Mocked<SubscanService>;
+  let stakingRewardsViaEventsService: jest.Mocked<StakingRewardsViaEventsService>;
 
   beforeEach(() => {
     blockTimeService = {
@@ -26,7 +28,15 @@ describe("StakingRewardsService", () => {
       fetchNativeToken: jest.fn(),
     } as any;
 
-    service = new StakingRewardsService(blockTimeService, subscanService);
+    stakingRewardsViaEventsService = {
+      fetchStakingRewards: jest.fn(),
+    } as any;
+
+    service = new StakingRewardsService(
+      blockTimeService,
+      subscanService,
+      stakingRewardsViaEventsService,
+    );
   });
 
   describe("fetchStakingRewards", () => {
@@ -64,7 +74,7 @@ describe("StakingRewardsService", () => {
       ]);
     });
 
-    test("should throw error on Slash event", async () => {
+    test("should handle Slash event", async () => {
       blockTimeService.getMinMaxBlock.mockResolvedValue({
         blockMin: 100,
         blockMax: 200,
@@ -82,9 +92,20 @@ describe("StakingRewardsService", () => {
         token_decimals: 12,
       } as Token);
 
-      await expect(
-        service.fetchStakingRewards("kusama", "addr2", 1699999999000),
-      ).rejects.toThrow(HttpError);
+      const result = await service.fetchStakingRewards(
+        "kusama",
+        "addr2",
+        1699999999000,
+      );
+
+      expect(result).toEqual([
+        {
+          block: 150,
+          date: 1700000000,
+          amount: -1,
+          hash: "abc",
+        },
+      ]);
     });
   });
 
@@ -114,6 +135,52 @@ describe("StakingRewardsService", () => {
         {
           block: 160,
           date: 1700000001,
+          amount: 0.5,
+          hash: "def",
+        },
+      ]);
+    });
+  });
+
+  describe("fetch rewards from stakingRewardsViaEventsService", () => {
+    test("should fetch and filter rewards", async () => {
+      blockTimeService.getMinMaxBlock.mockResolvedValue({
+        blockMin: 100,
+        blockMax: 200,
+      });
+      stakingRewardsViaEventsService.fetchStakingRewards.mockResolvedValue([
+        {
+          event_id: "Reward",
+          block_timestamp: 1700000,
+          block_num: 160,
+          amount: new BigNumber("500000000000"),
+          hash: "def",
+        },
+      ]);
+      subscanService.fetchNativeToken.mockResolvedValue({
+        token_decimals: 12,
+      } as Token);
+
+      const result = await service.fetchStakingRewards(
+        "mythos",
+        "addr3",
+        1,
+        1800000000,
+      );
+      expect(
+        stakingRewardsViaEventsService.fetchStakingRewards,
+      ).toHaveBeenCalledWith(
+        "mythos",
+        "addr3",
+        "collatorstaking",
+        "StakingRewardReceived",
+        100,
+        200,
+      );
+      expect(result).toEqual([
+        {
+          block: 160,
+          date: 1700000,
           amount: 0.5,
           hash: "def",
         },

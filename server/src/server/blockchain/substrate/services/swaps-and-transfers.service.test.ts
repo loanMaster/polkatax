@@ -32,10 +32,12 @@ describe("SwapsAndTransfersService", () => {
       fetchAllTx: jest.fn(),
       fetchAllTransfers: jest.fn(),
       mapToSubstrateAccount: jest.fn(),
+      fetchAccounts: jest.fn((adress) => [adress]),
     } as any;
 
     mockTransferMerger = {
       merge: jest.fn(),
+      mergeTranferListToObject: jest.fn(),
     } as any;
 
     mockTransferClassifier = {
@@ -60,18 +62,16 @@ describe("SwapsAndTransfersService", () => {
     const fakeTxs = [
       { hash: "0x1", block_timestamp: 1700000000, block_num: 100 },
     ];
-    const fakeTransfers = {
-      "0x1": {
-        DOT: {
-          amount: 1,
-          timestamp: 1700000000,
-          block: 100,
-          from: "A",
-          to: "B",
-          functionName: "transfer",
-        },
+    const fakeTransfers = [
+      {
+        amount: 1,
+        timestamp: 1700000000,
+        block: 100,
+        from: "A",
+        to: "B",
+        functionName: "transfer",
       },
-    };
+    ];
 
     const swaps = [{ hash: "0x1", date: 1700000000 }] as any;
     const payments = {
@@ -97,7 +97,7 @@ describe("SwapsAndTransfersService", () => {
     });
     mockSubscanService.fetchAllTx.mockResolvedValue(fakeTxs as Transaction[]);
     mockSubscanService.fetchAllTransfers.mockResolvedValue(
-      fakeTransfers as unknown as Transfers,
+      fakeTransfers as any,
     );
     mockTransferClassifier.extractSwaps.mockReturnValue(swaps);
     mockTransferClassifier.extractPayments.mockReturnValue(payments);
@@ -130,7 +130,7 @@ describe("SwapsAndTransfersService", () => {
     mockSubscanService.fetchAllTx.mockResolvedValue([
       { hash: "x", block_timestamp: 1700000000, block_num: 99 },
     ] as Transaction[]);
-    mockSubscanService.fetchAllTransfers.mockResolvedValue({});
+    mockSubscanService.fetchAllTransfers.mockResolvedValue([]);
     mockTransferClassifier.extractSwaps.mockReturnValue([
       { hash: "x", date: 1700000000 },
     ] as Swap[]);
@@ -154,7 +154,7 @@ describe("SwapsAndTransfersService", () => {
       blockMax: 999,
     });
     mockSubscanService.fetchAllTx.mockResolvedValue([]);
-    mockSubscanService.fetchAllTransfers.mockResolvedValue({});
+    mockSubscanService.fetchAllTransfers.mockResolvedValue([]);
     mockTransferClassifier.extractSwaps.mockReturnValue([]);
     mockTransferClassifier.extractPayments.mockReturnValue({});
 

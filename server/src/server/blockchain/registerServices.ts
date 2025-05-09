@@ -9,6 +9,7 @@ import { TransferMerger } from "./substrate/util/transfer-merger";
 import { ChainAdjustments } from "./substrate/util/chain-adjustments";
 import { EvmTxService } from "./evm/service/evm-tx.service";
 import { EvmSwapsAndPaymentsService } from "./evm/service/evm-swaps-and-payments.service";
+import { StakingRewardsViaEventsService } from "./substrate/services/staking-rewards-via-events.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -22,5 +23,6 @@ export const registerServices = (container: AwilixContainer) => {
     stakingRewardsService: asClass(StakingRewardsService),
     evmSwapsAndPaymentsService: asClass(EvmSwapsAndPaymentsService),
     evmTxService: asClass(EvmTxService),
+    stakingRewardsViaEventsService: asClass(StakingRewardsViaEventsService),
   });
 };

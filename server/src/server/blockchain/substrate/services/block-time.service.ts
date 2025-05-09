@@ -80,23 +80,26 @@ export class BlockTimeService {
       `Entry getMinMaxBlock for chain ${chainName} and minDate ${new Date(minDate).toISOString()}, maxDate ${maxDate ? new Date(maxDate).toISOString() : "undefined"}`,
     );
     const tolerance = 3 * 24 * 60 * 60;
-    const meta = await this.subscanApi.fetchMetadata(chainName);
-    const firstBlock: Block = await this.subscanApi.fetchBlock(chainName, 1);
-    const lastBlock: Block = (
-      await this.subscanApi.fetchBlockList(chainName, 0, 1)
-    )[0];
+    const [meta, firstBlock, blockList] = await Promise.all([
+      this.subscanApi.fetchMetadata(chainName),
+      this.subscanApi.fetchBlock(chainName, 1),
+      this.subscanApi.fetchBlockList(chainName, 0, 1),
+    ]);
+    const lastBlock: Block = blockList[0];
     const blockMin = await this.searchBlock(
       chainName,
       Math.max(minDate, firstBlock.block_timestamp * 1000),
       firstBlock,
       lastBlock,
     );
-    const blockMax = await this.searchBlock(
-      chainName,
-      Math.min(maxDate || Date.now(), lastBlock.block_timestamp * 1000),
-      firstBlock,
-      lastBlock,
-    );
+    const blockMax = maxDate
+      ? await this.searchBlock(
+          chainName,
+          Math.min(maxDate, lastBlock.block_timestamp * 1000),
+          firstBlock,
+          lastBlock,
+        )
+      : lastBlock.block_num;
     logger.info(`Exit getMinMaxBlock for chain ${chainName}`);
     return {
       blockMin: Math.max(
