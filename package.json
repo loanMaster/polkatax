@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rimraf ./server/dist && npm run build --prefix server && npm run build --prefix client && cp -r ./client/dist/spa  ./server/dist/public",
     "postinstall": "npm install --prefix server && npm install --prefix client",
-    "start": "npm run start-with-stubs --prefix server"
+    "start": "npm run start --prefix server"
   },
   "author": "",
   "license": "ISC",

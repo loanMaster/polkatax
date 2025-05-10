@@ -12,37 +12,11 @@ import { HttpError } from "../common/error/HttpError";
 const init = async () => {
   const fastify = Fastify({
     logger,
-    https: process.env["SSL_KEY"]
-      ? {
-          key: fs.readFileSync(process.env["SSL_KEY"], "utf8"),
-          cert: fs.readFileSync(process.env["SSL_CERT"], "utf8"),
-        }
-      : undefined,
   });
 
   await fastify.register(import("@fastify/rate-limit"), { global: false });
 
-  fastify.addHook("onRequest", (request, reply, done) => {
-    if (
-      JSON.parse(
-        fs.readFileSync(__dirname + "/../../res/realtime-config.json", "utf-8"),
-      ).maintenanceMode &&
-      request.url.indexOf("/maintenance") == -1
-    ) {
-      reply.header("Content-Type", "text/html");
-      reply
-        .send(
-          fs.readFileSync(
-            __dirname + "/../../public/maintenance.html",
-            "utf-8",
-          ),
-        )
-        .status(200);
-    }
-    done();
-  });
-
-  const staticFilesFolder = path.join(process.cwd(), "public");
+  const staticFilesFolder = path.join(__dirname, "../../public");
   if (fs.existsSync(staticFilesFolder)) {
     fastify.log.info(
       "Static files are served from folder " + staticFilesFolder,
@@ -53,7 +27,10 @@ const init = async () => {
   }
 
   fastify.get("/api/res/subscan-chains", function (req, reply) {
-    return fs.readFileSync(path.join(__dirname, "../../res/gen/subscan-chains.json"), 'utf-8')
+    return fs.readFileSync(
+      path.join(__dirname, "../../res/gen/subscan-chains.json"),
+      "utf-8",
+    );
   });
 
   fastify.setErrorHandler((error, request, reply) => {
