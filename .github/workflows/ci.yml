@@ -102,7 +102,7 @@ jobs:
           path: server/dist/public
 
       - name: Set up Fly CLI
-        uses: superfly/flyctl-action@v1
+        uses: superfly/flyctl-actions/setup-flyctl@v1
         with:
           flyctl_version: "latest" 
         env:
