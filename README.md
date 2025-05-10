@@ -93,7 +93,7 @@ This will provide dummy values for fiat and crypto prices, allowing you to test 
 
 ### Production setup
 
-For production environments, it's recommended to use first build the application:
+For production environments, first build the application:
 ```bash
 npm run build
 ```
@@ -132,4 +132,4 @@ This will generate a new list of substrate chains in the `res/gen/` folder.
 The current implementation uses coingecko, however without API key.
 The reason are the relatively high costs of purchasing a coingecko API key.
 The consequence is that you might encounter errors with code 429 from coingecko if too many
-requests are many, especially when you just started the application.
+requests are made, especially when you just started the application.
