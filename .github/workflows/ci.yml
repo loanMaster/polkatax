@@ -47,16 +47,25 @@ jobs:
         working-directory: client
         run: npm run build
 
+      # ===== Upload artifacts =====
+
       - name: Upload client build
         uses: actions/upload-artifact@v4
         with:
           name: client-dist
-          path: client/dist
+          path: client/dist/spa
+        if: github.ref == 'refs/heads/main'
+
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-dist
+          path: server/dist
         if: github.ref == 'refs/heads/main'
 
   deploy-client:
     if: github.ref == 'refs/heads/main'
-    needs: test  # Only run if test job passes
+    needs: test 
     runs-on: ubuntu-latest
 
     steps:
@@ -70,6 +79,36 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          publish_dir: ./client/dist/spa
+          publish_dir: ./client/dist
           external_repository: polkatax/polkatax.github.io
           publish_branch: main
+
+  deploy-to-fly:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download server build
+        uses: actions/download-artifact@v4
+        with:
+          name: server-dist
+          path: server/dist
+
+      - name: Download client build
+        uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: server/dist/public
+
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-action@v1
+        with:
+          flyctl_version: "latest" 
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Fly.io
+        run: |
+          flyctl auth login --access-token ${{ secrets.FLY_API_TOKEN }}
+          flyctl deploy --remote-only
