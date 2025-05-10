@@ -53,10 +53,7 @@ const init = async () => {
   }
 
   fastify.get("/api/res/subscan-chains", function (req, reply) {
-    reply.sendFile(
-      "subscan-chains.json",
-      path.join(__dirname, "../../res/gen"),
-    );
+    return fs.readFileSync(path.join(__dirname, "../../res/gen/subscan-chains.json"), 'utf-8')
   });
 
   fastify.setErrorHandler((error, request, reply) => {

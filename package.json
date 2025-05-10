@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "rimraf server/dist && cd server && npm run build && cd ../client && npm run build && cp -r ./dist/spa  ../server/dist/public",
-    "postinstall": "cd server && npm install && cd ../client && npm install",
-    "start": "cd server && npm run start-with-stubs"
+    "build": "npm run build --prefix server && npm run build --prefix client && cp -r ./client/dist/spa  ./server/dist/public",
+    "postinstall": "npm install --prefix server && npm install --prefix client",
+    "start": "npm run start-with-stubs --prefix server"
   },
   "author": "",
   "license": "ISC",
