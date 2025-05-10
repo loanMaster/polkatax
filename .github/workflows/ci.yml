@@ -30,10 +30,6 @@ jobs:
         working-directory: server
         run: npm run test
 
-      - name: Build server
-        working-directory: server
-        run: npm run build
-
       # ===== Client =====
       - name: Install Client Dependencies
         working-directory: client
@@ -43,63 +39,26 @@ jobs:
         working-directory: client
         run: npm run test
 
-      - name: Build client
-        working-directory: client
-        run: npm run build
-
-      # ===== Upload artifacts =====
-
-      - name: Upload client build
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-dist
-          path: client/dist/spa
-        if: github.ref == 'refs/heads/main'
-
-      - name: Upload server build
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-dist
-          path: server/dist
-        if: github.ref == 'refs/heads/main'
-
-  deploy-client:
-    if: github.ref == 'refs/heads/main'
-    needs: test 
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download client build
-        uses: actions/download-artifact@v4
-        with:
-          name: client-dist
-          path: client/dist
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          personal_token: ${{ secrets.PERSONAL_TOKEN }}
-          publish_dir: ./client/dist
-          external_repository: polkatax/polkatax.github.io
-          publish_branch: main
-
   deploy-to-fly:
     if: github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download server build
-        uses: actions/download-artifact@v4
-        with:
-          name: server-dist
-          path: server/dist
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Download client build
-        uses: actions/download-artifact@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          name: client-dist
-          path: server/dist/public
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
 
       - name: Set up Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@v1
