@@ -54,14 +54,6 @@ jobs:
           path: client/dist
         if: github.ref == 'refs/heads/main'
 
-  deploy-server:
-    if: github.ref == 'refs/heads/main'
-    needs: test  # Only run if test job passes
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Render Deploy Hook
-        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-
   deploy-client:
     if: github.ref == 'refs/heads/main'
     needs: test  # Only run if test job passes
