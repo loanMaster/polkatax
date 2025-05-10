@@ -67,7 +67,6 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Deploy to Fly.io
-        run: |
-          flyctl deploy --remote-only --access-token ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --access-token ${{ secrets.FLY_API_TOKEN }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
