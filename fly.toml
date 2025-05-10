@@ -1,0 +1,6 @@
+app = "polkatax"  
+
+[build]
+
+[env]
+  NODE_ENV = "production"
