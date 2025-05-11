@@ -10,7 +10,7 @@ import { paymentsEndpoint } from "./endpoints/payments.endpoint";
 import { HttpError } from "../common/error/HttpError";
 
 export const polkataxServer = {
-  init: async (customPort?: number) => {
+  init: async () => {
     const fastify = Fastify({
       logger,
     });
@@ -62,7 +62,7 @@ export const polkataxServer = {
     });
 
     fastify.listen(
-      { port: customPort || Number(process.env["PORT"] || 3001), host: "0.0.0.0" },
+      { port: Number(process.env["PORT"] || 3001), host: "0.0.0.0" },
       (err) => {
         if (err) {
           fastify.log.error(err);
