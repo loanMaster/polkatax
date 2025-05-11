@@ -1,5 +1,4 @@
 import { parse } from "node-html-parser";
-import "node-fetch";
 import * as fs from "fs";
 import * as substrateTokenToCoingeckoId from "../../res/substrate-token-to-coingecko-id.json";
 import dotenv from "dotenv";

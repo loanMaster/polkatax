@@ -3,6 +3,7 @@ import { TimeFrames } from '../model/time-frames';
 export const getStartOfCurrentDay = () => {
   const temp = new Date();
   temp.setMilliseconds(0);
+  temp.setSeconds(0);
   temp.setMinutes(0);
   temp.setHours(0);
   return temp;
@@ -11,6 +12,7 @@ export const getStartOfCurrentDay = () => {
 export const getFirstDayOfYear = () => {
   const temp = new Date();
   temp.setMilliseconds(0);
+  temp.setSeconds(0);
   temp.setMinutes(0);
   temp.setHours(0);
   temp.setMonth(0);

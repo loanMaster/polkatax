@@ -35,7 +35,7 @@ const createHistoricMockdata = (currency): CurrencyQuotes => {
   return result;
 };
 
-const init = async () => {
+export const startStub = async () => {
   const fastify = Fastify({
     logger,
   });
@@ -73,5 +73,3 @@ const init = async () => {
     },
   );
 };
-
-init();

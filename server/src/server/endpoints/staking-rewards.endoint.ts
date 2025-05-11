@@ -1,8 +1,9 @@
 import Joi from "joi";
 import { RouteOptions } from "fastify/types/route";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { runWorker } from "./workers/run-worker";
 import { HttpError } from "../../common/error/HttpError";
+import { DIContainer } from "../di-container";
+import { activeRequestCounter } from "./active_request_counter";
 
 export const stakingRewardsEndpoint: RouteOptions = {
   method: "GET",
@@ -30,15 +31,25 @@ export const stakingRewardsEndpoint: RouteOptions = {
   validatorCompiler: ({ schema, method, url, httpPart }) => {
     return (data) => (schema as any).validate(data);
   },
-  handler: async (request, reply) => {
-    return runWorker("staking-rewards.worker", {
-      chain: request.params["chain"],
-      address: request.params["address"],
-      currency: request.query["currency"],
-      poolId: request.query["poolid"],
-      startDay: request.query["startdate"],
-      endDay: request.query["enddate"],
-    });
+  handler: async (request) => {
+    if (activeRequestCounter.increase()) {
+      try {
+        return DIContainer.resolve(
+          "stakingRewardsWithFiatService",
+        ).fetchStakingRewards({
+          chain: request.params["chain"],
+          address: request.params["address"],
+          currency: request.query["currency"],
+          poolId: request.query["poolid"],
+          startDay: request.query["startdate"],
+          endDay: request.query["enddate"],
+        });
+      } finally {
+        activeRequestCounter.decrease();
+      }
+    } else {
+      throw new HttpError(503, "Server is busy. Try again later.");
+    }
   },
   config: {
     rateLimit: {

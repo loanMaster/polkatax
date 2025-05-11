@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "main-server",
-      script: "node ./dist/src/server/main.js",
+      script: "node ./dist/src/server/start-server.js",
     },
     {
       name: "crypto-currency-prices",

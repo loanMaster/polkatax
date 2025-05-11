@@ -207,7 +207,7 @@ const generateMockData = () => {
   return getDailyQuotesForLastTenYears();
 };
 
-const init = async () => {
+export const startStub = async () => {
   const mockData = generateMockData();
 
   const fastify = Fastify({
@@ -232,5 +232,3 @@ const init = async () => {
     },
   );
 };
-
-init();

@@ -4,7 +4,6 @@ import { Block } from "../model/block";
 import { StakingReward } from "../model/staking-reward";
 import { BigNumber } from "bignumber.js";
 import { Transaction } from "../model/transaction";
-import { Transfers } from "../model/transfer";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
 import { SubscanEvent } from "../model/subscan-event";

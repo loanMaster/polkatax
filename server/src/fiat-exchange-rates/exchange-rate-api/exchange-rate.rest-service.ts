@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { ExchangeRates } from "../../model/fiat-exchange-rates/exchange-rates";
 import { HttpError } from "../../common/error/HttpError";
 import { logger } from "../logger/logger";
