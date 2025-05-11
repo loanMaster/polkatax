@@ -37,7 +37,7 @@ const store = (recordings, fileName) => {
 
 const handlers = ["post", "get"].map((method) =>
   http[method]("*", async ({ request }) => {
-    if (request.url.startsWith("http://localhost:3001")) {
+    if (request.url.startsWith("http://127.0.0.1:3001")) {
       return passthrough();
     }
     return record(request);
