@@ -4,7 +4,7 @@ import { addFiatValuesToTransfers } from "../helper/addFiatValuesToTransfers";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { StakingRewardsResponse } from "../model/staking-rewards.response";
-import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
+import { formatDate } from "../../../common/util/date-utils";
 
 export class StakingRewardsWithFiatService {
   constructor(
@@ -44,7 +44,7 @@ export class StakingRewardsWithFiatService {
   async fetchStakingRewards(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<StakingRewardsResponse> {
-    let { chain, currency } = stakingRewardsRequest;
+    let { chain, currency, endDay } = stakingRewardsRequest;
 
     const [quotes, rewards] = await Promise.all([
       this.tokenPriceConversionService.fetchQuotesForTokens(
@@ -54,9 +54,17 @@ export class StakingRewardsWithFiatService {
       ),
       this.fetchRawStakingRewards(stakingRewardsRequest),
     ]);
+    let priceEndDay =
+      endDay &&
+      quotes[chain.token].quotes &&
+      quotes[chain.token].quotes.hasOwnProperty(formatDate(endDay))
+        ? quotes[chain.token].quotes[formatDate(endDay)]
+        : quotes[chain.token].quotes?.latest;
+
     return {
       values: addFiatValuesToTransfers(rewards, quotes[chain.token]),
-      currentPrice: quotes[chain.token].quotes?.latest ?? 0,
+      currentPrice: quotes[chain.token].quotes?.latest,
+      priceEndDay,
       token: chain.token,
     };
   }

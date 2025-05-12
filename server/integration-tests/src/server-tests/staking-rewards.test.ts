@@ -17,7 +17,7 @@ let fastiyInstance;
 
 describe("should fetch staking rewards", () => {
   test("ksm staking rewards 2024", async () => {
-    process.env['SUBSCAN_API_KEY'] = 'made-up-key'
+    process.env["SUBSCAN_API_KEY"] = "made-up-key";
 
     server = setupServer(
       ...getReplayTrafficHandlers(

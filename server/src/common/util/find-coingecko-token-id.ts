@@ -25,7 +25,7 @@ export const findCoingeckoToken = (
       (p) => p.id === substrateMainToken.coingeckoId,
     );
     if (token) {
-      return token;
+      return { ...token, symbol };
     }
   }
 
@@ -64,5 +64,5 @@ export const findCoingeckoToken = (
     );
   }
 
-  return result[0];
+  return { ...result[0], symbol };
 };
