@@ -246,7 +246,7 @@ export class SubscanApi {
         ? json.data.list.map((entry) => ({
             address: entry.address.toLowerCase(),
           }))
-        : [{ address }]
+        : [{ address: address.toLowerCase() }]
     ).map((entry) => entry.address.toLowerCase());
   }
 

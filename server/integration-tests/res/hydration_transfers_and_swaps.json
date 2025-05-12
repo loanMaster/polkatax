@@ -1,0 +1,177 @@
+{
+  "currentPrices": {
+    "hdx": 20,
+    "ewt": 20,
+    "bnc": 20,
+    "vdot": 20,
+    "usdt": 20
+  },
+  "swaps": [
+    {
+      "hash": "0xcd190ef9f98f4627a4c1bd9de5779a4d5612b2fa94c19804cf9acf8aaf987c0a",
+      "block": 7521595,
+      "date": 1747051584,
+      "functionName": "tokens",
+      "contract": "router",
+      "tokens": {
+        "wud": {
+          "amount": 164814.3815250167,
+          "type": "buy",
+          "value": null
+        },
+        "hdx": {
+          "amount": 42,
+          "type": "sell",
+          "price": 20,
+          "value": 840
+        }
+      }
+    },
+    {
+      "hash": "0x208f95330c345d9d509e245f9d56958e9d213364150f36b89ab8ce778a6dddf0",
+      "block": 7521589,
+      "date": 1747051500,
+      "functionName": "tokens",
+      "contract": "router",
+      "tokens": {
+        "ewt": {
+          "amount": 0.9328482170479597,
+          "type": "buy",
+          "price": 20,
+          "value": 18.656964340959195
+        },
+        "hdx": {
+          "amount": 69,
+          "type": "sell",
+          "price": 20,
+          "value": 1380
+        }
+      }
+    },
+    {
+      "hash": "0xe15203ab21dd46f865d59d1863f3667fddc325ae3d2886fddab238823987af57",
+      "block": 7519529,
+      "date": 1747025544,
+      "functionName": "tokens",
+      "contract": "omnipool",
+      "tokens": {
+        "bnc": {
+          "amount": 197.226061645993,
+          "type": "buy",
+          "price": 20,
+          "value": 3944.5212329198603
+        },
+        "vdot": {
+          "amount": 4.1311210269,
+          "type": "sell",
+          "price": 20,
+          "value": 82.622420538
+        }
+      }
+    },
+    {
+      "hash": "0x9324f2b8e7e357ac60bbe56ddc2a60ca45948a08d70fb250d589030b4aeb50f5",
+      "block": 7512716,
+      "date": 1746940368,
+      "functionName": "tokens",
+      "contract": "router",
+      "tokens": {
+        "usdt": {
+          "amount": 192.338156,
+          "type": "buy",
+          "price": 10,
+          "value": 1923.38156
+        },
+        "vdot": {
+          "amount": 24.8510232047,
+          "type": "sell",
+          "price": 10,
+          "value": 248.510232047
+        }
+      }
+    }
+  ],
+  "transfers": {
+    "hdx": {
+      "values": [
+        {
+          "hash": "0x02fbc28348183bfa607cdd9579a7e0dec4f62e316abd15637f0b62df455c419a",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7519523,
+          "date": 1747025460,
+          "amount": 736.2282728295687,
+          "functionName": "batch_all",
+          "price": 20,
+          "value": 14724.565456591374
+        },
+        {
+          "hash": "0xadd132324dd74ec579e27d6a07b42fd905e145fa4cc10117d9c4d6034187e137",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7512703,
+          "date": 1746940212,
+          "amount": 4428.927791919992,
+          "functionName": "batch_all",
+          "price": 10,
+          "value": 44289.27791919992
+        }
+      ],
+      "currentPrice": 20
+    },
+    "vdot": {
+      "values": [
+        {
+          "hash": "0x02fbc28348183bfa607cdd9579a7e0dec4f62e316abd15637f0b62df455c419a",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7519523,
+          "date": 1747025460,
+          "amount": 4.1311210269,
+          "functionName": "batch_all",
+          "price": 20,
+          "value": 82.622420538
+        },
+        {
+          "hash": "0xadd132324dd74ec579e27d6a07b42fd905e145fa4cc10117d9c4d6034187e137",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7512703,
+          "date": 1746940212,
+          "amount": 24.851023204700002,
+          "functionName": "batch_all",
+          "price": 10,
+          "value": 248.51023204700002
+        }
+      ],
+      "currentPrice": 20
+    },
+    "bnc": {
+      "values": [
+        {
+          "hash": "0x02fbc28348183bfa607cdd9579a7e0dec4f62e316abd15637f0b62df455c419a",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7519523,
+          "date": 1747025460,
+          "amount": 4.763848535228,
+          "functionName": "batch_all",
+          "price": 20,
+          "value": 95.27697070456
+        },
+        {
+          "hash": "0xadd132324dd74ec579e27d6a07b42fd905e145fa4cc10117d9c4d6034187e137",
+          "from": "7L53bUT5Bn9vNULtfmkmPZWG7Lki3TdaRiBiRiEu8uSA9rYF",
+          "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+          "block": 7512703,
+          "date": 1746940212,
+          "amount": 29.659156633602002,
+          "functionName": "batch_all",
+          "price": 10,
+          "value": 296.59156633602004
+        }
+      ],
+      "currentPrice": 20
+    }
+  }
+}

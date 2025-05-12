@@ -150,15 +150,17 @@ export class SubscanService {
     logger.info(
       `fetchAllExtrinsics for ${chainName} and address ${address}. Evm ${evm}`,
     );
-    const result = this.iterateOverPagesParallel<Transaction>((page) =>
-      this.subscanApi.fetchExtrinsics(
-        chainName,
-        address,
-        page,
-        block_min,
-        block_max,
-        evm,
-      ),
+    const result = this.iterateOverPagesParallel<Transaction>(
+      (page) =>
+        this.subscanApi.fetchExtrinsics(
+          chainName,
+          address,
+          page,
+          block_min,
+          block_max,
+          evm,
+        ),
+      3,
     );
     logger.info(
       `Exit fetchAllExtrinsics for ${chainName} and address ${address}`,
@@ -176,14 +178,16 @@ export class SubscanService {
     logger.info(
       `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );
-    const result = await this.iterateOverPagesParallel<any>((page) =>
-      this.subscanApi.fetchTransfers(
-        chainName,
-        account,
-        page,
-        block_min,
-        block_max,
-      ),
+    const result = await this.iterateOverPagesParallel<any>(
+      (page) =>
+        this.subscanApi.fetchTransfers(
+          chainName,
+          account,
+          page,
+          block_min,
+          block_max,
+        ),
+      3,
     );
     logger.info(
       `Exit fetchAllTransfersAs for ${chainName} and account ${account}`,

@@ -33,9 +33,9 @@ export class SwapsAndTransfersService {
       address,
       chainName,
     );
-    const isMyAccount = (account: string) =>
-      address.toLowerCase() === account.toLowerCase() ||
-      accounts.indexOf(address.toLowerCase()) > -1;
+    const isMyAccount = (addressToTest: string) =>
+      address.toLowerCase() === addressToTest.toLowerCase() ||
+      accounts.indexOf(addressToTest.toLowerCase()) > -1;
 
     const transactions = await this.subscanService.fetchAllTx(
       chainName,

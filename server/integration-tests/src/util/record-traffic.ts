@@ -7,10 +7,10 @@ import {
   StrictRequest,
 } from "msw";
 import { setupServer } from "msw/node";
-import { polkataxServer } from "../../src/server/polkatax-server";
+import { polkataxServer } from "../../../src/server/polkatax-server";
 import fs from "fs";
-import { startStub as startPricesStub } from "../../src/crypto-currency-prices/stub";
-import { startStub as startFiatStub } from "../../src/fiat-exchange-rates/stub";
+import { startStub as startPricesStub } from "../../../src/crypto-currency-prices/stub";
+import { startStub as startFiatStub } from "../../../src/fiat-exchange-rates/stub";
 
 const req_and_resp_list = [];
 const fileName = Math.random().toString(36).replace("0.", "") + ".json";
@@ -30,7 +30,7 @@ const record = async (request: StrictRequest<JsonBodyType>) => {
 
 const store = (recordings, fileName) => {
   fs.writeFileSync(
-    __dirname + "/../_recordings_/" + fileName,
+    __dirname + "/../../_recordings_/" + fileName,
     JSON.stringify(recordings),
   );
 };
