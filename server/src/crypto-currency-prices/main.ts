@@ -59,4 +59,4 @@ export const cryptoCurrencyPricesServer = {
   },
 };
 
-cryptoCurrencyPricesServer.init()
+cryptoCurrencyPricesServer.init();

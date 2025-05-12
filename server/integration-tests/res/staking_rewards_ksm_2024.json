@@ -7242,5 +7242,6 @@
     }
   ],
   "currentPrice": 20,
+  "priceEndDay": 10,
   "token": "KSM"
 }

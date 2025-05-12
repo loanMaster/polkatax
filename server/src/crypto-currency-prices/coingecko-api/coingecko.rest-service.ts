@@ -2,6 +2,7 @@ import { parse } from "node-html-parser";
 import { logger } from "../logger/logger";
 import { HttpError } from "../../common/error/HttpError";
 import { Quotes } from "../../model/crypto-currency-prices/crypto-currency-quotes";
+import { formatDate } from "../../common/util/date-utils";
 
 export class CoingeckoRestService {
   async fetchPrices(
@@ -68,9 +69,12 @@ export class CoingeckoRestService {
       timestamp: Date.now(),
     };
     for (let dataPoint of json) {
-      result[dataPoint["snapped_at"].substring(0, 10)] = Number(
-        dataPoint["price"],
+      // coingecko return quotes for beginning of day, but we are interested in end-of-day quotes
+      // => price from start of day 2025-01-03 is saved with key "2025-01-02" (end of day)
+      const previousDay = formatDate(
+        new Date(Date.parse(dataPoint["snapped_at"]) - 86400000),
       );
+      result[previousDay] = Number(dataPoint["price"]);
     }
     return result;
   }

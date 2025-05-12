@@ -13,7 +13,7 @@
     "start:fiat-exchange-rates": "ts-node src/fiat-exchange-rates/main.ts",
     "start:fiat-exchange-rates-stub": "ts-node src/fiat-exchange-rates/start-stub.ts",
     "start": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates\"",
-    "start-with-stubs": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices-stub\" \"npm run start:fiat-exchange-rates-stub\"",
+    "start-with-stubs": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates-stub\"",
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test": "jest",
     "e2e-test": "npx playwright test --list --output \"\"",

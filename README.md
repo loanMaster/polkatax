@@ -89,7 +89,7 @@ To run the app with stubbed services for local testing:
 ```bash
 npm run start-with-stubs
 ```
-This will provide dummy values for fiat and crypto prices, allowing you to test without needing an EXCHANGERATE_HOST_API_KEY.
+This will provide dummy values for fiat-to-fiat values, allowing you to test without needing an EXCHANGERATE_HOST_API_KEY.
 
 ### Production setup
 
