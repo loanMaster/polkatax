@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { HttpError } from "../error/HttpError";
 
 export class RequestHelper {

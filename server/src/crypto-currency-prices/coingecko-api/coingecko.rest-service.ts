@@ -1,4 +1,3 @@
-import "node-fetch";
 import { parse } from "node-html-parser";
 import { logger } from "../logger/logger";
 import { HttpError } from "../../common/error/HttpError";

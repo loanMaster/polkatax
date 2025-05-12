@@ -82,7 +82,7 @@ describe('filterPayments', () => {
       'Incoming transfers only',
       [],
     ]);
-    expect(result?.payments).toEqual([mockPayment(10)]);
+    expect(result?.payments).toEqual([payments[0]]);
   });
 
   test('passes excluded entries to calculatePaymentsSummary', () => {

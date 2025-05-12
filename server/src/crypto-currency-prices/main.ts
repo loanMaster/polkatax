@@ -8,51 +8,55 @@ import { CurrentPriceRequest } from "../model/crypto-currency-prices/current-pri
 import { DIContainer } from "./di-container";
 import { PreferredQuoteCurrency } from "../model/preferred-quote-currency";
 
-const init = async () => {
-  const tokenPriceHistoryService: TokenPriceHistoryService =
-    DIContainer.resolve("tokenPriceHistoryService");
-  const tokenPriceService: TokenPriceService =
-    DIContainer.resolve("tokenPriceService");
+export const cryptoCurrencyPricesServer = {
+  init: async () => {
+    const tokenPriceHistoryService: TokenPriceHistoryService =
+      DIContainer.resolve("tokenPriceHistoryService");
+    const tokenPriceService: TokenPriceService =
+      DIContainer.resolve("tokenPriceService");
 
-  tokenPriceHistoryService.init();
+    tokenPriceHistoryService.init();
 
-  const fastify = Fastify({
-    logger,
-  });
+    const fastify = Fastify({
+      logger,
+    });
 
-  fastify.route({
-    method: "POST",
-    url: "/crypto-current-prices",
-    handler: async (request: FastifyRequest<{ Body: CurrentPriceRequest }>) => {
-      const { symbols, chain, currency } = request.body;
-      return tokenPriceService.fetchCurrentPrices(symbols, chain, currency);
-    },
-  });
+    fastify.route({
+      method: "POST",
+      url: "/crypto-current-prices",
+      handler: async (
+        request: FastifyRequest<{ Body: CurrentPriceRequest }>,
+      ) => {
+        const { symbols, chain, currency } = request.body;
+        return tokenPriceService.fetchCurrentPrices(symbols, chain, currency);
+      },
+    });
 
-  fastify.route({
-    method: "GET",
-    url: "/crypto-historic-prices/:symbol",
-    handler: async (
-      request: FastifyRequest<{
-        Params: { symbol: string };
-        Querystring: { currency: PreferredQuoteCurrency };
-      }>,
-    ) => {
-      const { symbol } = request.params;
-      const { currency } = request.query;
-      return tokenPriceHistoryService.getHistoricPrices(symbol, currency);
-    },
-  });
+    fastify.route({
+      method: "GET",
+      url: "/crypto-historic-prices/:symbol",
+      handler: async (
+        request: FastifyRequest<{
+          Params: { symbol: string };
+          Querystring: { currency: PreferredQuoteCurrency };
+        }>,
+      ) => {
+        const { symbol } = request.params;
+        const { currency } = request.query;
+        return tokenPriceHistoryService.getHistoricPrices(symbol, currency);
+      },
+    });
 
-  fastify.listen(
-    { port: Number(process.env["CRYPTO_CURRENCY_PRICES_PORT"] || 3003) },
-    (err) => {
-      if (err) {
-        fastify.log.error(err);
-        process.exit(1);
-      }
-    },
-  );
+    fastify.listen(
+      { port: Number(process.env["CRYPTO_CURRENCY_PRICES_PORT"] || 3003) },
+      (err) => {
+        if (err) {
+          fastify.log.error(err);
+          process.exit(1);
+        }
+      },
+    );
+  },
 };
 
-init();
+cryptoCurrencyPricesServer.init()

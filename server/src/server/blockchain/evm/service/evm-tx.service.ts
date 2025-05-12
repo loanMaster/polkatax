@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { HttpError } from "../../../../common/error/HttpError";
 import { evmChainConfigs } from "../constants/evm-chains.config";
 import { EVMTransfer, EVMTx } from "../model/transfers";
