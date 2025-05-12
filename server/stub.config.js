@@ -5,8 +5,8 @@ module.exports = {
       script: "node ./dist/src/server/start-server.js",
     },
     {
-      name: "crypto-currency-prices-stub",
-      script: "node ./dist/src/crypto-currency-prices/start-stub.js",
+      name: "crypto-currency-prices",
+      script: "node ./dist/src/crypto-currency-prices/main.js",
     },
     {
       name: "fiat-exchange-rates-stub",
