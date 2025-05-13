@@ -1,25 +1,18 @@
 import dotenv from "dotenv";
 import { SubscanService } from "../api/subscan.service";
-import { Transfers } from "../model/transfer";
 import { BlockTimeService } from "./block-time.service";
 import { Transaction } from "../model/transaction";
 import { logger } from "../../../logger/logger";
-import { Swap } from "../../../../model/swap";
 import { TokenTransfers } from "../../../../model/token-transfer";
-import { TransferClassifier } from "../util/transfer-classifier";
-import { TransferMerger } from "../util/transfer-merger";
-import { ChainAdjustments } from "../util/chain-adjustments";
 import { hasChainEvmSupport } from "../util/has-chain-evm-support";
+import { TransferDto } from "../model/raw-transfer";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
 export class SwapsAndTransfersService {
   constructor(
     private blockTimeService: BlockTimeService,
-    private subscanService: SubscanService,
-    private transferClassifier: TransferClassifier,
-    private transferMerger: TransferMerger,
-    private chainAdjustments: ChainAdjustments,
+    private subscanService: SubscanService
   ) {}
 
   private async fetchTxAndTransfers(
@@ -28,14 +21,14 @@ export class SwapsAndTransfersService {
     blockMin: number,
     blockMax: number,
     evm = false,
-  ): Promise<{ transactions: Transaction[]; transfers: Transfers }> {
-    const accounts = await this.subscanService.fetchAccounts(
+  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+    /*const accounts = await this.subscanService.fetchAccounts(
       address,
       chainName,
     );
     const isMyAccount = (addressToTest: string) =>
       address.toLowerCase() === addressToTest.toLowerCase() ||
-      accounts.indexOf(addressToTest.toLowerCase()) > -1;
+      accounts.indexOf(addressToTest.toLowerCase()) > -1;*/
 
     const transactions = await this.subscanService.fetchAllTx(
       chainName,
@@ -51,12 +44,7 @@ export class SwapsAndTransfersService {
       blockMax,
       evm,
     );
-    const transfers = this.transferMerger.mergeTranferListToObject(
-      transfersList,
-      address,
-      isMyAccount,
-    );
-    return { transactions, transfers };
+    return { transactions, transfersList };
   }
 
   private async resolveAddresses(chainName: string, address: string) {
@@ -74,8 +62,8 @@ export class SwapsAndTransfersService {
     evmAddress: string | undefined,
     blockMin: number,
     blockMax: number,
-  ) {
-    let { transactions, transfers } = substrateAddress
+  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+    let { transactions, transfersList } = substrateAddress
       ? await this.fetchTxAndTransfers(
           chainName,
           substrateAddress,
@@ -83,7 +71,7 @@ export class SwapsAndTransfersService {
           blockMax,
           false,
         )
-      : { transactions: [], transfers: {} };
+      : { transactions: [], transfersList: [] };
 
     if (evmAddress && hasChainEvmSupport(chainName)) {
       const evmData = await this.fetchTxAndTransfers(
@@ -93,35 +81,23 @@ export class SwapsAndTransfersService {
         blockMax,
         true,
       );
-      this.transferMerger.merge(transfers, evmData.transfers);
+      transfersList.concat(evmData.transfersList)
       transactions = transactions.concat(evmData.transactions);
     }
-
-    return { transactions, transfers };
+    return { transactions, transfersList };
   }
 
-  private filterByDate<T extends { date: number }>(
-    items: T[] | Record<string, T[]>,
+  private filterByDate<T extends { block_timestamp?: number }>(
+    items: T[],
     minDate: Date,
     maxDate?: Date,
   ) {
     const timestamp = (d: number) => d * 1000;
     const filterFn = (item: T) =>
-      timestamp(item.date) >= minDate.getTime() &&
-      (!maxDate || timestamp(item.date) <= maxDate.getTime());
+      timestamp(item.block_timestamp) >= minDate.getTime() &&
+      (!maxDate || timestamp(item.block_timestamp) <= maxDate.getTime());
 
-    if (Array.isArray(items)) {
-      return items.filter(filterFn);
-    }
-
-    const filtered: Record<string, T[]> = {};
-    for (const [token, txs] of Object.entries(items)) {
-      const valid = txs.filter(filterFn);
-      if (valid.length > 0) {
-        filtered[token] = valid;
-      }
-    }
-    return filtered;
+    return items.filter(filterFn);
   }
 
   private filterEmptyTokens(payments: TokenTransfers): TokenTransfers {
@@ -139,7 +115,7 @@ export class SwapsAndTransfersService {
     address: string,
     minDate: Date,
     maxDate?: Date,
-  ): Promise<{ swaps: Swap[]; payments: TokenTransfers }> {
+  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
     logger.info(`Enter fetchSwapsAndTransfers for ${chainName}`);
 
     const { substrateAddress, evmAddress } = await this.resolveAddresses(
@@ -152,7 +128,7 @@ export class SwapsAndTransfersService {
       maxDate?.getTime(),
     );
 
-    let { transactions, transfers } = await this.loadAllTransfers(
+    let { transactions, transfersList } = await this.loadAllTransfers(
       chainName,
       substrateAddress,
       evmAddress,
@@ -160,21 +136,10 @@ export class SwapsAndTransfersService {
       blockMax,
     );
 
-    let swaps = this.transferClassifier.extractSwaps(transactions, transfers);
-    if (chainName.toLowerCase() === "hydration") {
-      this.chainAdjustments.handleHydration(swaps);
-    }
-
-    swaps = this.filterByDate(swaps, minDate, maxDate) as Swap[];
-    let payments = this.transferClassifier.extractPayments(
-      transactions,
-      transfers,
-    );
-    payments = this.filterEmptyTokens(
-      this.filterByDate(payments, minDate, maxDate) as TokenTransfers,
-    );
+    transactions = this.filterByDate(transactions, minDate, maxDate)
+    const transfersListMapped = this.filterByDate(transfersList, minDate, maxDate)
 
     logger.info(`Exit fetchSwapsAndTransfers for ${chainName}`);
-    return { swaps, payments };
+    return { transactions, transfersList: transfersListMapped };
   }
 }

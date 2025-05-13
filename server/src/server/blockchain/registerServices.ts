@@ -4,8 +4,8 @@ import { SwapsAndTransfersService } from "./substrate/services/swaps-and-transfe
 import { StakingRewardsService } from "./substrate/services/staking-rewards.service";
 import { SubscanApi } from "./substrate/api/subscan.api";
 import { SubscanService } from "./substrate/api/subscan.service";
-import { TransferClassifier } from "./substrate/util/transfer-classifier";
-import { TransferMerger } from "./substrate/util/transfer-merger";
+import { TransferClassifier } from "../endpoints/helper/transfer-classifier";
+import { TransferMerger } from "../endpoints/helper/transfer-merger";
 import { ChainAdjustments } from "./substrate/util/chain-adjustments";
 import { EvmTxService } from "./evm/service/evm-tx.service";
 import { EvmSwapsAndPaymentsService } from "./evm/service/evm-swaps-and-payments.service";

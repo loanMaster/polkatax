@@ -36,7 +36,6 @@
     "node-html-parser": "^6.1.13",
     "pino-pretty": "^10.2.0",
     "pm2": "^6.0.5",
-    "polkadot-api": "^1.10.0",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {

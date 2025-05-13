@@ -1,6 +1,6 @@
 import { TransferClassifier } from "./transfer-classifier";
-import { Transfers } from "../model/transfer";
-import { Transaction } from "../model/transaction";
+import { Transfers } from "../../blockchain/substrate/model/transfer";
+import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { test, expect, describe, beforeEach, jest } from "@jest/globals";
 
 jest.mock("../../../../common/util/process-function-name", () => ({

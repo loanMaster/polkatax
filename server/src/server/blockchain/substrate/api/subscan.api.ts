@@ -7,6 +7,7 @@ import { Transaction } from "../model/transaction";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
 import { SubscanEvent } from "../model/subscan-event";
+import { RawEvmTransferDto, RawSubstrateTransferDto } from "../model/raw-transfer";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -314,7 +315,7 @@ export class SubscanApi {
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<{ list: any[]; hasNext: boolean }> {
+  ): Promise<{ list: (RawSubstrateTransferDto & RawEvmTransferDto)[]; hasNext: boolean }> {
     const endpoint = evm
       ? "api/scan/evm/token/transfer"
       : "api/v2/scan/transfers";

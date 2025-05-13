@@ -1,4 +1,12 @@
 {
+  "chains": {
+    "hydration": {
+      "HDX": "hydradx"
+    },
+    "peaq": {
+      "PEAQ": "peaq"
+    }
+  },
   "tokens": [
     {
       "token": "FIS",

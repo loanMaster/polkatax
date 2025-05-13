@@ -1,8 +1,8 @@
-import { Transfer, Transfers } from "../model/transfer";
-import { Transaction } from "../model/transaction";
-import { TokenTransfers } from "../../../../model/token-transfer";
-import { processFunctionName } from "../../../../common/util/process-function-name";
-import { Swap } from "../../../../model/swap";
+import { Transfer, Transfers } from "../../blockchain/substrate/model/transfer";
+import { Transaction } from "../../blockchain/substrate/model/transaction";
+import { TokenTransfers } from "../../../model/token-transfer";
+import { processFunctionName } from "../../../common/util/process-function-name";
+import { Swap } from "../../../model/swap";
 
 export class TransferClassifier {
   private isSwap(transfer: Transfer): boolean {

@@ -2,7 +2,7 @@ import { setupServer, SetupServerApi } from "msw/node";
 import { polkataxServer } from "../../../src/server/polkatax-server";
 import { getReplayTrafficHandlers } from "../util/get-replay-traffic-handlers";
 import fs from "fs";
-import { afterEach, beforeEach, expect, test } from "@jest/globals";
+import { afterEach, expect, test } from "@jest/globals";
 import { FastifyInstance } from "fastify";
 
 export class VerifyResponse {

@@ -5,4 +5,5 @@ export interface Transaction {
   block_num?: number;
   functionName?: string;
   callModule?: string;
+  value?: number;
 }

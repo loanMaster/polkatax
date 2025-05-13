@@ -1,18 +1,17 @@
 import { addFiatValuesToNestedTransfers } from "../helper/addFiatValuesToNestedTransfers";
-import { addFiatValuesToSwaps } from "../helper/addFiatValuesToSwaps";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { PaymentsRequest } from "../model/payments.request";
 import { PaymentsResponse } from "../model/payments.response";
 import { evmChainConfigs } from "../../blockchain/evm/constants/evm-chains.config";
 import { SwapsAndTransfersService } from "../../blockchain/substrate/services/swaps-and-transfers.service";
 import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swaps-and-payments.service";
-import { Swap } from "../../../model/swap";
 import { validateDates } from "../../../common/util/validate-dates";
 import { HttpError } from "../../../common/error/HttpError";
-import { coingeckoSupportsToken } from "../helper/coingecko-supports-token";
 import { Transfer } from "../../../model/transfer";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
+import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
+import { addFiatValuesToTransferDtoList } from "../helper/add-fiat-values-to-transfer-dto-list";
 
 export class PaymentsService {
   constructor(
@@ -21,15 +20,14 @@ export class PaymentsService {
     private evmSwapsAndPaymentsService: EvmSwapsAndPaymentsService,
   ) {}
 
-  getTokens(swaps: Swap[]): string[] {
+  getTokens(transfer: TransferDto[]): string[] {
     const tokens = [];
-    swaps.forEach((s) => {
-      Object.keys(s.tokens).forEach((t) => {
-        if (tokens.indexOf(t) === -1) {
-          tokens.push(t);
-        }
-      });
-    });
+    transfer.forEach(t => {
+      const token = { id: t?.asset_unique_id || t?.contract, symbol: t.symbol }
+      if (tokens.indexOf(token) == -1) {
+        tokens.push(token)
+      }
+    })
     return tokens;
   }
 
@@ -49,33 +47,34 @@ export class PaymentsService {
     }
 
     const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()];
-    const { swaps, payments } = evmChainConfig
+    const { transactions, transfersList } = /*evmChainConfig
       ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(
           chainName,
           address,
           startDay,
           endDay,
         )
-      : await this.swapsAndTransfersService.fetchSwapsAndTransfers(
+      : */ await this.swapsAndTransfersService.fetchSwapsAndTransfers(
           chainName,
           address,
           startDay,
           endDay,
         );
 
-    const tokens = this.getTokens(swaps);
-    tokens.push(...Object.keys(payments));
-    const supportedTokens = Array.from(
-      new Set(
-        tokens.filter((symbol) => coingeckoSupportsToken(symbol, chainName)),
-      ),
-    );
+    const tokens = this.getTokens(transfersList); 
+
+    const idToCoingeckoMap: { [tokenId: string]: string } = tokens.map(t => mapTokenToCoingeckoId(t, chainName)).filter(mapping => !!mapping.coingeckoId) // TODO!
 
     const quotes = await this.tokenPriceConversionService.fetchQuotesForTokens(
-      supportedTokens,
+      idToCoingeckoMap.map(mapping => mapping.coingeckoId),
       chainName,
       currency,
     );
+
+    addFiatValuesToTransferDtoList(transfersList, idToCoingeckoMap, quotes)
+    addFiatValuesToTx(transactions, quotes)
+
+    const { payments, swaps } = convert(transactions, transfersList)
 
     const listOfTransfers: {
       [symbol: string]: { values: Transfer[]; currentPrice: number };
@@ -85,8 +84,8 @@ export class PaymentsService {
     Object.keys(quotes).forEach(
       (token) => (currentPrices[token] = quotes[token].quotes.latest),
     );
-    const swapsExtended = addFiatValuesToSwaps(swaps, quotes);
+    // const swapsExtended = addFiatValuesToSwaps(swaps, quotes);
     logger.info("PaymentsService: Exit processess Task");
-    return { currentPrices, swaps: swapsExtended, transfers: listOfTransfers };
+    return { currentPrices, swaps, transfers: payments };
   }
 }

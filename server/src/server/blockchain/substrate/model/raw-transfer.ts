@@ -1,4 +1,4 @@
-export interface RawTransferDto {
+export interface RawSubstrateTransferDto {
   transfer_id: number;
   from: string;
   from_account_display: {
@@ -30,7 +30,11 @@ export interface RawTransferDto {
 }
 
 export interface RawEvmTransferDto {
+  amount: number;
   decimals: number;
+  contract: string;
+  from: string;
+  to: string;
   create_at: number;
   to_display: {
     evm_contract: {
@@ -40,4 +44,17 @@ export interface RawEvmTransferDto {
   value: string;
   hash: string;
   symbol: string;
+}
+
+export interface TransferDto {
+  symbol: string;
+  contract?: string;
+  asset_unique_id?: string;
+  amount: number;
+  from: string;
+  to: string;
+  label?: string;
+  block?: number;
+  block_timestamp: number;
+  hash: string;
 }

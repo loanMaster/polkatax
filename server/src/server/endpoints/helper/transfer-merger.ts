@@ -1,6 +1,5 @@
-import BigNumber from "bignumber.js";
-import { RawEvmTransferDto, RawTransferDto } from "../model/raw-transfer";
-import { Transfers } from "../model/transfer";
+import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
+import { Transfers } from "../../blockchain/substrate/model/transfer";
 
 export class TransferMerger {
   merge(target: Transfers, source: Transfers): Transfers {
@@ -15,7 +14,7 @@ export class TransferMerger {
   }
 
   mergeTranferListToObject(
-    list: (RawTransferDto | RawEvmTransferDto)[],
+    list: TransferDto[],
     address: string,
     isMyAccount: (string) => boolean,
   ): Transfers {
@@ -24,9 +23,6 @@ export class TransferMerger {
       if (!entry.hash) {
         return;
       }
-      entry = (entry as RawEvmTransferDto).symbol
-        ? this.mapEvmTransferToSubstrateTransferDto(entry as RawEvmTransferDto)
-        : (entry as RawTransferDto);
       const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
       if (!transfers[entry.hash]) {
         transfers[entry.hash] = {};
@@ -59,19 +55,5 @@ export class TransferMerger {
       transfers[entry.hash][entry.asset_symbol].hash = entry.hash;
     });
     return transfers;
-  }
-
-  private mapEvmTransferToSubstrateTransferDto(
-    entry: RawEvmTransferDto,
-  ): RawTransferDto {
-    return {
-      ...entry,
-      asset_symbol: entry.symbol,
-      module: entry.to_display?.evm_contract?.contract_name,
-      amount: BigNumber(entry.value)
-        .dividedBy(BigNumber(10).pow(entry.decimals))
-        .toNumber(),
-      block_timestamp: entry.create_at,
-    } as unknown as RawTransferDto;
   }
 }

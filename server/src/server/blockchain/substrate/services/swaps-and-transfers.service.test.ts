@@ -1,7 +1,7 @@
 import { BlockTimeService } from "./block-time.service";
 import { SubscanService } from "../api/subscan.service";
-import { TransferMerger } from "../util/transfer-merger";
-import { TransferClassifier } from "../util/transfer-classifier";
+import { TransferMerger } from "../../../endpoints/helper/transfer-merger";
+import { TransferClassifier } from "../../../endpoints/helper/transfer-classifier";
 import { ChainAdjustments } from "../util/chain-adjustments";
 import { expect, jest, describe, beforeEach, test } from "@jest/globals";
 import { SwapsAndTransfersService } from "./swaps-and-transfers.service";

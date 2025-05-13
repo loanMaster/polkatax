@@ -1,10 +1,7 @@
 import { evmChainConfigs } from "../constants/evm-chains.config";
-import { extractSwaps } from "../util/extract-swaps";
-import { extractPayments } from "../util/extract-payments";
 import { EvmTxService } from "./evm-tx.service";
 import { logger } from "../../../logger/logger";
-import { Swap } from "../../../../model/swap";
-import { TokenTransfers } from "../../../../model/token-transfer";
+import { EVMTransfer, EVMTx } from "../model/transfers";
 
 export class EvmSwapsAndPaymentsService {
   constructor(private evmTxService: EvmTxService) {}
@@ -14,11 +11,11 @@ export class EvmSwapsAndPaymentsService {
     address: string,
     startDate: Date,
     endDate: Date,
-  ): Promise<{ swaps: Swap[]; payments: TokenTransfers }> {
+  ): Promise<{ transactions: EVMTx[]; transfersList: EVMTransfer[] }> {
     logger.info(`Enter fetchSwapsAndPayments for ${network}`);
     const config = evmChainConfigs[network];
-    const nativeToken = config.nativeToken;
-    const walletAdr = address.toLowerCase();
+    //const nativeToken = config.nativeToken;
+    //onst walletAdr = address.toLowerCase();
     const { tx, transfers } = await this.evmTxService.fetchTxAndTransfers(
       network,
       address,
@@ -26,9 +23,6 @@ export class EvmSwapsAndPaymentsService {
       endDate,
     );
     logger.info(`Exit fetchSwapsAndPayments for ${network}`);
-    return {
-      swaps: extractSwaps(tx, transfers, walletAdr, nativeToken),
-      payments: extractPayments(tx, transfers, walletAdr, nativeToken),
-    };
+    return { transactions: tx, transfersList: transfers};
   }
 }
