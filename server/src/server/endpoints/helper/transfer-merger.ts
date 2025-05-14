@@ -2,22 +2,15 @@ import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
 import { Transfers } from "../../blockchain/substrate/model/transfer";
 
 export class TransferMerger {
-  merge(target: Transfers, source: Transfers): Transfers {
-    Object.entries(source).forEach(([hash, transfer]) => {
-      target[hash] ??= {};
-      Object.entries(transfer).forEach(([token, data]) => {
-        target[hash][token] ??= { ...data, amount: 0 };
-        target[hash][token].amount += data.amount;
-      });
-    });
-    return target;
-  }
-
   mergeTranferListToObject(
     list: TransferDto[],
     address: string,
-    isMyAccount: (string) => boolean,
+    aliases: string[],
   ): Transfers {
+    const isMyAccount = (addressToTest: string) =>
+      address.toLowerCase() === addressToTest.toLowerCase() ||
+      aliases.indexOf(addressToTest.toLowerCase()) > -1;
+
     const transfers = {};
     list.forEach((entry) => {
       if (!entry.hash) {

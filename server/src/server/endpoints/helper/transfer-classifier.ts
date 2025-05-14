@@ -3,12 +3,23 @@ import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { TokenTransfers } from "../../../model/token-transfer";
 import { processFunctionName } from "../../../common/util/process-function-name";
 import { Swap } from "../../../model/swap";
+import { TransferMerger } from "./transfer-merger";
+import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
 
 export class TransferClassifier {
+  constructor(private transferMerger: TransferMerger) {}
+
   private isSwap(transfer: Transfer): boolean {
     const received = Object.values(transfer).some((v) => v.amount > 0);
     const sent = Object.values(transfer).some((v) => v.amount < 0);
     return received && sent;
+  }
+
+  extractSwapsAndPayments(transfactions: Transaction[], transfers: TransferDto[], address: string, aliases: string[]): { payments: TokenTransfers, swaps: Swap[] } {
+    const tranfersObj = this.transferMerger.mergeTranferListToObject(transfers, address, aliases);
+    const payments = this.extractPayments(transfactions, tranfersObj)
+    const swaps = this.extractSwaps(transfactions, tranfersObj)
+    return { payments, swaps }
   }
 
   extractPayments(

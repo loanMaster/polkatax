@@ -1,4 +1,3 @@
-import { addFiatValuesToNestedTransfers } from "../helper/addFiatValuesToNestedTransfers";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { PaymentsRequest } from "../model/payments.request";
 import { PaymentsResponse } from "../model/payments.response";
@@ -7,17 +6,22 @@ import { SwapsAndTransfersService } from "../../blockchain/substrate/services/sw
 import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swaps-and-payments.service";
 import { validateDates } from "../../../common/util/validate-dates";
 import { HttpError } from "../../../common/error/HttpError";
-import { Transfer } from "../../../model/transfer";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
 import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
 import { addFiatValuesToTransferDtoList } from "../helper/add-fiat-values-to-transfer-dto-list";
+import { addFiatValuesToTx } from "../helper/add-fiat-values-to-tx";
+import { TransferClassifier } from "../helper/transfer-classifier";
+import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 
 export class PaymentsService {
   constructor(
     private swapsAndTransfersService: SwapsAndTransfersService,
     private tokenPriceConversionService: TokenPriceConversionService,
     private evmSwapsAndPaymentsService: EvmSwapsAndPaymentsService,
+    private transferClassifier: TransferClassifier,
+    private subscanService: SubscanService,
+    private coingeckoIdLookupService: CoingeckoIdLookupService
   ) {}
 
   getTokens(transfer: TransferDto[]): string[] {
@@ -47,38 +51,39 @@ export class PaymentsService {
     }
 
     const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()];
-    const { transactions, transfersList } = /*evmChainConfig
+    const { transactions, transfersList } = evmChainConfig
       ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(
           chainName,
           address,
           startDay,
           endDay,
         )
-      : */ await this.swapsAndTransfersService.fetchSwapsAndTransfers(
+      : await this.swapsAndTransfersService.fetchSwapsAndTransfers(
           chainName,
           address,
           startDay,
           endDay,
         );
 
+    const nativeToken = evmChainConfig[chainName]?.nativeToken ?? subscanChains[chainName].token
     const tokens = this.getTokens(transfersList); 
 
-    const idToCoingeckoMap: { [tokenId: string]: string } = tokens.map(t => mapTokenToCoingeckoId(t, chainName)).filter(mapping => !!mapping.coingeckoId) // TODO!
+    const idToCoingeckoMap: { [tokenId: string]: string } = tokens.map(t => coingeckoIdLookupService.mapTokenToCoingeckoId(t, chainName)).filter(mapping => !!mapping.coingeckoId) // TODO!
 
     const quotes = await this.tokenPriceConversionService.fetchQuotesForTokens(
-      idToCoingeckoMap.map(mapping => mapping.coingeckoId),
+      Object.values(idToCoingeckoMap),
       chainName,
       currency,
     );
 
     addFiatValuesToTransferDtoList(transfersList, idToCoingeckoMap, quotes)
-    addFiatValuesToTx(transactions, quotes)
-
-    const { payments, swaps } = convert(transactions, transfersList)
-
-    const listOfTransfers: {
-      [symbol: string]: { values: Transfer[]; currentPrice: number };
-    } = addFiatValuesToNestedTransfers(payments, quotes);
+    addFiatValuesToTx(transactions, quotes[nativeToken])
+    
+    const aliases = await this.subscanService.fetchAccounts(
+      address,
+      chainName,
+    );
+    const { payments, swaps } = this.transferClassifier.extractSwapsAndPayments(transactions, transfersList, address, aliases)
 
     const currentPrices = {};
     Object.keys(quotes).forEach(

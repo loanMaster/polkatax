@@ -22,13 +22,6 @@ export class SwapsAndTransfersService {
     blockMax: number,
     evm = false,
   ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
-    /*const accounts = await this.subscanService.fetchAccounts(
-      address,
-      chainName,
-    );
-    const isMyAccount = (addressToTest: string) =>
-      address.toLowerCase() === addressToTest.toLowerCase() ||
-      accounts.indexOf(addressToTest.toLowerCase()) > -1;*/
 
     const transactions = await this.subscanService.fetchAllTx(
       chainName,

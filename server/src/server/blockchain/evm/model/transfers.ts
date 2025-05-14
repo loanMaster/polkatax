@@ -23,18 +23,3 @@ export interface EVMTx {
   functionName: string;
 }
 
-export interface TransferObjects {
-  [hash: string]: TransferObject;
-}
-
-export interface TransferObject {
-  to: string;
-  from: string;
-  hash: string;
-  timestamp: number;
-  block: number;
-  functionName: string;
-  tokens: {
-    [hash: string]: number;
-  };
-}
