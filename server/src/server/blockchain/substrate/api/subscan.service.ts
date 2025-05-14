@@ -201,7 +201,7 @@ export class SubscanService {
           to: transfer.to,
           label: transfer?.to_display?.evm_contract.contract_name,
           block: transfer.block_num,
-          block_timestamp: transfer.block_timestamp || transfer.create_at,
+          timestamp: transfer.block_timestamp || transfer.create_at,
           hash: transfer.hash
         }
       })

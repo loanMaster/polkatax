@@ -15,7 +15,7 @@ export const addFiatValuesToTransferDtoList = (
       continue
     }
     const currentPrice = quotes[coingeckoId].quotes.latest;
-    const isoDate = formatDate(new Date(d.block_timestamp * 1000));
+    const isoDate = formatDate(new Date(d.timestamp * 1000));
     if (isoDate === currentIsoDate && quotes[coingeckoId].quotes.latest) {
       d.price = currentPrice;
       d.fiatValue = d.amount * currentPrice;

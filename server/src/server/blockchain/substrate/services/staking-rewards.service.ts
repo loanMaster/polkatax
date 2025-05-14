@@ -36,7 +36,7 @@ export class StakingRewardsService {
       }))
       .map((reward) => ({
         block: reward.block_num,
-        date: reward.block_timestamp,
+        timestamp: reward.block_timestamp,
         amount: reward.amount,
         hash: reward.hash,
       }));

@@ -170,7 +170,7 @@ export class SubscanApi {
     return response.data.blocks;
   }
 
-  private mapStakingRewards(rawResponseList: any[] | undefined) {
+  private mapStakingRewards(rawResponseList: any[] | undefined): StakingReward[] {
     return (rawResponseList || []).map((entry) => {
       return {
         event_id: entry.event_id,
@@ -296,7 +296,7 @@ export class SubscanApi {
         return {
           hash: entry.extrinsic_hash,
           account: entry.account_display.address,
-          block_timestamp: entry.block_timestamp,
+          timestamp: entry.block_timestamp,
           block_num: entry.block_num,
           functionName: entry.call_module_function,
           callModule: entry.call_module,

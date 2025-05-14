@@ -1,8 +1,8 @@
 export interface Transfer {
   amount: number;
-  date: number;
+  timestamp: number;
   block: number;
-  value?: number;
+  fiatValue?: number;
   price?: number;
   hash?: string;
 }

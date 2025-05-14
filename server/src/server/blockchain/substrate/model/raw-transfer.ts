@@ -55,6 +55,6 @@ export interface TransferDto {
   to: string;
   label?: string;
   block?: number;
-  block_timestamp: number;
+  timestamp: number;
   hash: string;
 }
