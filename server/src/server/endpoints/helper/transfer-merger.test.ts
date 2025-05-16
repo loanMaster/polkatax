@@ -1,5 +1,5 @@
 import { TransferMerger } from "./transfer-merger";
-import { Transfers } from "../../blockchain/substrate/model/transfer";
+import { Transfers } from "../model/transfer";
 import { test, expect, describe, beforeEach } from "@jest/globals";
 
 describe("TransferMerger", () => {

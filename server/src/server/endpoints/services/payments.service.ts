@@ -7,12 +7,16 @@ import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swa
 import { validateDates } from "../../../common/util/validate-dates";
 import { HttpError } from "../../../common/error/HttpError";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
+import * as substrateTokenToCoingeckoId from "../../../../res/substrate-token-to-coingecko-id.json";
 import { logger } from "../../logger/logger";
-import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
 import { addFiatValuesToTransferDtoList } from "../helper/add-fiat-values-to-transfer-dto-list";
 import { addFiatValuesToTx } from "../helper/add-fiat-values-to-tx";
 import { TransferClassifier } from "../helper/transfer-classifier";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
+import { CoingeckoIdLookupService } from "./coingecko-id-lookup.service";
+import { TransferDto } from "src/server/blockchain/substrate/model/raw-transfer";
+import { Transaction } from "src/server/blockchain/substrate/model/transaction";
+import { TransferWithFiatValue } from "../model/priced-transfer";
 
 export class PaymentsService {
   constructor(
@@ -24,15 +28,12 @@ export class PaymentsService {
     private coingeckoIdLookupService: CoingeckoIdLookupService
   ) {}
 
-  getTokens(transfer: TransferDto[]): string[] {
-    const tokens = [];
-    transfer.forEach(t => {
-      const token = { id: t?.asset_unique_id || t?.contract, symbol: t.symbol }
-      if (tokens.indexOf(token) == -1) {
-        tokens.push(token)
-      }
-    })
-    return tokens;
+  private findCoingeckoIdForNativeToken(chainName: string): string | undefined  {
+    if (evmChainConfigs[chainName]) {
+      return evmChainConfigs[chainName]?.nativeTokenCoingeckoId
+    } else {
+      substrateTokenToCoingeckoId.tokens.find(t => t.token === subscanChains[chainName].token.toUpperCase())?.coingeckoId
+    }
   }
 
   async processTask(
@@ -51,33 +52,22 @@ export class PaymentsService {
     }
 
     const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()];
-    const { transactions, transfersList } = evmChainConfig
-      ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(
-          chainName,
-          address,
-          startDay,
-          endDay,
-        )
-      : await this.swapsAndTransfersService.fetchSwapsAndTransfers(
-          chainName,
-          address,
-          startDay,
-          endDay,
-        );
+    const { transactions, transfersList }: { transactions: Transaction[], transfersList: TransferWithFiatValue[] } = evmChainConfig
+      ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(paymentsRequest)
+      : await this.swapsAndTransfersService.fetchSwapsAndTransfers(paymentsRequest);
 
-    const nativeToken = evmChainConfig[chainName]?.nativeToken ?? subscanChains[chainName].token
-    const tokens = this.getTokens(transfersList); 
+    const nativeTokenCoingeckoId = this.findCoingeckoIdForNativeToken(chainName)
 
-    const idToCoingeckoMap: { [tokenId: string]: string } = tokens.map(t => coingeckoIdLookupService.mapTokenToCoingeckoId(t, chainName)).filter(mapping => !!mapping.coingeckoId) // TODO!
+    const coingeckoIds = this.coingeckoIdLookupService.addCoingeckoIds(transfersList)
 
     const quotes = await this.tokenPriceConversionService.fetchQuotesForTokens(
-      Object.values(idToCoingeckoMap),
+      nativeTokenCoingeckoId ? [...coingeckoIds, nativeTokenCoingeckoId] : coingeckoIds,
       chainName,
       currency,
     );
 
-    addFiatValuesToTransferDtoList(transfersList, idToCoingeckoMap, quotes)
-    addFiatValuesToTx(transactions, quotes[nativeToken])
+    addFiatValuesToTransferDtoList(transfersList, quotes)
+    addFiatValuesToTx(transactions, quotes[nativeTokenCoingeckoId])
     
     const aliases = await this.subscanService.fetchAccounts(
       address,
@@ -89,7 +79,6 @@ export class PaymentsService {
     Object.keys(quotes).forEach(
       (token) => (currentPrices[token] = quotes[token].quotes.latest),
     );
-    // const swapsExtended = addFiatValuesToSwaps(swaps, quotes);
     logger.info("PaymentsService: Exit processess Task");
     return { currentPrices, swaps, transfers: payments };
   }

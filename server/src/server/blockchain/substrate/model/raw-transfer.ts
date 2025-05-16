@@ -46,7 +46,7 @@ export interface RawEvmTransferDto {
   symbol: string;
 }
 
-export interface TransferDto {
+export interface Transfer {
   symbol: string;
   contract?: string;
   asset_unique_id?: string;

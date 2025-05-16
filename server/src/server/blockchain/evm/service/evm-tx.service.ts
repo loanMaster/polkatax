@@ -43,7 +43,7 @@ export class EvmTxService {
     network = "moonbeam",
     address: string,
     startDate: Date,
-    endDate: Date,
+    endDate?: Date,
   ): Promise<{ tx: EVMTx[]; transfers: EVMTransfer[] }> {
     const { endpoint, apiKey } = evmChainConfigs[network];
     const [startBlock, endBlock] = await this.getBlockRange(
@@ -71,7 +71,7 @@ export class EvmTxService {
       .filter(
         (tx) =>
           Number(tx.timeStamp) >= startDate.getTime() / 1000 &&
-          Number(tx.timeStamp) <= endDate.getTime() / 1000,
+          (!endDate || Number(tx.timeStamp) <= endDate?.getTime() / 1000),
       )
       .filter(
         (tx) =>

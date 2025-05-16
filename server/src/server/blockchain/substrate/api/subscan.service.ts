@@ -1,10 +1,10 @@
 import { Token } from "../model/token";
 import { Transaction } from "../model/transaction";
-import { StakingReward } from "../model/staking-reward";
+import { RawStakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
 import { logger } from "../../../logger/logger";
 import { SubscanEvent } from "../model/subscan-event";
-import { RawEvmTransferDto, RawSubstrateTransferDto, TransferDto } from "../model/raw-transfer";
+import { RawEvmTransferDto, RawSubstrateTransferDto, Transfer } from "../model/raw-transfer";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -74,8 +74,8 @@ export class SubscanService {
     chainName: string,
     address: string,
     poolId: number,
-  ): Promise<StakingReward[]> {
-    return this.iterateOverPagesParallel<StakingReward>((page) =>
+  ): Promise<RawStakingReward[]> {
+    return this.iterateOverPagesParallel<RawStakingReward>((page) =>
       this.subscanApi.fetchPoolStakingRewards(chainName, address, poolId, page),
     );
   }
@@ -124,7 +124,7 @@ export class SubscanService {
     address: string,
     block_min?: number,
     block_max?: number,
-  ): Promise<StakingReward[]> {
+  ): Promise<RawStakingReward[]> {
     logger.info(
       `fetchAllStakingRewards for ${chainName}, address ${address}, from ${block_min} to ${block_max}`,
     );
@@ -174,7 +174,7 @@ export class SubscanService {
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<TransferDto[]> {
+  ): Promise<Transfer[]> {
     logger.info(
       `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );

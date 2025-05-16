@@ -1,5 +1,5 @@
 import { TransferClassifier } from "./transfer-classifier";
-import { Transfers } from "../../blockchain/substrate/model/transfer";
+import { Transfers } from "../model/transfer";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { test, expect, describe, beforeEach, jest } from "@jest/globals";
 

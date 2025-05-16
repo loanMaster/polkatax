@@ -1,30 +1,31 @@
 import { logger } from "../../logger/logger";
 import { formatDate } from "../../../common/util/date-utils";
-import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
-import { TransferWithFiatValue } from "../model/transfer-with-fiat-value";
+import { CurrencyQuotes, Quotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
+import { PricedTransfer } from "../model/priced-transfer";
 
 export const addFiatValuesToTransferDtoList = (
-  values: TransferWithFiatValue[],
-  tokenIdToCoingeckoIdMapping: { [tokenId: string]: string },
+  values: PricedTransfer[],
   quotes: { [tokenId: string]: CurrencyQuotes },
-): TransferWithFiatValue[] => {
+): PricedTransfer[] => {
   const currentIsoDate = formatDate(new Date());
   for (let d of values) {
-    const coingeckoId = tokenIdToCoingeckoIdMapping[d?.asset_unique_id || d.contract];
-    if (!coingeckoId) {
+    if (!d.coingeckoId) {
       continue
     }
-    const currentPrice = quotes[coingeckoId].quotes.latest;
-    const isoDate = formatDate(new Date(d.timestamp * 1000));
-    if (isoDate === currentIsoDate && quotes[coingeckoId].quotes.latest) {
-      d.price = currentPrice;
-      d.fiatValue = d.amount * currentPrice;
-    } else if (quotes[coingeckoId].quotes?.[isoDate]) {
-      d.price = quotes[coingeckoId].quotes[isoDate];
-      d.fiatValue = d.amount * d.price;
-    } else if (isoDate !== currentIsoDate) {
-      logger.warn(`No quote found for ${quotes.currency} for date ${isoDate}`);
-    }
+    addFiatValueToTransfer(d, quotes[d.coingeckoId].quotes, currentIsoDate)
   }
   return values
 };
+
+export const addFiatValueToTransfer = (transfer: { timestamp: number, price?: number, fiatValue?: number, amount: number }, quotes: Quotes, currentIsoDate: string) => {
+  const isoDate = formatDate(new Date(transfer.timestamp * 1000));
+  if (isoDate === currentIsoDate && quotes.latest) {
+    transfer.price = quotes.latest;
+    transfer.fiatValue = transfer.amount * quotes.latest;
+  } else if (quotes.quotes?.[isoDate]) {
+    transfer.price = quotes.quotes[isoDate];
+    transfer.fiatValue = transfer.amount * transfer.price;
+  } else if (isoDate !== currentIsoDate) {
+    logger.warn(`No quote found for ${quotes.currency} for date ${isoDate}`);
+  }
+}

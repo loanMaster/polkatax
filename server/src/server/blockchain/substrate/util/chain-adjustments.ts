@@ -1,4 +1,4 @@
-import { Swap } from "../../../../model/swap";
+import { Swap } from "../../../endpoints/model/swap";
 
 export class ChainAdjustments {
   handleHydration(swaps: Swap[]) {

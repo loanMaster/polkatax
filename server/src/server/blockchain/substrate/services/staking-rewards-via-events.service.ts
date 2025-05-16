@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
-import { StakingReward } from "../model/staking-reward";
+import { RawStakingReward } from "../model/staking-reward";
 
 export class StakingRewardsViaEventsService {
   constructor(private subscanService: SubscanService) {}
@@ -12,7 +12,7 @@ export class StakingRewardsViaEventsService {
     eventId,
     blockMin,
     blockMax,
-  ): Promise<StakingReward[]> {
+  ): Promise<RawStakingReward[]> {
     const events = await this.subscanService.searchAllEvents(
       chain,
       address,

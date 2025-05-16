@@ -1,8 +1,7 @@
 import { BlockTimeService } from "./block-time.service";
 import { BigNumber } from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
-import { StakingReward } from "../model/staking-reward";
-import { Transfer } from "../../../../model/transfer";
+import { RawStakingReward, StakingReward } from "../model/staking-reward";
 import { logger } from "../../../logger/logger";
 import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
@@ -14,18 +13,18 @@ export class StakingRewardsService {
   ) {}
 
   private async filterRewards(
-    rewards: StakingReward[],
+    rewards: RawStakingReward[],
     chainName: string,
     minDate: number,
     maxDate: number,
-  ): Promise<Transfer[]> {
+  ): Promise<StakingReward[]> {
     const token = await this.subscanService.fetchNativeToken(chainName);
 
     return rewards
       .filter(
         (r) =>
-          (!maxDate || r.block_timestamp < maxDate / 1000) &&
-          r.block_timestamp >= minDate / 1000,
+          (!maxDate || r.timestamp < maxDate / 1000) &&
+          r.timestamp >= minDate / 1000,
       )
       .map((reward) => ({
         ...reward,
@@ -35,8 +34,8 @@ export class StakingRewardsService {
             .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
       }))
       .map((reward) => ({
-        block: reward.block_num,
-        timestamp: reward.block_timestamp,
+        block: reward.block,
+        timestamp: reward.timestamp,
         amount: reward.amount,
         hash: reward.hash,
       }));
@@ -47,7 +46,7 @@ export class StakingRewardsService {
     address: string,
     minDate: number,
     maxDate?: number,
-  ): Promise<Transfer[]> {
+  ): Promise<StakingReward[]> {
     logger.info(
       `Entry fetchStakingRewards for address ${address} and chain ${chainName}`,
     );
@@ -119,7 +118,7 @@ export class StakingRewardsService {
     poolId: number,
     minDate: number,
     maxDate?: number,
-  ): Promise<Transfer[]> {
+  ): Promise<StakingReward[]> {
     const rewardsSlashes = await this.subscanService.fetchAllPoolStakingRewards(
       chainName,
       address,

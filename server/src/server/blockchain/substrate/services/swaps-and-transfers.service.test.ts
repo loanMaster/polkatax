@@ -5,9 +5,8 @@ import { TransferClassifier } from "../../../endpoints/helper/transfer-classifie
 import { ChainAdjustments } from "../util/chain-adjustments";
 import { expect, jest, describe, beforeEach, test } from "@jest/globals";
 import { SwapsAndTransfersService } from "./swaps-and-transfers.service";
-import { Swap } from "../../../../model/swap";
+import { Swap } from "../../../endpoints/model/swap";
 import { Transaction } from "../model/transaction";
-import { Transfers } from "../model/transfer";
 
 jest.mock("../../../logger/logger", () => ({
   logger: {

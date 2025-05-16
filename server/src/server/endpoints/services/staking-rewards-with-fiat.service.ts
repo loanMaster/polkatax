@@ -1,10 +1,10 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
-import { addFiatValuesToTransfers } from "../helper/addFiatValuesToTransfers";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { StakingRewardsResponse } from "../model/staking-rewards.response";
 import { formatDate } from "../../../common/util/date-utils";
+import { addFiatValuesToStakingRewards } from "../helper/add-fiat-values-to-transfers";
 
 export class StakingRewardsWithFiatService {
   constructor(
@@ -62,7 +62,7 @@ export class StakingRewardsWithFiatService {
         : quotes[chain.token].quotes?.latest;
 
     return {
-      values: addFiatValuesToTransfers(rewards, quotes[chain.token]),
+      values: addFiatValuesToStakingRewards(rewards, quotes[chain.token]),
       currentPrice: quotes[chain.token].quotes?.latest,
       priceEndDay,
       token: chain.token,

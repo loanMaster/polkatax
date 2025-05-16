@@ -2,12 +2,12 @@ import { EvmTxService } from "./evm-tx.service";
 import { logger } from "../../../logger/logger";
 import { EVMTransfer, EVMTx } from "../model/transfers";
 import { Transaction } from "../../substrate/model/transaction";
-import { TransferDto } from "../../substrate/model/raw-transfer";
+import { Transfer } from "../../substrate/model/raw-transfer";
 
 export class EvmSwapsAndPaymentsService {
   constructor(private evmTxService: EvmTxService) {}
 
-  private mapEvmTransferToTransferDto(evmTransfer: EVMTransfer): TransferDto {
+  private mapEvmTransferToTransferDto(evmTransfer: EVMTransfer): Transfer {
     return {
       symbol: evmTransfer.tokenSymbol,
       contract: "TODO", // #TODO
@@ -16,7 +16,7 @@ export class EvmSwapsAndPaymentsService {
       from: evmTransfer.from,
       to: evmTransfer.to,
       block: Number(evmTransfer.blockNumber),
-      block_timestamp: Number(evmTransfer.timeStamp),
+      timestamp: Number(evmTransfer.timeStamp),
       hash: evmTransfer.hash
     }
   }
@@ -25,27 +25,27 @@ export class EvmSwapsAndPaymentsService {
     return {
       hash: tx.hash,
       account: tx.from,
-      block_timestamp: Number(tx.timeStamp),
-      block_num: Number(tx.blockNumber),
+      timestamp: Number(tx.timeStamp),
+      block: Number(tx.blockNumber),
       functionName: tx.functionName,
-      value: Number(tx.value)
+      amount: Number(tx.value)
     }
   }
 
-  async fetchSwapsAndPayments(
-    network = "moonbeam",
+  async fetchSwapsAndPayments(data: {
+    chainName,
     address: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
-    logger.info(`Enter fetchSwapsAndPayments for ${network}`);
+    startDay: Date,
+    endDay?: Date,
+  }): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
+    logger.info(`Enter fetchSwapsAndPayments for ${data.chainName}`);
     const { tx, transfers } = await this.evmTxService.fetchTxAndTransfers(
-      network,
-      address,
-      startDate,
-      endDate,
+      data.chainName,
+      data.address,
+      data.startDay,
+      data.endDay,
     );
-    logger.info(`Exit fetchSwapsAndPayments for ${network}`);
+    logger.info(`Exit fetchSwapsAndPayments for ${data.chainName}`);
     return { 
       transactions: tx.map(tx => this.mapEvmTxToTransaction(tx)), 
       transfersList: transfers.map(t => this.mapEvmTransferToTransferDto(t))

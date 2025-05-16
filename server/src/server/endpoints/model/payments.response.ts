@@ -1,8 +1,8 @@
-import { Swap } from "../../../model/swap";
-import { Transfer } from "../../../model/transfer";
+import { Swap } from "./swap";
+import { Payment } from "./payment";
 
 export interface PaymentsResponse {
   currentPrices: { [token: string]: number };
   swaps: Swap[];
-  transfers: { [symbol: string]: { values: Transfer[]; currentPrice: number } };
+  transfers: { [symbol: string]: { values: Payment[]; currentPrice: number } };
 }

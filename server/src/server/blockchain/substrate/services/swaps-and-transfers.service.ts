@@ -3,9 +3,8 @@ import { SubscanService } from "../api/subscan.service";
 import { BlockTimeService } from "./block-time.service";
 import { Transaction } from "../model/transaction";
 import { logger } from "../../../logger/logger";
-import { TokenTransfers } from "../../../../model/token-transfer";
 import { hasChainEvmSupport } from "../util/has-chain-evm-support";
-import { TransferDto } from "../model/raw-transfer";
+import { Transfer } from "../model/raw-transfer";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
@@ -21,7 +20,7 @@ export class SwapsAndTransfersService {
     blockMin: number,
     blockMax: number,
     evm = false,
-  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+  ): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
 
     const transactions = await this.subscanService.fetchAllTx(
       chainName,
@@ -55,7 +54,7 @@ export class SwapsAndTransfersService {
     evmAddress: string | undefined,
     blockMin: number,
     blockMax: number,
-  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+  ): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
     let { transactions, transfersList } = substrateAddress
       ? await this.fetchTxAndTransfers(
           chainName,
@@ -80,20 +79,20 @@ export class SwapsAndTransfersService {
     return { transactions, transfersList };
   }
 
-  private filterByDate<T extends { block_timestamp?: number }>(
+  private filterByDate<T extends { timestamp?: number }>(
     items: T[],
     minDate: Date,
     maxDate?: Date,
   ) {
     const timestamp = (d: number) => d * 1000;
     const filterFn = (item: T) =>
-      timestamp(item.block_timestamp) >= minDate.getTime() &&
-      (!maxDate || timestamp(item.block_timestamp) <= maxDate.getTime());
+      timestamp(item.timestamp) >= minDate.getTime() &&
+      (!maxDate || timestamp(item.timestamp) <= maxDate.getTime());
 
     return items.filter(filterFn);
   }
 
-  private filterEmptyTokens(payments: TokenTransfers): TokenTransfers {
+  private filterEmptyTokens(payments: TokenTransfers): TokenTransfers { // #TODO
     const result: TokenTransfers = {};
     for (const token of Object.keys(payments)) {
       if (payments[token].length > 0) {
@@ -104,35 +103,35 @@ export class SwapsAndTransfersService {
   }
 
   async fetchSwapsAndTransfers(
-    chainName: string,
+    data: {chainName: string,
     address: string,
-    minDate: Date,
-    maxDate?: Date,
-  ): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
-    logger.info(`Enter fetchSwapsAndTransfers for ${chainName}`);
+    startDay: Date,
+    endDay?: Date,
+  }): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+    logger.info(`Enter fetchSwapsAndTransfers for ${data.chainName}`);
 
     const { substrateAddress, evmAddress } = await this.resolveAddresses(
-      chainName,
-      address,
+      data.chainName,
+      data.address,
     );
     const { blockMin, blockMax } = await this.blockTimeService.getMinMaxBlock(
-      chainName,
-      minDate.getTime(),
-      maxDate?.getTime(),
+      data.chainName,
+      data.startDay.getTime(),
+      data.endDay?.getTime(),
     );
 
     let { transactions, transfersList } = await this.loadAllTransfers(
-      chainName,
+      data.chainName,
       substrateAddress,
       evmAddress,
       blockMin,
       blockMax,
     );
 
-    transactions = this.filterByDate(transactions, minDate, maxDate)
-    const transfersListMapped = this.filterByDate(transfersList, minDate, maxDate)
+    transactions = this.filterByDate<Transaction>(transactions, data.startDay, data.endDay)
+    const transfersListMapped = this.filterByDate(transfersList, data.startDay, data.endDay)
 
-    logger.info(`Exit fetchSwapsAndTransfers for ${chainName}`);
+    logger.info(`Exit fetchSwapsAndTransfers for ${data.chainName}`);
     return { transactions, transfersList: transfersListMapped };
   }
 }

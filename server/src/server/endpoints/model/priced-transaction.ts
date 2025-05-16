@@ -1,6 +1,6 @@
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 
-export interface TxWithFiatValue extends Transaction {
+export interface PricedTransaction extends Transaction {
     price?: number;
     fiatValue?: number;
 }

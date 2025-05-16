@@ -1,9 +1,16 @@
 import { BigNumber } from "bignumber.js";
 
-export interface StakingReward {
+export interface RawStakingReward {
   event_id: "Reward" | "Slash";
   amount: BigNumber;
-  block_timestamp: number;
-  block_num: number;
+  timestamp: number;
+  block: number;
+  hash: string;
+}
+
+export interface StakingReward {
+  amount: number;
+  timestamp: number;
+  block: number;
   hash: string;
 }

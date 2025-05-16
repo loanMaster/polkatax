@@ -4,7 +4,7 @@ import { isSwap } from "./is-swap";
 import { mergeTransfersOfSameTx } from "./merge-transfers-of-same-tx";
 import { normalizeTokenName } from "./normalize-token-name";
 import { processFunctionName } from "../../../../common/util/process-function-name";
-import { Swap } from "../../../../model/swap";
+import { Swap } from "../../../endpoints/model/swap";
 
 export const extractSwaps = (
   transactions: EVMTx[],

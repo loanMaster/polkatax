@@ -1,22 +1,21 @@
-import { Transfer, Transfers } from "../../blockchain/substrate/model/transfer";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
-import { TokenTransfers } from "../../../model/token-transfer";
 import { processFunctionName } from "../../../common/util/process-function-name";
-import { Swap } from "../../../model/swap";
-import { TransferMerger } from "./transfer-merger";
-import { TransferDto } from "../../blockchain/substrate/model/raw-transfer";
+import { Swap } from "../model/swap";
+import { MergedTransfers, TransferMerger } from "./transfer-merger";
+import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
+import { Payment } from "../model/payment";
 
 export class TransferClassifier {
   constructor(private transferMerger: TransferMerger) {}
 
-  private isSwap(transfer: Transfer): boolean {
+  private isSwap(transfer:{ [token: string]: { amount: number } }): boolean {
     const received = Object.values(transfer).some((v) => v.amount > 0);
     const sent = Object.values(transfer).some((v) => v.amount < 0);
     return received && sent;
   }
 
-  extractSwapsAndPayments(transfactions: Transaction[], transfers: TransferDto[], address: string, aliases: string[]): { payments: TokenTransfers, swaps: Swap[] } {
-    const tranfersObj = this.transferMerger.mergeTranferListToObject(transfers, address, aliases);
+  extractSwapsAndPayments(transfactions: Transaction[], transfers: Transfer[], address: string, aliases: string[]): { payments: { [token: string]: Payment[] }, swaps: Swap[] } {
+    const tranfersObj: MergedTransfers = this.transferMerger.mergeTranferListToObject(transfers, address, aliases);
     const payments = this.extractPayments(transfactions, tranfersObj)
     const swaps = this.extractSwaps(transfactions, tranfersObj)
     return { payments, swaps }
@@ -24,9 +23,9 @@ export class TransferClassifier {
 
   extractPayments(
     transactions: Transaction[],
-    transfers: Transfers,
-  ): TokenTransfers {
-    const result: TokenTransfers = {};
+    transfers: MergedTransfers,
+  ): { [token: string]: Payment[] } {
+    const result: { [token: string]: Payment[] } = {};
     Object.entries(transfers).forEach(([hash, transfer]) => {
       if (!this.isSwap(transfer)) {
         Object.entries(transfer).forEach(([token, data]) => {
@@ -41,8 +40,8 @@ export class TransferClassifier {
               block: data.block,
               date: data.timestamp,
               amount: data.amount,
-              functionName: processFunctionName(
-                tx?.functionName || data.functionName,
+              label: processFunctionName(
+                tx?.functionName || data.label,
               ),
             });
           }
@@ -52,15 +51,15 @@ export class TransferClassifier {
     return result;
   }
 
-  extractSwaps(transactions: Transaction[], transfers: Transfers): Swap[] {
+  extractSwaps(transactions: Transaction[], transfers: MergedTransfers): Swap[] {
     const swaps: Swap[] = [];
     Object.entries(transfers).forEach(([hash, transfer]) => {
       if (this.isSwap(transfer)) {
         const tx = transactions.find((tx) => tx.hash === hash);
         const base = {
           hash,
-          block: tx?.block_num,
-          date: tx?.block_timestamp,
+          block: tx?.block,
+          date: tx?.timestamp,
           functionName: "",
           contract: tx?.callModule,
           tokens: {},
@@ -69,7 +68,7 @@ export class TransferClassifier {
         Object.entries(transfer).forEach(([token, data]) => {
           base.block = base.block ?? data.block;
           base.date = base.date ?? data.timestamp;
-          base.functionName ||= processFunctionName(data.functionName);
+          base.functionName ||= processFunctionName(data.label);
           const tokenLower = token.toLowerCase();
           if (data.amount !== 0) {
             base.tokens[tokenLower] = {
