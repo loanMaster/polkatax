@@ -48,8 +48,7 @@ export interface RawEvmTransferDto {
 
 export interface Transfer {
   symbol: string;
-  contract?: string;
-  asset_unique_id?: string;
+  tokenId: string;
   amount: number;
   from: string;
   to: string;
@@ -57,4 +56,5 @@ export interface Transfer {
   block?: number;
   timestamp: number;
   hash: string;
+  extrinsic_index?: string;
 }

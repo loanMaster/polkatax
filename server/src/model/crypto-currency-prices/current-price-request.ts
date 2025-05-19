@@ -1,5 +1,5 @@
 export interface CurrentPriceRequest {
-  symbols: string[];
+  tokenIds: string[];
   chain: string;
   currency: string;
 }

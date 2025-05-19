@@ -16,13 +16,13 @@
     <tr>
       <td class="text-left q-pa-sm">Value at payout time:</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(rewards!.summary.value) }}
+        {{ formatCurrency(rewards?.summary?.fiatValue ?? -0) }}
       </td>
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value now:</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(rewards!.summary.valueNow) }}
+        {{ formatCurrency(rewards?.summary?.valueNow ?? 0) }}
       </td>
     </tr>
     <tr>

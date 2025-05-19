@@ -1,4 +1,4 @@
-import { TransferDto } from './payments-response.dto';
+import { TokenInfo, TransferDto } from './payments-response.dto';
 
 export interface TokenPayment extends TransferDto {
   valueNow?: number;
@@ -12,16 +12,17 @@ export interface TokenPaymentsData {
 }
 
 export interface PaymentPortfolio {
-  tokens: { [token: string]: TokenPaymentsData };
+  transfers: TokenPayment[];
   chain: string;
   address: string;
   startDate: string;
   endDate: string;
   currency: string;
+  tokens: TokenInfo;
 }
 
 export interface TokenPaymentsSummary {
   amount: number;
-  value: number;
+  fiatValue: number;
   valueNow: number;
 }

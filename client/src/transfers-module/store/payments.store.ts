@@ -25,8 +25,11 @@ import { addCurrentValueToSwappedTokens } from './util/add-current-value-to-swap
 import { filterSwaps } from './util/filter-swaps';
 import { filterPayments } from './util/filter-payments';
 import { PaymentsResponseDto } from '../model/payments-response.dto';
-import { addCurrentValueAndSummaryToTransfers } from './util/add-current-value-to-transfers';
-import { PaymentPortfolio, TokenPaymentsData } from '../model/payments';
+import {
+  PaymentPortfolio,
+  TokenPayment,
+  TokenPaymentsData,
+} from '../model/payments';
 
 const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
   domain: 'polkadot',
@@ -36,7 +39,7 @@ const chain$: BehaviorSubject<Chain> = new BehaviorSubject<Chain>({
 const chainList$ = from(fetchSubscanChains()).pipe(
   map((chainList) => [...chainList.chains, ...ethChains]),
   map((list) => {
-    return list.sort((a: Chain, b: Chain) => (a.label > b.label ? 1 : -1));
+    return list.sort((a, b) => (a.label > b.label ? 1 : -1));
   })
 );
 const swaps$ = new ReplaySubject<DataRequest<SwapList>>(1);
@@ -173,7 +176,7 @@ export const usePaymentsStore = defineStore('payments', {
           endDate: formatDate(endDate.getTime()),
           currency: this.currency,
         };
-        const { swaps, transfers, currentPrices }: PaymentsResponseDto =
+        const { swaps, transfers, tokens }: PaymentsResponseDto =
           await fetchSwapsAndTransfers(
             chain.domain,
             this.address.trim(),
@@ -182,21 +185,34 @@ export const usePaymentsStore = defineStore('payments', {
             endDate.getTime()
           );
 
+        const payments = transfers.map((t) => ({
+          ...t,
+          valueNow: tokens[t.tokenId].latestPrice
+            ? tokens[t.tokenId].latestPrice! * t.amount
+            : undefined,
+          isoDate: formatDate(t.timestamp),
+        })) as TokenPayment[];
+
         const paymentList: PaymentPortfolio = {
           ...metadata,
-          tokens: addCurrentValueAndSummaryToTransfers(transfers),
+          transfers: payments,
+          tokens,
         };
 
-        const selectedToken = Object.keys(paymentList.tokens).sort((a, b) =>
-          a > b ? 1 : -1
-        )[0];
+        const relevantTransferTokens = [
+          ...new Set(
+            payments.filter((t) => t.amount !== 0).map((t) => t.symbol)
+          ),
+        ].sort((a, b) => (a > b ? 1 : -1));
+        const selectedToken =
+          relevantTransferTokens.length > 0 ? relevantTransferTokens[0] : '';
 
         const swapList: SwapList = {
           ...metadata,
           startDate,
           endDate: endDate.getTime(),
-          swaps: addCurrentValueToSwappedTokens(swaps, currentPrices),
-          currentPrices,
+          swaps: addCurrentValueToSwappedTokens(swaps, tokens),
+          tokens,
         };
 
         const visibleSwapTokens = extractTokensFromSwaps(swapList).map((t) => ({

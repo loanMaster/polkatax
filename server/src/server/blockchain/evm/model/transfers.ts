@@ -22,4 +22,3 @@ export interface EVMTx {
   txreceipt_status: string;
   functionName: string;
 }
-

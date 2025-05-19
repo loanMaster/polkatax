@@ -44,17 +44,17 @@ export const startStub = async () => {
     method: "POST",
     url: "/crypto-current-prices",
     handler: async (request: FastifyRequest<{ Body: CurrentPriceRequest }>) => {
-      const { symbols } = request.body;
-      return createMockData(symbols);
+      const { tokenIds } = request.body;
+      return createMockData(tokenIds);
     },
   });
 
   fastify.route({
     method: "GET",
-    url: "/crypto-historic-prices/:symbol",
+    url: "/crypto-historic-prices/:tokenId",
     handler: async (
       request: FastifyRequest<{
-        Params: { symbol: string };
+        Params: { tokenId: string };
         Querystring: { currency: string };
       }>,
     ) => {

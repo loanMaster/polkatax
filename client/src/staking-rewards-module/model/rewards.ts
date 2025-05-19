@@ -1,17 +1,17 @@
 export interface Reward extends RewardDto {
-  date: number;
+  timestamp: number;
   valueNow?: number;
   isoDate: string;
 }
 
 export interface RewardSummary {
   amount: number;
-  value?: number;
+  fiatValue?: number;
   valueNow?: number;
 }
 
 export interface DailyRewards {
-  [key: string]: { amount: number; value?: number; valueNow?: number };
+  [key: string]: { amount: number; fiatValue?: number; valueNow?: number };
 }
 
 export interface Rewards {
@@ -30,10 +30,10 @@ export interface Rewards {
 }
 
 export interface RewardDto {
-  date: number;
+  timestamp: number;
   block: number;
   amount: number;
-  value?: number;
+  fiatValue?: number;
   price?: number;
   hash: string;
 }

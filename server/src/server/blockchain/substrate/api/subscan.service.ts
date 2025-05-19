@@ -4,7 +4,11 @@ import { RawStakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
 import { logger } from "../../../logger/logger";
 import { SubscanEvent } from "../model/subscan-event";
-import { RawEvmTransferDto, RawSubstrateTransferDto, Transfer } from "../model/raw-transfer";
+import {
+  RawEvmTransferDto,
+  RawSubstrateTransferDto,
+  Transfer,
+} from "../model/raw-transfer";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -83,7 +87,7 @@ export class SubscanService {
   private async retry<T>(
     query: () => Promise<T>,
     retries = 2,
-    backOff = [5000, 30000],
+    backOff = [5000, 10000],
   ): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
@@ -178,7 +182,9 @@ export class SubscanService {
     logger.info(
       `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );
-    const result = await this.iterateOverPagesParallel<(RawSubstrateTransferDto & RawEvmTransferDto)>(
+    const result = await this.iterateOverPagesParallel<
+      RawSubstrateTransferDto & RawEvmTransferDto
+    >(
       (page) =>
         this.subscanApi.fetchTransfers(
           chainName,
@@ -186,28 +192,31 @@ export class SubscanService {
           page,
           block_min,
           block_max,
-          evm
+          evm,
         ),
       3,
     );
     logger.info(
       `Exit fetchAllTransfersAs for ${chainName} and account ${account}`,
     );
-    return result.map(transfer => {
-        return {
-          symbol: transfer.symbol || transfer.asset_symbol,
-          amount: transfer.amount,
-          from: transfer.from,
-          to: transfer.to,
-          label: transfer?.to_display?.evm_contract.contract_name,
-          block: transfer.block_num,
-          timestamp: transfer.block_timestamp || transfer.create_at,
-          hash: transfer.hash
-        }
-      })
+    return result.map((transfer) => {
+      return {
+        symbol: transfer.symbol || transfer.asset_symbol,
+        amount: Number(transfer.amount),
+        from: transfer.from,
+        to: transfer.to,
+        label:
+          transfer?.to_display?.evm_contract.contract_name || transfer.module,
+        block: transfer.block_num,
+        timestamp: transfer.block_timestamp || transfer.create_at,
+        hash: transfer.hash,
+        tokenId: transfer.asset_unique_id || transfer.contract,
+        extrinsic_index: transfer.extrinsic_index,
+      };
+    });
   }
 
-  fetchAccounts(address: string, chainName: string): Promise<string[]> {
+  async fetchAccounts(address: string, chainName: string): Promise<string[]> {
     return this.subscanApi.fetchAccounts(address, chainName);
   }
 }

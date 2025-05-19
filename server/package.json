@@ -17,7 +17,6 @@
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test": "jest",
     "e2e-test": "npx playwright test --list --output \"\"",
-    "record-traffic": "ts-node integration-tests/src/util/record-traffic.ts",
     "format": "prettier --write . --ignore-path ../.gitignore",
     "copy-env-to-dist": "if [ -f .env ]; then cp .env ./dist; fi"
   },

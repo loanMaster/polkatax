@@ -1,9 +1,9 @@
 export interface Transaction {
   hash: string;
-  account: string;
+  from: string;
+  to?: string;
   timestamp: number;
   block?: number;
-  functionName?: string;
-  callModule?: string;
+  label?: string;
   amount: number;
 }

@@ -1,6 +1,5 @@
 import { logger } from "../logger/logger";
 import { CoingeckoRestService } from "../coingecko-api/coingecko.rest-service";
-import { findCoingeckoToken } from "../../common/util/find-coingecko-token-id";
 import {
   CurrencyQuotes,
   Quotes,
@@ -15,24 +14,15 @@ import {
 const MAX_AGE = 4 * 60 * 60 * 1000;
 
 export class TokenPriceHistoryService {
-  private cachedPrices: { [symbolCurrency: string]: Quotes } = {};
+  private cachedPrices: { [coingeckoId: string]: Quotes } = {};
   private timer;
   private tokensToSync = [
-    ...substrateTokenToCoingeckoId.tokens.map((t) => t.token),
-    "op",
-    "eth",
-    "velo",
-    "bal",
-    "usdc",
-    "matic",
-    "wom",
-    "ldo",
-    "sushi",
-    "usdt",
-    "dai",
-    "wbtc",
-    "frax",
-    "well",
+    ...substrateTokenToCoingeckoId.tokens.map((t) => t.coingeckoId),
+    "ethereum",
+    "usd-coin",
+    "moonwell-artemis",
+    "mulitchain-bridged-wbtc-moonbeam",
+    "interbtc",
   ];
 
   constructor(private coingeckoRestService: CoingeckoRestService) {}
@@ -46,56 +36,46 @@ export class TokenPriceHistoryService {
   }
 
   async getHistoricPrices(
-    symbol: string,
+    coingeckoId: string,
     currency: PreferredQuoteCurrency = "usd",
   ): Promise<CurrencyQuotes> {
-    symbol = symbol.toLowerCase();
-    if (this.synonyms[symbol]) {
-      symbol = this.synonyms[symbol];
-    }
-    const result = await this.fetchQuotesForSymbol(symbol, currency);
-    this.addTokenToSyncList(symbol);
+    const result = await this.fetchQuotesForId(coingeckoId, currency);
+    this.addTokenToSyncList(coingeckoId);
     return { quotes: result, currency };
   }
 
   private currenciesToSync = preferredQuoteCurrencyValues;
 
-  private synonyms = {
-    wglmr: "glmr",
-    weth: "eth",
-    wsteth: "steth",
-    ibtc: "btc",
-    kbtc: "btc",
-  };
-
   private async sync() {
     logger.info("TokenPriceHistoryService syncing");
-    const tokensToSync = [...this.tokensToSync];
+    const coingeckoIdsToSync = [...this.tokensToSync];
     for (let currency of this.currenciesToSync) {
-      for (let symbol of tokensToSync) {
+      for (let coingeckoId of coingeckoIdsToSync) {
         try {
-          if (!this.informationUpToDate(symbol, currency)) {
-            await this.fetchQuotesForSymbol(symbol, currency);
+          if (!this.informationUpToDate(coingeckoId, currency)) {
+            await this.fetchQuotesForId(coingeckoId, currency);
             logger.info(
-              `TokenPriceHistoryService syncing done for token ${symbol} and currency ${currency}`,
+              `TokenPriceHistoryService syncing done for token ${coingeckoId} and currency ${currency}`,
             );
             break;
           }
         } catch (error) {
           logger.warn(
-            `Error syncing token ${symbol} for currency ${currency}`,
+            `Error syncing token ${coingeckoId} for currency ${currency}`,
             error,
           );
           logger.warn(error);
-          this.tokensToSync = this.tokensToSync.filter((t) => t !== symbol);
+          this.tokensToSync = this.tokensToSync.filter(
+            (t) => t !== coingeckoId,
+          );
           break;
         }
       }
     }
     if (
-      tokensToSync.every((symbol) =>
+      coingeckoIdsToSync.every((id) =>
         this.currenciesToSync.every((currency) =>
-          this.informationUpToDate(symbol, currency),
+          this.informationUpToDate(id, currency),
         ),
       )
     ) {
@@ -103,19 +83,19 @@ export class TokenPriceHistoryService {
     }
   }
 
-  private combine(symbol: string, currency: string) {
-    return symbol + "_" + currency;
+  private combine(id: string, currency: string) {
+    return id + "_" + currency;
   }
 
-  private addTokenToSyncList(symbol: string) {
+  private addTokenToSyncList(coingeckoId: string) {
     const tokensToSync = this.tokensToSync;
-    if (tokensToSync.indexOf(symbol) === -1) {
-      tokensToSync.push(symbol);
+    if (tokensToSync.indexOf(coingeckoId) === -1) {
+      tokensToSync.push(coingeckoId);
     }
   }
 
-  private informationUpToDate(symbol: string, currency: string) {
-    const combinedIdx = this.combine(symbol, currency);
+  private informationUpToDate(coingeckoId: string, currency: string) {
+    const combinedIdx = this.combine(coingeckoId, currency);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
@@ -127,20 +107,19 @@ export class TokenPriceHistoryService {
     );
   }
 
-  private async fetchQuotesForSymbol(symbol: string, currency: string = "usd") {
-    if (this.informationUpToDate(symbol, currency)) {
-      return this.cachedPrices[this.combine(symbol, currency)];
-    }
-    const token = findCoingeckoToken(symbol, "polkadot", logger);
-    if (!token) {
-      throw new Error("Token " + symbol + " not found in coingecko list.");
+  private async fetchQuotesForId(
+    coingeckoId: string,
+    currency: string = "usd",
+  ) {
+    if (this.informationUpToDate(coingeckoId, currency)) {
+      return this.cachedPrices[this.combine(coingeckoId, currency)];
     }
     const quotes: Quotes = await this.coingeckoRestService.fetchHistoricalData(
-      token.id,
+      coingeckoId,
       currency,
     );
-    const symbolCurr = symbol + "_" + currency;
-    this.cachedPrices[symbolCurr] = quotes;
-    return this.cachedPrices[symbolCurr];
+    const idCurr = this.combine(coingeckoId, currency);
+    this.cachedPrices[idCurr] = quotes;
+    return this.cachedPrices[idCurr];
   }
 }

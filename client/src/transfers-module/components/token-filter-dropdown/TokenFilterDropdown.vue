@@ -34,9 +34,13 @@ onUnmounted(() => {
 });
 
 const tokens = computed(() => {
-  return Object.keys(paymentPortfolio.value?.tokens || {}).sort((a, b) =>
-    a > b ? 1 : -1
-  );
+  return [
+    ...new Set(
+      paymentPortfolio.value?.transfers
+        .filter((t) => t.amount !== 0)
+        .map((t) => t.symbol)
+    ),
+  ].sort((a, b) => (a > b ? 1 : -1));
 });
 
 function capitalize(input: string) {

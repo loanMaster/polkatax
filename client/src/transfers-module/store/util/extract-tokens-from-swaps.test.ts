@@ -1,57 +1,49 @@
-import { extractTokensFromSwaps } from './extract-tokens-from-swaps';
+import { expect, it, describe } from '@jest/globals';
 import { SwapList } from '../../../swap-module/model/swaps';
-import { expect, test, describe } from '@jest/globals';
+import { extractTokensFromSwaps } from './extract-tokens-from-swaps';
 
 describe('extractTokensFromSwaps', () => {
-  test('should return an empty array if swaps is undefined', () => {
-    expect(extractTokensFromSwaps(undefined)).toEqual([]);
+  it('returns an empty array if input is undefined', () => {
+    const result = extractTokensFromSwaps(undefined);
+    expect(result).toEqual([]);
   });
 
-  test('should return an empty array if swaps.swaps is empty', () => {
-    const emptySwaps: SwapList = { swaps: [] } as unknown as SwapList;
-    expect(extractTokensFromSwaps(emptySwaps)).toEqual([]);
-  });
-
-  test('should extract unique tokens from swaps and sort them alphabetically', () => {
-    const mockSwaps: SwapList = {
+  it('extracts unique token symbols from swaps and sorts them alphabetically', () => {
+    const swaps: SwapList = {
       swaps: [
         {
-          tokens: {
-            DOT: { amount: 10 },
-            KSM: { amount: 5 },
-          },
-        },
+          transfers: [
+            { symbol: 'ETH' },
+            { symbol: 'DAI' },
+            { symbol: 'ETH' }, // duplicate
+          ],
+        } as any,
         {
-          tokens: {
-            USDT: { amount: 7 },
-            DOT: { amount: 2 },
-          },
+          transfers: [
+            { symbol: 'USDC' },
+            { symbol: 'DAI' }, // duplicate
+          ],
         },
       ],
-    } as unknown as SwapList;
+    } as any;
 
-    const result = extractTokensFromSwaps(mockSwaps);
-    expect(result).toEqual(['DOT', 'KSM', 'USDT']);
+    const result = extractTokensFromSwaps(swaps);
+    expect(result).toEqual(['DAI', 'ETH', 'USDC']); // sorted & unique
   });
 
-  test('should handle duplicate tokens correctly', () => {
-    const mockSwaps: SwapList = {
-      swaps: [
-        { tokens: { A: { amount: 1 } } },
-        { tokens: { A: { amount: 2 }, B: { amount: 3 } } },
-        { tokens: { B: { amount: 4 }, C: { amount: 5 } } },
-      ],
-    } as unknown as SwapList;
+  it('returns empty array if swaps is empty', () => {
+    const swaps: SwapList = {
+      swaps: [],
+    } as any;
 
-    const result = extractTokensFromSwaps(mockSwaps);
-    expect(result).toEqual(['A', 'B', 'C']);
+    const result = extractTokensFromSwaps(swaps);
+    expect(result).toEqual([]);
   });
 
-  test('should work with single swap and single token', () => {
-    const mockSwaps: SwapList = {
-      swaps: [{ tokens: { BTC: { amount: 1 } } }],
-    } as unknown as SwapList;
+  it('handles missing swaps field gracefully', () => {
+    const swaps = {} as SwapList;
 
-    expect(extractTokensFromSwaps(mockSwaps)).toEqual(['BTC']);
+    const result = extractTokensFromSwaps(swaps);
+    expect(result).toEqual([]);
   });
 });

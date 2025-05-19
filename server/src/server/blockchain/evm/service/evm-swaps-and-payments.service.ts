@@ -3,6 +3,7 @@ import { logger } from "../../../logger/logger";
 import { EVMTransfer, EVMTx } from "../model/transfers";
 import { Transaction } from "../../substrate/model/transaction";
 import { Transfer } from "../../substrate/model/raw-transfer";
+import BigNumber from "bignumber.js";
 
 export class EvmSwapsAndPaymentsService {
   constructor(private evmTxService: EvmTxService) {}
@@ -10,33 +11,39 @@ export class EvmSwapsAndPaymentsService {
   private mapEvmTransferToTransferDto(evmTransfer: EVMTransfer): Transfer {
     return {
       symbol: evmTransfer.tokenSymbol,
-      contract: "TODO", // #TODO
-      asset_unique_id: "TODO", // #TODO
-      amount: Number(evmTransfer.value),
+      tokenId: evmTransfer.contractAddress,
+      amount: Number(
+        new BigNumber(evmTransfer.value).dividedBy(
+          Math.pow(10, Number(evmTransfer.tokenDecimal)),
+        ),
+      ),
       from: evmTransfer.from,
       to: evmTransfer.to,
       block: Number(evmTransfer.blockNumber),
       timestamp: Number(evmTransfer.timeStamp),
-      hash: evmTransfer.hash
-    }
+      hash: evmTransfer.hash,
+    };
   }
 
   private mapEvmTxToTransaction(tx: EVMTx): Transaction {
     return {
       hash: tx.hash,
-      account: tx.from,
+      from: tx.from,
+      to: tx.to,
       timestamp: Number(tx.timeStamp),
       block: Number(tx.blockNumber),
-      functionName: tx.functionName,
-      amount: Number(tx.value)
-    }
+      label: tx.functionName,
+      amount: Number(
+        new BigNumber(tx.value).dividedBy(Math.pow(10, Number(18))),
+      ),
+    };
   }
 
   async fetchSwapsAndPayments(data: {
-    chainName,
-    address: string,
-    startDay: Date,
-    endDay?: Date,
+    chainName;
+    address: string;
+    startDay: Date;
+    endDay?: Date;
   }): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
     logger.info(`Enter fetchSwapsAndPayments for ${data.chainName}`);
     const { tx, transfers } = await this.evmTxService.fetchTxAndTransfers(
@@ -46,9 +53,9 @@ export class EvmSwapsAndPaymentsService {
       data.endDay,
     );
     logger.info(`Exit fetchSwapsAndPayments for ${data.chainName}`);
-    return { 
-      transactions: tx.map(tx => this.mapEvmTxToTransaction(tx)), 
-      transfersList: transfers.map(t => this.mapEvmTransferToTransferDto(t))
+    return {
+      transactions: tx.map((tx) => this.mapEvmTxToTransaction(tx)),
+      transfersList: transfers.map((t) => this.mapEvmTransferToTransferDto(t)),
     };
   }
 }

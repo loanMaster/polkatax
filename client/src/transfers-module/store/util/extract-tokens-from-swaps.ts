@@ -8,9 +8,9 @@ export const extractTokensFromSwaps = (
   }
   const temp: string[] = [];
   (swaps.swaps || []).forEach((swap: Swap) => {
-    Object.keys(swap.tokens).forEach((token) => {
-      if (temp.indexOf(token) === -1) {
-        temp.push(token);
+    swap.transfers.forEach((transfer) => {
+      if (temp.indexOf(transfer.symbol) === -1) {
+        temp.push(transfer.symbol);
       }
     });
   });

@@ -67,7 +67,6 @@ import {
 } from '../../../shared-module/util/number-formatters';
 import { usePaymentsStore } from '../../store/payments.store';
 import { getTxLink } from '../../../shared-module/util/tx-link';
-import { Swap } from '../../../swap-module/model/swaps';
 import {
   formatDate,
   formatDateUTC,
@@ -83,7 +82,7 @@ const sortAmounts = (value1: number, value2: number) =>
   Math.abs(value1) > Math.abs(value2) ? 1 : -1;
 
 const paymentsCurrentToken: Ref<TokenPaymentsData | undefined> = ref(undefined);
-const excludedPayments: Ref<TokenPayment[]> = ref([]);
+const excludedPayments: Ref<{ hash: string }[]> = ref([]);
 const selectedToken: Ref<string | undefined> = ref(undefined);
 const paymentPortfolio: Ref<PaymentPortfolio | undefined> = ref(undefined);
 
@@ -129,7 +128,7 @@ const columns = computed(() => [
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Swap) => formatDate(row.date * 1000),
+    field: (row: TokenPayment) => formatDate(row.timestamp * 1000),
     sortable: true,
   },
   {
@@ -177,7 +176,7 @@ const columns = computed(() => [
     name: 'value',
     align: 'right',
     label: `Value (${paymentPortfolio.value?.currency})`,
-    field: 'value',
+    field: 'fiatValue',
     format: (num: number) => formatValue(Math.abs(num)),
     sort: sortAmounts,
     sortable: true,
@@ -192,10 +191,10 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'functionName',
+    name: 'label',
     align: 'left',
-    label: 'Function',
-    field: 'functionName',
+    label: 'Contract/Function',
+    field: 'label',
     sortable: false,
   },
   {
@@ -232,10 +231,10 @@ function exportKoinlyCsv() {
   const parser = new Parser();
   const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const values = [...(paymentsCurrentToken.value?.payments || [])]
-    .filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .filter((v) => excludedHashes.indexOf(v.hash ?? '') === -1)
     .map((v) => {
       return {
-        'Koinly Date': formatDateUTC(v.date * 1000),
+        'Koinly Date': formatDateUTC(v.timestamp * 1000),
         Amount: v.amount,
         Currency: selectedToken.value,
         TxHash: v.hash,
@@ -249,11 +248,11 @@ function exportCsv() {
   const parser = new Parser();
   const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const values = [...(paymentsCurrentToken.value?.payments || [])]
-    .filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .filter((v) => excludedHashes.indexOf(v.hash ?? '') === -1)
     .map((v) => {
       return {
         ...v,
-        date: formatDateUTC(v.date * 1000),
+        date: formatDateUTC(v.timestamp * 1000),
       };
     });
   values[0] = {
@@ -263,7 +262,7 @@ function exportCsv() {
     'Wallet address': paymentPortfolio.value?.address,
     ...values[0],
     totalAmount: paymentsCurrentToken.value?.summary!.amount,
-    totalValue: paymentsCurrentToken.value?.summary!.value,
+    totalValue: paymentsCurrentToken.value?.summary!.fiatValue,
     totalValueNow: paymentsCurrentToken.value?.summary?.valueNow,
   } as any;
   const csv = parser.parse(values);
@@ -273,11 +272,11 @@ function exportCsv() {
 function exportJson() {
   const excludedHashes = excludedPayments.value.map((e) => e.hash);
   const filteredPayments = paymentsCurrentToken
-    .value!.payments.filter((v) => excludedHashes.indexOf(v.hash) === -1)
+    .value!.payments.filter((v) => excludedHashes.indexOf(v.hash || '') === -1)
     .map((p: TokenPayment) => {
       return {
         ...p,
-        date: formatDateUTC(p.date * 1000),
+        date: formatDateUTC(p.timestamp * 1000),
       };
     });
 

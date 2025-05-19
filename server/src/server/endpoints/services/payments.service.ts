@@ -7,16 +7,17 @@ import { EvmSwapsAndPaymentsService } from "../../blockchain/evm/service/evm-swa
 import { validateDates } from "../../../common/util/validate-dates";
 import { HttpError } from "../../../common/error/HttpError";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
-import * as substrateTokenToCoingeckoId from "../../../../res/substrate-token-to-coingecko-id.json";
 import { logger } from "../../logger/logger";
-import { addFiatValuesToTransferDtoList } from "../helper/add-fiat-values-to-transfer-dto-list";
-import { addFiatValuesToTx } from "../helper/add-fiat-values-to-tx";
-import { TransferClassifier } from "../helper/transfer-classifier";
-import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
+import { TransferClassifier } from "./transfer-classifier.service";
 import { CoingeckoIdLookupService } from "./coingecko-id-lookup.service";
-import { TransferDto } from "src/server/blockchain/substrate/model/raw-transfer";
-import { Transaction } from "src/server/blockchain/substrate/model/transaction";
-import { TransferWithFiatValue } from "../model/priced-transfer";
+import { PricedTransfer } from "../model/priced-transfer";
+import { PricedTransaction } from "../model/priced-transaction";
+import { addFiatValuesToTransferList } from "../helper/add-fiat-values-to-transfers";
+import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
+import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
+import { ChainAdjustments } from "../helper/chain-adjustments";
+import { getNativeToken } from "../helper/get-native-token";
+import { addFiatValuesToSwaps } from "../helper/add-fiat-values-to-swaps";
 
 export class PaymentsService {
   constructor(
@@ -24,62 +25,130 @@ export class PaymentsService {
     private tokenPriceConversionService: TokenPriceConversionService,
     private evmSwapsAndPaymentsService: EvmSwapsAndPaymentsService,
     private transferClassifier: TransferClassifier,
-    private subscanService: SubscanService,
-    private coingeckoIdLookupService: CoingeckoIdLookupService
+    private coingeckoIdLookupService: CoingeckoIdLookupService,
   ) {}
 
-  private findCoingeckoIdForNativeToken(chainName: string): string | undefined  {
-    if (evmChainConfigs[chainName]) {
-      return evmChainConfigs[chainName]?.nativeTokenCoingeckoId
-    } else {
-      substrateTokenToCoingeckoId.tokens.find(t => t.token === subscanChains[chainName].token.toUpperCase())?.coingeckoId
+  private async fetchQuotes(
+    nativeTokenCoingeckoId: string,
+    paymentsRequest: PaymentsRequest,
+    coingeckoIds: string[],
+  ): Promise<{
+    quotes: Record<string, CurrencyQuotes>;
+    currentPrices: Record<string, number>;
+  }> {
+    const quotes = await this.tokenPriceConversionService.fetchQuotesForTokens(
+      nativeTokenCoingeckoId
+        ? [...coingeckoIds, nativeTokenCoingeckoId]
+        : coingeckoIds,
+      paymentsRequest.currency,
+    );
+    const currentPrices = {};
+    Object.keys(quotes).forEach(
+      (tokenId) => (currentPrices[tokenId] = quotes[tokenId].quotes.latest),
+    );
+    return { currentPrices, quotes };
+  }
+
+  private async fetchData(paymentsRequest: PaymentsRequest) {
+    const evmChainConfig = evmChainConfigs[paymentsRequest.chainName];
+    const {
+      transactions,
+      transfersList,
+    }: { transactions: PricedTransaction[]; transfersList: PricedTransfer[] } =
+      evmChainConfig
+        ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(
+            paymentsRequest,
+          )
+        : await this.swapsAndTransfersService.fetchSwapsAndTransfers(
+            paymentsRequest,
+          );
+    return { transactions, transfersList };
+  }
+
+  private validate(paymentsRequest: PaymentsRequest) {
+    let { startDay, endDay, chainName } = paymentsRequest;
+
+    validateDates(startDay, endDay);
+    endDay = endDay && endDay < new Date() ? endDay : new Date();
+    if (
+      !evmChainConfigs[chainName] &&
+      !subscanChains.chains.find((p) => p.domain === chainName)
+    ) {
+      throw new HttpError(400, "Chain " + chainName + " not found");
     }
+  }
+
+  private createTokenInfoList(
+    nativeToken: string,
+    nativeTokenCoingeckoId?: string,
+    transfers: PricedTransfer[] = [],
+    currentPrices: Record<string, number> = {},
+  ) {
+    const tokenInfo: Record<
+      string,
+      { symbol: string; coingeckoId?: string; latestPrice?: number }
+    > = {
+      [nativeToken]: {
+        symbol: nativeToken,
+        coingeckoId: nativeTokenCoingeckoId,
+        latestPrice: currentPrices[nativeTokenCoingeckoId],
+      },
+    };
+    for (let t of transfers) {
+      if (!tokenInfo[t.tokenId]) {
+        tokenInfo[t.tokenId] = {
+          symbol: t.symbol,
+          coingeckoId: t.coingeckoId,
+          latestPrice: currentPrices[t.coingeckoId],
+        };
+      }
+    }
+    return tokenInfo;
   }
 
   async processTask(
     paymentsRequest: PaymentsRequest,
   ): Promise<PaymentsResponse> {
     logger.info("PaymentsService: Enter processess Task");
-    let { startDay, endDay, chainName, address, currency } = paymentsRequest;
+    this.validate(paymentsRequest);
+    const { transactions, transfersList } =
+      await this.fetchData(paymentsRequest);
 
-    validateDates(startDay, endDay);
-    endDay = endDay && endDay < new Date() ? endDay : new Date();
-    if (
-      !evmChainConfigs[chainName.toLocaleLowerCase()] &&
-      !subscanChains.chains.find((p) => p.domain === chainName)
-    ) {
-      throw new HttpError(400, "Chain " + chainName + " not found");
+    const nativeTokenCoingeckoId = findCoingeckoIdForNativeToken(
+      paymentsRequest.chainName,
+    );
+    const coingeckoIds =
+      this.coingeckoIdLookupService.addCoingeckoIds(transfersList);
+
+    const { payments, swaps } =
+      await this.transferClassifier.extractSwapsAndPayments(
+        paymentsRequest.address,
+        paymentsRequest.chainName,
+        transactions,
+        transfersList,
+      );
+
+    if (paymentsRequest.chainName === "hydration") {
+      new ChainAdjustments().handleHydration(swaps);
     }
 
-    const evmChainConfig = evmChainConfigs[chainName.toLocaleLowerCase()];
-    const { transactions, transfersList }: { transactions: Transaction[], transfersList: TransferWithFiatValue[] } = evmChainConfig
-      ? await this.evmSwapsAndPaymentsService.fetchSwapsAndPayments(paymentsRequest)
-      : await this.swapsAndTransfersService.fetchSwapsAndTransfers(paymentsRequest);
-
-    const nativeTokenCoingeckoId = this.findCoingeckoIdForNativeToken(chainName)
-
-    const coingeckoIds = this.coingeckoIdLookupService.addCoingeckoIds(transfersList)
-
-    const quotes = await this.tokenPriceConversionService.fetchQuotesForTokens(
-      nativeTokenCoingeckoId ? [...coingeckoIds, nativeTokenCoingeckoId] : coingeckoIds,
-      chainName,
-      currency,
+    const { quotes, currentPrices } = await this.fetchQuotes(
+      nativeTokenCoingeckoId,
+      paymentsRequest,
+      coingeckoIds,
     );
 
-    addFiatValuesToTransferDtoList(transfersList, quotes)
-    addFiatValuesToTx(transactions, quotes[nativeTokenCoingeckoId])
-    
-    const aliases = await this.subscanService.fetchAccounts(
-      address,
-      chainName,
-    );
-    const { payments, swaps } = this.transferClassifier.extractSwapsAndPayments(transactions, transfersList, address, aliases)
+    addFiatValuesToTransferList(payments, quotes);
+    addFiatValuesToSwaps(swaps, quotes);
 
-    const currentPrices = {};
-    Object.keys(quotes).forEach(
-      (token) => (currentPrices[token] = quotes[token].quotes.latest),
+    const tokens = this.createTokenInfoList(
+      getNativeToken(paymentsRequest.chainName),
+      nativeTokenCoingeckoId,
+      transfersList,
+      currentPrices,
     );
+
     logger.info("PaymentsService: Exit processess Task");
-    return { currentPrices, swaps, transfers: payments };
+    return { swaps, transfers: payments, tokens };
   }
 }

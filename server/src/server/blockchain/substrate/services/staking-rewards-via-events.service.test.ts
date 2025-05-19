@@ -29,20 +29,20 @@ describe("StakingRewardsViaEventsService", () => {
     const transfers = [
       {
         hash: "0x123",
-        amount_v2: "1000",
-        block_timestamp: 12345678,
+        amount: 1000,
+        timestamp: 12345678,
         extrinsic_index: "150-1",
       },
       {
         hash: "0x456",
-        amount_v2: "-500",
-        block_timestamp: 12345679,
+        amount: -500,
+        timestamp: 12345679,
         extrinsic_index: "151-2",
       },
       {
         hash: "0x789",
-        amount_v2: "300",
-        block_timestamp: 12345680,
+        amount: 300,
+        timestamp: 12345680,
         extrinsic_index: "152-0",
       },
     ];
@@ -62,16 +62,16 @@ describe("StakingRewardsViaEventsService", () => {
     expect(rewards).toEqual([
       {
         event_id: "Reward",
-        amount: new BigNumber("1000"),
-        block_timestamp: 12345678,
-        block_num: 150,
+        amount: 1000,
+        timestamp: 12345678,
+        block: 150,
         hash: "0x123",
       },
       {
         event_id: "Slash",
-        amount: new BigNumber("-500"),
-        block_timestamp: 12345679,
-        block_num: 151,
+        amount: -500,
+        timestamp: 12345679,
+        block: 151,
         hash: "0x456",
       },
     ]);

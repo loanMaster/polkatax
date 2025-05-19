@@ -5,13 +5,14 @@ import { Transaction } from "../model/transaction";
 import { logger } from "../../../logger/logger";
 import { hasChainEvmSupport } from "../util/has-chain-evm-support";
 import { Transfer } from "../model/raw-transfer";
+import { isEvmAddress } from "../../../endpoints/helper/is-evm-address";
 
 dotenv.config({ path: __dirname + "/../.env" });
 
 export class SwapsAndTransfersService {
   constructor(
     private blockTimeService: BlockTimeService,
-    private subscanService: SubscanService
+    private subscanService: SubscanService,
   ) {}
 
   private async fetchTxAndTransfers(
@@ -21,7 +22,6 @@ export class SwapsAndTransfersService {
     blockMax: number,
     evm = false,
   ): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
-
     const transactions = await this.subscanService.fetchAllTx(
       chainName,
       address,
@@ -40,9 +40,8 @@ export class SwapsAndTransfersService {
   }
 
   private async resolveAddresses(chainName: string, address: string) {
-    const isEvm = address.length <= 42;
-    const evmAddress = isEvm ? address : undefined;
-    const substrateAddress = isEvm
+    const evmAddress = isEvmAddress(address) ? address : undefined;
+    const substrateAddress = isEvmAddress(address)
       ? await this.subscanService.mapToSubstrateAccount(chainName, address)
       : address;
     return { substrateAddress, evmAddress };
@@ -73,7 +72,7 @@ export class SwapsAndTransfersService {
         blockMax,
         true,
       );
-      transfersList.concat(evmData.transfersList)
+      transfersList.concat(evmData.transfersList);
       transactions = transactions.concat(evmData.transactions);
     }
     return { transactions, transfersList };
@@ -92,22 +91,12 @@ export class SwapsAndTransfersService {
     return items.filter(filterFn);
   }
 
-  private filterEmptyTokens(payments: TokenTransfers): TokenTransfers { // #TODO
-    const result: TokenTransfers = {};
-    for (const token of Object.keys(payments)) {
-      if (payments[token].length > 0) {
-        result[token] = payments[token];
-      }
-    }
-    return result;
-  }
-
-  async fetchSwapsAndTransfers(
-    data: {chainName: string,
-    address: string,
-    startDay: Date,
-    endDay?: Date,
-  }): Promise<{ transactions: Transaction[]; transfersList: TransferDto[] }> {
+  async fetchSwapsAndTransfers(data: {
+    chainName: string;
+    address: string;
+    startDay: Date;
+    endDay?: Date;
+  }): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
     logger.info(`Enter fetchSwapsAndTransfers for ${data.chainName}`);
 
     const { substrateAddress, evmAddress } = await this.resolveAddresses(
@@ -128,8 +117,16 @@ export class SwapsAndTransfersService {
       blockMax,
     );
 
-    transactions = this.filterByDate<Transaction>(transactions, data.startDay, data.endDay)
-    const transfersListMapped = this.filterByDate(transfersList, data.startDay, data.endDay)
+    transactions = this.filterByDate<Transaction>(
+      transactions,
+      data.startDay,
+      data.endDay,
+    );
+    const transfersListMapped = this.filterByDate(
+      transfersList,
+      data.startDay,
+      data.endDay,
+    );
 
     logger.info(`Exit fetchSwapsAndTransfers for ${data.chainName}`);
     return { transactions, transfersList: transfersListMapped };

@@ -1,67 +1,99 @@
-import { expect, test, describe } from '@jest/globals';
-import { Reward, RewardSummary } from '../../model/rewards';
+import { expect, it, describe } from '@jest/globals';
+import { Reward } from '../../model/rewards';
 import { calculateRewardSummary } from './calculate-reward-summary';
 
 describe('calculateRewardSummary', () => {
-  test('should correctly summarize rewards', () => {
+  it('calculates total amount, fiatValue and valueNow correctly', () => {
     const rewards: Reward[] = [
-      { amount: 10, value: 100, valueNow: 120 },
-      { amount: 5, value: 50, valueNow: 60 },
-      { amount: 2, value: 20, valueNow: 25 },
-    ] as Reward[];
-
-    const expected: RewardSummary = {
-      amount: 17,
-      value: 170,
-      valueNow: 205,
-    };
+      { amount: 1, fiatValue: 10, valueNow: 15, timestamp: 0, isoDate: '' },
+      { amount: 2, fiatValue: 20, valueNow: 25, timestamp: 0, isoDate: '' },
+    ] as any;
 
     const result = calculateRewardSummary(rewards);
-    expect(result).toEqual(expected);
+
+    expect(result).toEqual({
+      amount: 3,
+      fiatValue: 30,
+      valueNow: 40,
+    });
   });
 
-  test('should return zeros when the rewards array is empty', () => {
-    const rewards: Reward[] = [];
-
-    const expected: RewardSummary = {
-      amount: 0,
-      value: 0,
-      valueNow: 0,
-    };
+  it('sets fiatValue to undefined if any reward.fiatValue is undefined', () => {
+    const rewards: Reward[] = [
+      { amount: 1, fiatValue: 10, valueNow: 15, timestamp: 0, isoDate: '' },
+      {
+        amount: 2,
+        fiatValue: undefined,
+        valueNow: 25,
+        timestamp: 0,
+        isoDate: '',
+      },
+    ] as any;
 
     const result = calculateRewardSummary(rewards);
-    expect(result).toEqual(expected);
+
+    expect(result).toEqual({
+      amount: 3,
+      fiatValue: undefined,
+      valueNow: 40,
+    });
   });
 
-  test('should handle rewards with zero values', () => {
+  it('sets valueNow to undefined if any reward.valueNow is undefined', () => {
     const rewards: Reward[] = [
-      { amount: 0, value: 0, valueNow: 0 },
-      { amount: 0, value: 0, valueNow: 0 },
-    ] as Reward[];
-
-    const expected: RewardSummary = {
-      amount: 0,
-      value: 0,
-      valueNow: 0,
-    };
+      { amount: 1, fiatValue: 10, valueNow: 15, timestamp: 0, isoDate: '' },
+      {
+        amount: 2,
+        fiatValue: 20,
+        valueNow: undefined,
+        timestamp: 0,
+        isoDate: '',
+      },
+    ] as any;
 
     const result = calculateRewardSummary(rewards);
-    expect(result).toEqual(expected);
-  });
 
-  test('should handle rewards with undefined values', () => {
-    const rewards: Reward[] = [
-      { amount: 10, value: undefined, valueNow: 20 },
-      { amount: 20, value: 10, valueNow: undefined },
-    ] as Reward[];
-
-    const expected: RewardSummary = {
-      amount: 30,
-      value: undefined,
+    expect(result).toEqual({
+      amount: 3,
+      fiatValue: 30,
       valueNow: undefined,
-    };
+    });
+  });
+
+  it('sets both fiatValue and valueNow to undefined if all are undefined', () => {
+    const rewards: Reward[] = [
+      {
+        amount: 1,
+        fiatValue: undefined,
+        valueNow: undefined,
+        timestamp: 0,
+        isoDate: '',
+      },
+      {
+        amount: 2,
+        fiatValue: undefined,
+        valueNow: undefined,
+        timestamp: 0,
+        isoDate: '',
+      },
+    ] as any;
 
     const result = calculateRewardSummary(rewards);
-    expect(result).toEqual(expected);
+
+    expect(result).toEqual({
+      amount: 3,
+      fiatValue: undefined,
+      valueNow: undefined,
+    });
+  });
+
+  it('returns initial summary when input is empty', () => {
+    const result = calculateRewardSummary([]);
+
+    expect(result).toEqual({
+      amount: 0,
+      fiatValue: 0,
+      valueNow: 0,
+    });
   });
 });

@@ -13,12 +13,12 @@ export const filterSwaps = ([swapsRequest, visibleSwapTokens, swapTypeFilter]: [
   const filtered = (swaps?.swaps || [])
     .filter(
       (swap: Swap) =>
-        (swapTypeFilter.twoAssets && Object.keys(swap.tokens).length <= 2) ||
-        (swapTypeFilter.multipleAssets && Object.keys(swap.tokens).length > 2)
+        (swapTypeFilter.twoAssets && swap.transfers.length <= 2) ||
+        (swapTypeFilter.multipleAssets && swap.transfers.length > 2)
     )
     .filter((swap: Swap) =>
-      Object.keys(swap.tokens).some(
-        (token) => supportedTokens.indexOf(token) > -1
+      swap.transfers.some(
+        (transfer) => supportedTokens.indexOf(transfer.symbol) > -1
       )
     );
   return filtered;

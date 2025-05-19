@@ -1,8 +1,11 @@
 import { Swap } from "./swap";
-import { Payment } from "./payment";
+import { PricedTransfer } from "./priced-transfer";
 
 export interface PaymentsResponse {
-  currentPrices: { [token: string]: number };
   swaps: Swap[];
-  transfers: { [symbol: string]: { values: Payment[]; currentPrice: number } };
+  transfers: PricedTransfer[];
+  tokens: Record<
+    string,
+    { symbol: string; coingeckoId?: string; latestPrice?: number }
+  >;
 }
