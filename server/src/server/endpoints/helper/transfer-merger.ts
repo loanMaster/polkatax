@@ -1,3 +1,4 @@
+import { logger } from "../../logger/logger";
 import { PricedTransaction } from "../model/priced-transaction";
 import { PricedTransfer } from "../model/priced-transfer";
 
@@ -48,7 +49,7 @@ export class TransferMerger {
       } else if (isMyAccount(entry.from)) {
         currentTransfer.amount -= Number(entry.amount);
       } else {
-        console.warn("no match for transfer!");
+        logger.warn("no match for transfer!");
       }
       if (currentTransfer.amount > 0) {
         currentTransfer.to = address;
