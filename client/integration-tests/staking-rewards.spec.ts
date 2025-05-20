@@ -74,7 +74,6 @@ test('shows staking rewards', async ({ page }) => {
     timeout: 10000,
   });
   await page.waitForSelector('.q-loading', { state: 'hidden', timeout: 10000 });
-  // q-table__bottom-item
   await expect(page.getByTestId('total-rewards')).toHaveText('51.5137 DOT');
   await expect(page.getByTestId('value-at-payout-time')).toHaveText('$351.93');
 });

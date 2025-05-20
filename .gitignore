@@ -25,7 +25,6 @@ server/res/gen/crypto-currencies-quotes/*.json
 
 coverage
 .vscode
-_recordings_/*.json
 
 test-results/
 playwright-report/

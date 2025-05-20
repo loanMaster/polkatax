@@ -24,7 +24,7 @@ describe("staking rewards via reward_slash endpoint", () => {
   ];
 
   beforeEach(async () => {
-    process.env['SUBSCAN_API_KEY'] = 'bla'
+    process.env["SUBSCAN_API_KEY"] = "bla";
     fastiyInstances.push(
       ...[
         await polkataxServer.init(),
@@ -84,7 +84,7 @@ describe("staking rewards via reward_slash endpoint", () => {
     });
   });
 
-  test("example with only multiple rewards and slash", async () => {
+  test("example with multiple rewards and a slashing", async () => {
     const timeStamp = 1672531200000;
 
     const mockStakingRewards = [

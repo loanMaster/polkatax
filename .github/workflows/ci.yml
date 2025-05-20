@@ -9,7 +9,7 @@ on:
       - '**'  
 
 jobs:
-  test-server:
+  test:server:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
         working-directory: server
         run: npm run test
 
-  test-client:
+  test:client:
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   deploy-to-fly:
     if: github.ref == 'refs/heads/main'
-    needs: [test-server, test-client]
+    needs: [test:server, test:client]
     runs-on: ubuntu-latest
 
     steps:
