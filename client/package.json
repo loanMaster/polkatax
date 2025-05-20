@@ -11,7 +11,7 @@
     "build": "quasar build",
     "test-watch": "jest --watch --verbose false",
     "test": "jest",
-    "integration-tests:playwright": "wait-on http://localhost:9000/index.html && npx playwright test --output \"\"",
+    "integration-tests:playwright": "wait-on http://127.0.0.1:9000/index.html && npx playwright test --output \"\"",
     "integration-tests": "run-p -r dev integration-tests:playwright"
   },
   "dependencies": {

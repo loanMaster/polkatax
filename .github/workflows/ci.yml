@@ -9,7 +9,7 @@ on:
       - '**'  
 
 jobs:
-  test:
+  test-server:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +21,6 @@ jobs:
         with:
           node-version: '18'
 
-      # ===== Server =====
       - name: Install Server Dependencies
         working-directory: server
         run: npm install
@@ -30,16 +29,7 @@ jobs:
         working-directory: server
         run: npm run test
 
-      # ===== Client =====
-      - name: Install Client Dependencies
-        working-directory: client
-        run: npm install
-
-      - name: Run Client Tests
-        working-directory: client
-        run: npm run test
-
-  browser-tests:
+  test-client:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,17 +45,21 @@ jobs:
         working-directory: client
         run: npm ci
 
+      - name: Run Client Unit Tests
+        working-directory: client
+        run: npm run test
+
       - name: Install Playwright Browsers
         working-directory: client
         run: npx playwright install chromium --with-deps
 
-      - name: Start App and Run Tests
+      - name: Run Browser tests
         working-directory: client
         run: npm run integration-tests 
 
   deploy-to-fly:
     if: github.ref == 'refs/heads/main'
-    needs: [test, browser-tests]
+    needs: [test-server, test-client]
     runs-on: ubuntu-latest
 
     steps:
