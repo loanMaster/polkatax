@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { MetaData } from "../../../../src/server/blockchain/substrate/model/meta-data";
+import { MetaData } from "../../../src/server/blockchain/substrate/model/meta-data";
 
 export const metaDataHandler = http.post(
   "https://*.api.subscan.io/api/scan/metadata",

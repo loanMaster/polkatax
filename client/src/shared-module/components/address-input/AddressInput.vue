@@ -5,6 +5,7 @@
       :model-value="props.modelValue"
       @update:model-value="onAddressChanged"
       label="Wallet address"
+      data-testid="wallet-input"
       @keyup.enter="onEnterPressed"
     >
       <template v-slot:after>
@@ -32,8 +33,8 @@ const props = defineProps({
   modelValue: String,
 });
 
-function onAddressChanged(value: string) {
-  emits('update:modelValue', value);
+function onAddressChanged(value: string | number | null) {
+  emits('update:modelValue', value ? String(value) : undefined);
 }
 
 function onEnterPressed() {

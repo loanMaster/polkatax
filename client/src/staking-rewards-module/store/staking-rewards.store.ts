@@ -82,10 +82,12 @@ export const useStakingRewardsStore = defineStore('rewards', {
           startDate,
           endDate
         );
+        console.log(rewardsDto);
         const valuesWithIsoDate = addIsoDateAndCurrentValue(
           rewardsDto.values,
           rewardsDto.currentPrice
         );
+        console.log(valuesWithIsoDate);
         const result: Rewards = {
           values: valuesWithIsoDate,
           summary: calculateRewardSummary(valuesWithIsoDate),

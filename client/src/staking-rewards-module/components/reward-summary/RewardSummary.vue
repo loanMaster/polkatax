@@ -3,7 +3,7 @@
   <table class="q-my-lg q-mx-auto" v-if="rewards">
     <tr>
       <td class="text-left q-pa-sm">Total rewards:</td>
-      <td class="text-right q-pa-sm">
+      <td class="text-right q-pa-sm" data-testid="total-rewards">
         {{ formatTokenAmount(rewards!.summary.amount) + ' ' + rewards!.token }}
       </td>
     </tr>
@@ -15,7 +15,7 @@
     </tr>
     <tr>
       <td class="text-left q-pa-sm">Value at payout time:</td>
-      <td class="text-right q-pa-sm">
+      <td class="text-right q-pa-sm" data-testid="value-at-payout-time">
         {{ formatCurrency(rewards?.summary?.fiatValue ?? -0) }}
       </td>
     </tr>

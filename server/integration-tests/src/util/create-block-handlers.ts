@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { Block } from "../../../../src/server/blockchain/substrate/model/block";
+import { Block } from "../../../src/server/blockchain/substrate/model/block";
 
 export const createBlockHandlers = (timestamp: number) => {
   return [

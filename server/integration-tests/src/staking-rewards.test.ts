@@ -1,11 +1,11 @@
 import { describe, test, beforeEach, afterEach, expect } from "@jest/globals";
 import { http, HttpResponse } from "msw";
-import { polkataxServer } from "../../../src/server/polkatax-server";
+import { polkataxServer } from "../../src/server/polkatax-server";
 import { setupServer, SetupServerApi } from "msw/node";
-import { startStub as startPricesStub } from "../../../src/crypto-currency-prices/stub";
-import { startStub as startFiatStub } from "../../../src/fiat-exchange-rates/stub";
+import { startStub as startPricesStub } from "../../src/crypto-currency-prices/stub";
+import { startStub as startFiatStub } from "../../src/fiat-exchange-rates/stub";
 import { FastifyInstance } from "fastify";
-import { RawStakingReward } from "../../../src/server/blockchain/substrate/model/staking-reward";
+import { RawStakingReward } from "../../src/server/blockchain/substrate/model/staking-reward";
 import { passThroughHandlers } from "./util/pass-through-handlers";
 import { metaDataHandler } from "./util/metadata-handler";
 import { createBlockHandlers } from "./util/create-block-handlers";
