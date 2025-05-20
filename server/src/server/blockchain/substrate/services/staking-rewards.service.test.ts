@@ -1,6 +1,5 @@
 import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { StakingRewardsService } from "./staking-rewards.service";
-import BigNumber from "bignumber.js";
 
 // Mock dependencies
 const mockBlockTimeService = {

@@ -1,9 +1,6 @@
 import { logger } from "../../logger/logger";
 import { formatDate } from "../../../common/util/date-utils";
-import {
-  CurrencyQuotes,
-  Quotes,
-} from "../../../model/crypto-currency-prices/crypto-currency-quotes";
+import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { PricedTransfer } from "../model/priced-transfer";
 
 export const addFiatValuesToTransferList = (
@@ -42,14 +39,6 @@ export const addFiatValueToTransfer = (
   } else if (quotes.quotes?.[isoDate]) {
     transfer.price = quotes.quotes[isoDate];
     transfer.fiatValue = transfer.amount * transfer.price;
-    if (
-      (transfer as any).symbol === "HDX" &&
-      transfer.amount > 650 &&
-      transfer.amount < 700
-    ) {
-      // #TODO!
-      console.log("found it!" + transfer.fiatValue);
-    }
   } else if (isoDate !== currentIsoDate) {
     logger.warn(`No quote found for ${quotes.currency} for date ${isoDate}`);
   }

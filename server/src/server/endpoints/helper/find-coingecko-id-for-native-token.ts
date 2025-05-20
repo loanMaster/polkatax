@@ -10,7 +10,7 @@ export const findCoingeckoIdForNativeToken = (
   } else {
     const chainInfo = subscanChains.chains.find(
       (c) => c.domain === chainName,
-    ) || { token: undefined };
+    ) || { token: "" };
     return substrateTokenToCoingeckoId.tokens.find(
       (t) => t.token.toUpperCase() === chainInfo.token.toUpperCase(),
     )?.coingeckoId;

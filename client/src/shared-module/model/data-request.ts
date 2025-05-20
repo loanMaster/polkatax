@@ -1,6 +1,6 @@
 export interface DataRequest<T> {
   data: T | undefined;
-  error?: any; // TODO
+  error?: any;
   pending: boolean;
 }
 

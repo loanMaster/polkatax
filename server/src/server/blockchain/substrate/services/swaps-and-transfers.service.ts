@@ -63,7 +63,6 @@ export class SwapsAndTransfersService {
           false,
         )
       : { transactions: [], transfersList: [] };
-
     if (evmAddress && hasChainEvmSupport(chainName)) {
       const evmData = await this.fetchTxAndTransfers(
         chainName,
@@ -72,7 +71,7 @@ export class SwapsAndTransfersService {
         blockMax,
         true,
       );
-      transfersList.concat(evmData.transfersList);
+      transfersList = transfersList.concat(evmData.transfersList);
       transactions = transactions.concat(evmData.transactions);
     }
     return { transactions, transfersList };
@@ -116,7 +115,6 @@ export class SwapsAndTransfersService {
       blockMin,
       blockMax,
     );
-
     transactions = this.filterByDate<Transaction>(
       transactions,
       data.startDay,
