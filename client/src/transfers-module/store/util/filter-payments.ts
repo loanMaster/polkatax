@@ -9,12 +9,13 @@ export const filterPayments = ([
   excludedPayments,
 ]: [DataRequest<PaymentPortfolio>, string, string, any[]]) => {
   const payments = paymentsRequest.data;
-  if (!payments || !payments?.tokens?.[selectedToken]) {
-    return undefined;
-  }
+  const filtered =
+    payments?.transfers.filter((t) => t.symbol === selectedToken) ?? [];
   const paymentsForToken = {
-    payments: payments.tokens![selectedToken].payments,
-    currentPrice: payments.tokens![selectedToken].currentPrice,
+    payments: filtered,
+    currentPrice: Object.values(payments?.tokens || []).find(
+      (t) => t.symbol === selectedToken
+    )?.latestPrice,
   } as TokenPaymentsData;
   paymentsForToken.payments = paymentsForToken.payments.filter(
     (p) =>

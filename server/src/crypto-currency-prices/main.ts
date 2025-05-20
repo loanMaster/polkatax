@@ -27,23 +27,23 @@ export const cryptoCurrencyPricesServer = {
       handler: async (
         request: FastifyRequest<{ Body: CurrentPriceRequest }>,
       ) => {
-        const { symbols, chain, currency } = request.body;
-        return tokenPriceService.fetchCurrentPrices(symbols, chain, currency);
+        const { tokenIds, currency } = request.body;
+        return tokenPriceService.fetchCurrentPrices(tokenIds, currency);
       },
     });
 
     fastify.route({
       method: "GET",
-      url: "/crypto-historic-prices/:symbol",
+      url: "/crypto-historic-prices/:tokenId",
       handler: async (
         request: FastifyRequest<{
-          Params: { symbol: string };
+          Params: { tokenId: string };
           Querystring: { currency: PreferredQuoteCurrency };
         }>,
       ) => {
-        const { symbol } = request.params;
+        const { tokenId } = request.params;
         const { currency } = request.query;
-        return tokenPriceHistoryService.getHistoricPrices(symbol, currency);
+        return tokenPriceHistoryService.getHistoricPrices(tokenId, currency);
       },
     });
 

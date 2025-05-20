@@ -1,14 +1,13 @@
 import { Swap } from '../../../swap-module/model/swaps';
-import { SwapDto } from '../../model/payments-response.dto';
 
 export const addCurrentValueToSwappedTokens = (
-  swaps: SwapDto[],
-  currentPrices: { [key: string]: number }
+  swaps: Swap[],
+  tokenInfo: { [key: string]: { latestPrice?: number } }
 ): Swap[] => {
-  swaps.forEach((swap: SwapDto) => {
-    Object.keys(swap.tokens).forEach((token) => {
-      (swap as Swap).tokens[token].valueNow = currentPrices[token]
-        ? swap.tokens[token].amount * currentPrices[token]
+  swaps.forEach((swap: Swap) => {
+    swap.transfers.forEach((transfer) => {
+      transfer.valueNow = tokenInfo[transfer.tokenId]?.latestPrice
+        ? transfer.amount * tokenInfo[transfer.tokenId].latestPrice!
         : undefined;
     });
   });

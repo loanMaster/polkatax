@@ -1,45 +1,63 @@
-import { expect, test, describe } from '@jest/globals';
-import { addIsoDateAndCurrentValue } from './add-iso-date-and-current-value';
+import { jest, expect, it, describe } from '@jest/globals';
+
 import { RewardDto } from '../../model/rewards';
+import * as dateUtils from '../../../shared-module/util/date-utils';
+import { addIsoDateAndCurrentValue } from './add-iso-date-and-current-value';
 
 describe('addIsoDateAndCurrentValue', () => {
-  test('should add isoDate and calculate valueNow when currentPrice is defined', () => {
+  it('adds isoDate and valueNow when currentPrice is defined', () => {
     const input: RewardDto[] = [
-      { date: 1713782400, amount: 5 }, // corresponds to 2024-04-22
-      { date: 1713868800, amount: 3 }, // corresponds to 2024-04-23
-    ] as RewardDto[];
-    const currentPrice = 2;
+      { amount: 2, timestamp: 1609459200 }, // 2021-01-01T00:00:00Z
+      { amount: 3, timestamp: 1609545600 }, // 2021-01-02T00:00:00Z
+    ] as any;
 
-    const result = addIsoDateAndCurrentValue(input, currentPrice);
+    const mockFormatDate = jest
+      .spyOn(dateUtils, 'formatDate')
+      .mockImplementation((ts) => new Date(ts).toISOString());
+
+    const result = addIsoDateAndCurrentValue(input, 10);
 
     expect(result).toEqual([
       {
-        date: 1713782400,
-        amount: 5,
-        isoDate: '2024-04-22',
-        valueNow: 10,
+        amount: 2,
+        timestamp: 1609459200,
+        isoDate: '2021-01-01T00:00:00.000Z',
+        valueNow: 20,
       },
       {
-        date: 1713868800,
         amount: 3,
-        isoDate: '2024-04-23',
-        valueNow: 6,
+        timestamp: 1609545600,
+        isoDate: '2021-01-02T00:00:00.000Z',
+        valueNow: 30,
       },
     ]);
+
+    mockFormatDate.mockRestore();
   });
 
-  test('should return valueNow as undefined if currentPrice is undefined', () => {
-    const input: RewardDto[] = [{ date: 1713782400, amount: 5 }] as RewardDto[];
+  it('sets valueNow to undefined if currentPrice is undefined', () => {
+    const input: RewardDto[] = [{ amount: 5, timestamp: 1609459200 }] as any;
+
+    const mockFormatDate = jest
+      .spyOn(dateUtils, 'formatDate')
+      .mockReturnValue('mocked-date');
 
     const result = addIsoDateAndCurrentValue(input, undefined);
 
     expect(result).toEqual([
       {
-        date: 1713782400,
         amount: 5,
-        isoDate: '2024-04-22',
+        timestamp: 1609459200,
+        isoDate: 'mocked-date',
         valueNow: undefined,
       },
     ]);
+
+    mockFormatDate.mockRestore();
+  });
+
+  it('returns an empty array if input is empty', () => {
+    const result = addIsoDateAndCurrentValue([], 10);
+    expect(result).toEqual([]);
   });
 });

@@ -1,25 +1,26 @@
-export interface SwappedTokens {
-  [token: string]: {
-    amount: number;
-    value: number;
-    valueNow: number | undefined;
-    price: number;
-    type: 'sell' | 'buy';
-  };
+import {
+  SwapDto,
+  TokenInfo,
+} from '../../transfers-module/model/payments-response.dto';
+
+export interface SaleOrPurchase {
+  symbol: string;
+  amount: number;
+  price?: number;
+  fiatValue?: number;
+  tokenId: string;
+  from: string;
+  to: string;
+  valueNow?: number;
 }
 
-export interface Swap {
-  date: number;
-  block: number;
-  hash: string;
-  contract: string;
-  functionName: string;
-  tokens: SwappedTokens;
+export interface Swap extends SwapDto {
+  transfers: SaleOrPurchase[];
 }
 
 export interface SummaryPosition {
   amount: number;
-  value?: number;
+  fiatValue?: number;
   valueNow?: number;
 }
 
@@ -37,6 +38,6 @@ export interface SwapList {
   endDate: number;
   address: string;
   currency: string;
-  currentPrices: { [token: string]: number };
+  tokens: TokenInfo;
   swaps: Swap[];
 }

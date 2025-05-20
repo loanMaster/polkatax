@@ -106,9 +106,9 @@ import {
 } from '../../../shared-module/util/number-formatters';
 import { usePaymentsStore } from '../../../transfers-module/store/payments.store';
 import {
+  SaleOrPurchase,
   Swap,
   SwapList,
-  SwappedTokens,
   TradingSummary,
 } from '../../../swap-module/model/swaps';
 import {
@@ -140,26 +140,26 @@ onUnmounted(() => {
   filteredSwapSub.unsubscribe();
 });
 
-const filterSwappedTokens = (tokens: SwappedTokens, sales = true) =>
-  Object.keys(tokens).filter(
-    (tokenName: string) => tokens[tokenName].type === (sales ? 'sell' : 'buy')
-  );
+const filterSwappedTokens = (transfers: SaleOrPurchase[], sales = true) =>
+  transfers.filter((t) => (sales ? -1 : 1) * t.amount > 0);
 
-const getSales = (tokens: SwappedTokens) => filterSwappedTokens(tokens, true);
-const getBuys = (tokens: SwappedTokens) => filterSwappedTokens(tokens, false);
+const getSales = (tokens: SaleOrPurchase[]) =>
+  filterSwappedTokens(tokens, true);
+const getBuys = (tokens: SaleOrPurchase[]) =>
+  filterSwappedTokens(tokens, false);
 
-const calculateValue = (tokens: SwappedTokens) => {
-  let value = getSales(tokens).reduce(
-    (acc, token) => acc + tokens[token].value,
+const calculateSwapValue = (transfers: SaleOrPurchase[]) => {
+  let value = getSales(transfers).reduce(
+    (acc, transfer) => acc + (transfer.fiatValue || NaN),
     0
   );
   if (isNaN(value)) {
-    value = getBuys(tokens).reduce(
-      (acc, token) => acc + tokens[token].value,
+    value = getBuys(transfers).reduce(
+      (acc, transfer) => acc + (transfer.fiatValue || NaN),
       0
     );
   }
-  return value;
+  return Math.abs(value);
 };
 
 const sortAmounts = (value1: number[], value2: number[]) =>
@@ -172,7 +172,7 @@ const columns = computed(() => [
     name: 'date',
     label: 'Date',
     align: 'left',
-    field: (row: Swap) => formatDate(row.date * 1000),
+    field: (row: Swap) => formatDate(row.timestamp * 1000),
     sortable: true,
   },
   {
@@ -180,15 +180,6 @@ const columns = computed(() => [
     align: 'right',
     label: 'Block',
     field: 'block',
-    sortable: true,
-  },
-  {
-    name: 'contract',
-    align: 'center',
-    label: 'Contract',
-    field: 'contract',
-    format: (value: string) =>
-      value ? value.substring(0, 10) + (value.length > 10 ? '...' : '') : '-',
     sortable: true,
   },
   {
@@ -205,7 +196,7 @@ const columns = computed(() => [
     label: 'Amount',
     field: 'amountSold',
     format: (amounts: number[]) =>
-      amounts.map((amount) => formatTokenAmount(amount, 4)),
+      amounts.map((amount) => formatTokenAmount(Math.abs(amount), 4)),
     sort: sortAmounts,
     sortable: true,
   },
@@ -249,16 +240,16 @@ const columns = computed(() => [
     name: 'value',
     align: 'right',
     label: `Transaction Value (${swaps.value?.currency})`,
-    format: (value: number) => formatValue(value),
-    field: 'value',
+    format: (swapValue: number) => formatValue(swapValue),
+    field: 'swapValue',
     sortable: true,
   },
   {
-    name: 'functionnName',
+    name: 'label',
     required: true,
     align: 'left',
-    label: 'Function',
-    field: 'functionName',
+    label: 'Contract/Function',
+    field: 'label',
     sortable: true,
   },
   {
@@ -276,23 +267,17 @@ const rows = computed(() => {
   filteredSwaps.value.forEach((swap: Swap) => {
     flattened.push({
       block: swap.block,
-      date: swap.date,
+      timestamp: swap.timestamp,
       contract: swap.contract || '',
-      functionName: swap.functionName,
+      label: swap.label,
       hash: swap.hash,
-      tokensSold: getSales(swap.tokens).map((t) => t.toUpperCase()),
-      amountSold: getSales(swap.tokens).map(
-        (token) => swap.tokens[token].amount
-      ),
-      priceSold: getSales(swap.tokens).map((token) => swap.tokens[token].price),
-      tokensBought: getBuys(swap.tokens).map((t) => t.toUpperCase()),
-      amountBought: getBuys(swap.tokens).map(
-        (token) => swap.tokens[token].amount
-      ),
-      priceBought: getBuys(swap.tokens).map(
-        (token) => swap.tokens[token].price
-      ),
-      value: calculateValue(swap.tokens),
+      tokensSold: getSales(swap.transfers).map((t) => t.symbol),
+      amountSold: getSales(swap.transfers).map((transfer) => transfer.amount),
+      priceSold: getSales(swap.transfers).map((transfer) => transfer.price),
+      tokensBought: getBuys(swap.transfers).map((t) => t.symbol),
+      amountBought: getBuys(swap.transfers).map((t) => t.amount),
+      priceBought: getBuys(swap.transfers).map((t) => t.price),
+      swapValue: calculateSwapValue(swap.transfers),
     });
   });
   return flattened;
@@ -308,45 +293,44 @@ const initialPagination = ref({
 function extractRowForCSVExport(swap: Swap) {
   const firstTokenPair: any = {
     ...swap,
-    date: formatDateUTC(swap.date * 1000),
+    timestamp: formatDateUTC(swap.timestamp * 1000),
   };
   const otherTokens: any = [];
   let temp: any = {};
-  Object.keys(swap.tokens).forEach((t) => {
-    const tokenInfo = swap.tokens[t];
-    if (tokenInfo.type === 'sell') {
+  swap.transfers.forEach((t) => {
+    if (t.amount < 0) {
       if (!firstTokenPair.sold_token) {
-        firstTokenPair.sold_token = t.toUpperCase();
-        firstTokenPair.sold_amount = tokenInfo.amount;
-        firstTokenPair.sale_price = tokenInfo.price;
-        firstTokenPair.sale_value = tokenInfo.value;
+        firstTokenPair.sold_token = t.symbol;
+        firstTokenPair.sold_amount = t.amount;
+        firstTokenPair.sale_price = t.price;
+        firstTokenPair.sale_value = t.fiatValue;
       } else {
         if (temp.sold_token) {
           otherTokens.push(temp);
           temp = {};
         }
-        temp.sold_token = t.toUpperCase();
-        temp.sold_amount = tokenInfo.amount;
-        temp.sale_price = tokenInfo.price;
-        temp.sale_value = tokenInfo.value;
+        temp.sold_token = t.symbol;
+        temp.sold_amount = t.amount;
+        temp.sale_price = t.price;
+        temp.sale_value = t.fiatValue;
       }
     }
 
-    if (tokenInfo.type === 'buy') {
+    if (t.amount > 0) {
       if (!firstTokenPair.bought_token) {
-        firstTokenPair.bought_token = t.toUpperCase();
-        firstTokenPair.bought_amount = tokenInfo.amount;
-        firstTokenPair.purchase_price = tokenInfo.price;
-        firstTokenPair.purchase_value = tokenInfo.value;
+        firstTokenPair.bought_token = t.symbol;
+        firstTokenPair.bought_amount = t.amount;
+        firstTokenPair.purchase_price = t.price;
+        firstTokenPair.purchase_value = t.fiatValue;
       } else {
         if (temp.bought_token) {
           otherTokens.push(temp);
           temp = {};
         }
-        temp.bought_token = t.toUpperCase();
-        temp.bought_amount = tokenInfo.amount;
-        temp.purchase_price = tokenInfo.price;
-        temp.purchase_value = tokenInfo.value;
+        temp.bought_token = t.symbol;
+        temp.bought_amount = t.amount;
+        temp.purchase_price = t.price;
+        temp.purchase_value = t.fiatValue;
       }
     }
   });
@@ -410,7 +394,7 @@ function exportJson() {
   const swapsWithDateCol = filteredSwaps.value.map((s: Swap) => {
     return {
       ...s,
-      date: formatDateUTC(s.date * 1000),
+      timestamp: formatDateUTC(s.timestamp * 1000),
     };
   });
   saveAs(

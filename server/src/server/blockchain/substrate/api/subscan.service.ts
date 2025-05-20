@@ -1,10 +1,14 @@
 import { Token } from "../model/token";
 import { Transaction } from "../model/transaction";
-import { StakingReward } from "../model/staking-reward";
+import { RawStakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
 import { logger } from "../../../logger/logger";
 import { SubscanEvent } from "../model/subscan-event";
-import { RawTransferDto } from "../model/raw-transfer";
+import {
+  RawEvmTransferDto,
+  RawSubstrateTransferDto,
+  Transfer,
+} from "../model/raw-transfer";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -74,8 +78,8 @@ export class SubscanService {
     chainName: string,
     address: string,
     poolId: number,
-  ): Promise<StakingReward[]> {
-    return this.iterateOverPagesParallel<StakingReward>((page) =>
+  ): Promise<RawStakingReward[]> {
+    return this.iterateOverPagesParallel<RawStakingReward>((page) =>
       this.subscanApi.fetchPoolStakingRewards(chainName, address, poolId, page),
     );
   }
@@ -83,7 +87,7 @@ export class SubscanService {
   private async retry<T>(
     query: () => Promise<T>,
     retries = 2,
-    backOff = [5000, 30000],
+    backOff = [5000, 10000],
   ): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
@@ -124,7 +128,7 @@ export class SubscanService {
     address: string,
     block_min?: number,
     block_max?: number,
-  ): Promise<StakingReward[]> {
+  ): Promise<RawStakingReward[]> {
     logger.info(
       `fetchAllStakingRewards for ${chainName}, address ${address}, from ${block_min} to ${block_max}`,
     );
@@ -174,11 +178,13 @@ export class SubscanService {
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<RawTransferDto[]> {
+  ): Promise<Transfer[]> {
     logger.info(
       `fetchAllTransfersAs for ${chainName} and account ${account}. Evm: ${evm}`,
     );
-    const result = await this.iterateOverPagesParallel<any>(
+    const result = await this.iterateOverPagesParallel<
+      RawSubstrateTransferDto & RawEvmTransferDto
+    >(
       (page) =>
         this.subscanApi.fetchTransfers(
           chainName,
@@ -186,16 +192,31 @@ export class SubscanService {
           page,
           block_min,
           block_max,
+          evm,
         ),
       3,
     );
     logger.info(
       `Exit fetchAllTransfersAs for ${chainName} and account ${account}`,
     );
-    return result;
+    return result.map((transfer) => {
+      return {
+        symbol: transfer.symbol || transfer.asset_symbol,
+        amount: Number(transfer.amount),
+        from: transfer.from,
+        to: transfer.to,
+        label:
+          transfer?.to_display?.evm_contract.contract_name || transfer.module,
+        block: transfer.block_num,
+        timestamp: transfer.block_timestamp || transfer.create_at,
+        hash: transfer.hash,
+        tokenId: transfer.asset_unique_id || transfer.contract,
+        extrinsic_index: transfer.extrinsic_index,
+      };
+    });
   }
 
-  fetchAccounts(address: string, chainName: string): Promise<string[]> {
+  async fetchAccounts(address: string, chainName: string): Promise<string[]> {
     return this.subscanApi.fetchAccounts(address, chainName);
   }
 }

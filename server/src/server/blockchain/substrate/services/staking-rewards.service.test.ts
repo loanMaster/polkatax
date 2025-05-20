@@ -1,190 +1,193 @@
+import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { StakingRewardsService } from "./staking-rewards.service";
-import { BlockTimeService } from "./block-time.service";
-import { SubscanService } from "../api/subscan.service";
-import { HttpError } from "../../../../common/error/HttpError";
-import { expect, test, jest, describe, beforeEach } from "@jest/globals";
-import { Token } from "../model/token";
-import { BigNumber } from "bignumber.js";
-import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
-jest.mock("../../../logger/logger", () => ({
-  logger: { info: jest.fn() },
-}));
+// Mock dependencies
+const mockBlockTimeService = {
+  getMinMaxBlock: jest.fn<any>(),
+};
+
+const mockSubscanService = {
+  fetchNativeToken: jest.fn<any>(),
+  fetchAllStakingRewards: jest.fn<any>(),
+  fetchAllPoolStakingRewards: jest.fn<any>(),
+};
+
+const mockStakingRewardsViaEventsService = {
+  fetchStakingRewards: jest.fn<any>(),
+};
 
 describe("StakingRewardsService", () => {
   let service: StakingRewardsService;
-  let blockTimeService: jest.Mocked<BlockTimeService>;
-  let subscanService: jest.Mocked<SubscanService>;
-  let stakingRewardsViaEventsService: jest.Mocked<StakingRewardsViaEventsService>;
 
   beforeEach(() => {
-    blockTimeService = {
-      getMinMaxBlock: jest.fn(),
-    } as any;
-
-    subscanService = {
-      fetchAllStakingRewards: jest.fn(),
-      fetchAllPoolStakingRewards: jest.fn(),
-      fetchNativeToken: jest.fn(),
-    } as any;
-
-    stakingRewardsViaEventsService = {
-      fetchStakingRewards: jest.fn(),
-    } as any;
-
+    jest.clearAllMocks();
     service = new StakingRewardsService(
-      blockTimeService,
-      subscanService,
-      stakingRewardsViaEventsService,
+      mockBlockTimeService as any,
+      mockSubscanService as any,
+      mockStakingRewardsViaEventsService as any,
     );
   });
 
-  describe("fetchStakingRewards", () => {
-    test("should fetch and filter rewards properly", async () => {
-      blockTimeService.getMinMaxBlock.mockResolvedValue({
-        blockMin: 100,
-        blockMax: 200,
-      });
-      subscanService.fetchAllStakingRewards.mockResolvedValue([
+  describe("filterRewards", () => {
+    it("filters rewards by date", async () => {
+      const rawRewards = [
         {
           event_id: "Reward",
-          block_timestamp: 1700000000,
-          block_num: 150,
-          amount: new BigNumber("1000000000000"),
-          hash: "abc",
+          amount: 100,
+          timestamp: 1000,
+          block: "1",
+          hash: "hash1",
         },
-      ]);
-      subscanService.fetchNativeToken.mockResolvedValue({
-        token_decimals: 12,
-      } as Token);
-
-      const result = await service.fetchStakingRewards(
-        "polkadot",
-        "address1",
-        1699999999000,
-      );
-
-      expect(result).toEqual([
-        {
-          block: 150,
-          date: 1700000000,
-          amount: 1,
-          hash: "abc",
-        },
-      ]);
-    });
-
-    test("should handle Slash event", async () => {
-      blockTimeService.getMinMaxBlock.mockResolvedValue({
-        blockMin: 100,
-        blockMax: 200,
-      });
-      subscanService.fetchAllStakingRewards.mockResolvedValue([
         {
           event_id: "Slash",
-          block_timestamp: 1700000000,
-          block_num: 150,
-          amount: new BigNumber("1000000000000"),
-          hash: "abc",
+          amount: -500,
+          timestamp: 2000,
+          block: "2",
+          hash: "hash2",
         },
-      ]);
-      subscanService.fetchNativeToken.mockResolvedValue({
-        token_decimals: 12,
-      } as Token);
+        {
+          event_id: "Reward",
+          amount: 300,
+          timestamp: 3000,
+          block: "3",
+          hash: "hash3",
+        },
+      ];
 
-      const result = await service.fetchStakingRewards(
-        "kusama",
-        "addr2",
-        1699999999000,
+      // Min date = 1500 ms, max date = 3500 ms, so reward with timestamp=1000 is filtered out
+      const filtered = await (service as any).filterRewards(
+        rawRewards,
+        1500000,
+        3500000,
       );
 
-      expect(result).toEqual([
+      expect(filtered).toHaveLength(2);
+
+      expect(filtered[0]).toEqual({
+        block: "2",
+        timestamp: 2000,
+        amount: -500,
+        hash: "hash2",
+      });
+      expect(filtered[1]).toEqual({
+        block: "3",
+        timestamp: 3000,
+        amount: 300,
+        hash: "hash3",
+      });
+    });
+  });
+
+  describe("fetchStakingRewards", () => {
+    it("calls stakingRewardsViaEventsService for specific chains and filters results", async () => {
+      const mockRewards = [
         {
-          block: 150,
-          date: 1700000000,
-          amount: -1,
-          hash: "abc",
+          amount: 100,
+          timestamp: 2000,
+          block: "1",
+          hash: "h1",
         },
-      ]);
+      ];
+      mockBlockTimeService.getMinMaxBlock.mockResolvedValue({
+        blockMin: 1,
+        blockMax: 10,
+      });
+      mockStakingRewardsViaEventsService.fetchStakingRewards.mockResolvedValue(
+        mockRewards,
+      );
+      mockSubscanService.fetchNativeToken.mockResolvedValue({
+        token_decimals: 9,
+      });
+
+      const result = await service.fetchStakingRewards(
+        "mythos",
+        "addr",
+        1000000,
+        3000000,
+      );
+
+      expect(
+        mockStakingRewardsViaEventsService.fetchStakingRewards,
+      ).toHaveBeenCalledWith(
+        "mythos",
+        "addr",
+        "collatorstaking",
+        "StakingRewardReceived",
+        1,
+        10,
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].amount).toBeCloseTo(100);
+    });
+
+    it("calls subscanService.fetchAllStakingRewards for default chain", async () => {
+      const mockRewards = [
+        {
+          event_id: "Reward",
+          amount: "2000000000",
+          timestamp: 2500,
+          block: "2",
+          hash: "h2",
+        },
+      ];
+      mockBlockTimeService.getMinMaxBlock.mockResolvedValue({
+        blockMin: 5,
+        blockMax: 15,
+      });
+      mockSubscanService.fetchAllStakingRewards.mockResolvedValue(mockRewards);
+      mockSubscanService.fetchNativeToken.mockResolvedValue({
+        token_decimals: 9,
+      });
+
+      const result = await service.fetchStakingRewards(
+        "unknown",
+        "addr",
+        2000000,
+        3000000,
+      );
+
+      expect(mockSubscanService.fetchAllStakingRewards).toHaveBeenCalledWith(
+        "unknown",
+        "addr",
+        5,
+        15,
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].amount).toBeCloseTo(2);
     });
   });
 
   describe("fetchNominationPoolRewards", () => {
-    test("should fetch and filter pool rewards", async () => {
-      subscanService.fetchAllPoolStakingRewards.mockResolvedValue([
+    it("fetches pool rewards and filters them", async () => {
+      const poolRewards = [
         {
           event_id: "Reward",
-          block_timestamp: 1700000001,
-          block_num: 160,
-          amount: new BigNumber("500000000000"),
-          hash: "def",
+          amount: "3000000000",
+          timestamp: 3500,
+          block: "3",
+          hash: "h3",
         },
-      ]);
-      subscanService.fetchNativeToken.mockResolvedValue({
-        token_decimals: 12,
-      } as Token);
+      ];
+      mockSubscanService.fetchAllPoolStakingRewards.mockResolvedValue(
+        poolRewards,
+      );
+      mockSubscanService.fetchNativeToken.mockResolvedValue({
+        token_decimals: 9,
+      });
 
       const result = await service.fetchNominationPoolRewards(
-        "moonbeam",
-        "addr3",
-        5,
-        1699999999000,
-      );
-
-      expect(result).toEqual([
-        {
-          block: 160,
-          date: 1700000001,
-          amount: 0.5,
-          hash: "def",
-        },
-      ]);
-    });
-  });
-
-  describe("fetch rewards from stakingRewardsViaEventsService", () => {
-    test("should fetch and filter rewards", async () => {
-      blockTimeService.getMinMaxBlock.mockResolvedValue({
-        blockMin: 100,
-        blockMax: 200,
-      });
-      stakingRewardsViaEventsService.fetchStakingRewards.mockResolvedValue([
-        {
-          event_id: "Reward",
-          block_timestamp: 1700000,
-          block_num: 160,
-          amount: new BigNumber("500000000000"),
-          hash: "def",
-        },
-      ]);
-      subscanService.fetchNativeToken.mockResolvedValue({
-        token_decimals: 12,
-      } as Token);
-
-      const result = await service.fetchStakingRewards(
-        "mythos",
-        "addr3",
+        "chain",
+        "addr",
         1,
-        1800000000,
+        3_000_000,
+        4_000_000,
       );
+
       expect(
-        stakingRewardsViaEventsService.fetchStakingRewards,
-      ).toHaveBeenCalledWith(
-        "mythos",
-        "addr3",
-        "collatorstaking",
-        "StakingRewardReceived",
-        100,
-        200,
-      );
-      expect(result).toEqual([
-        {
-          block: 160,
-          date: 1700000,
-          amount: 0.5,
-          hash: "def",
-        },
-      ]);
+        mockSubscanService.fetchAllPoolStakingRewards,
+      ).toHaveBeenCalledWith("chain", "addr", 1);
+      expect(result).toHaveLength(1);
+      expect(result[0].amount).toBeCloseTo(3);
     });
   });
 });

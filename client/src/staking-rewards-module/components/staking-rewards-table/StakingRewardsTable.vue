@@ -43,7 +43,6 @@ import {
   formatDate,
   formatDateUTC,
 } from '../../../shared-module/util/date-utils';
-import { Swap } from 'app/client/src/swap-module/model/swaps';
 
 interface RewardsTableHeader extends Reward {
   'Reward token': string;
@@ -73,11 +72,11 @@ const timeFrame = computed(() => {
 
 const columns = computed(() => [
   {
-    name: 'date',
+    name: 'timestamp',
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Swap) => formatDate(row.date * 1000),
+    field: (row: Reward) => formatDate(row.timestamp * 1000),
     sortable: true,
   },
   {
@@ -104,10 +103,10 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'value',
+    name: 'fiatValue',
     align: 'right',
     label: `Value (${rewards.value?.currency})`,
-    field: 'value',
+    field: 'fiatValue',
     format: (num: number) => valueFormatter.format(num),
     sortable: true,
   },
@@ -156,7 +155,7 @@ function exportCsv() {
   const values = [...(rewards.value?.values || [])].map((v) => {
     return {
       ...v,
-      utcDate: formatDateUTC(v.date * 1000),
+      utcDate: formatDateUTC(v.timestamp * 1000),
     };
   });
   values[0] = {
@@ -167,7 +166,7 @@ function exportCsv() {
     'NominationPool Id': rewards.value?.nominationPoolId || '',
     ...values[0],
     totalAmount: rewards.value?.summary.amount,
-    totalValue: rewards.value?.summary.value,
+    totalValue: rewards.value?.summary.fiatValue,
     totalValueNow: rewards.value?.summary?.valueNow,
   } as RewardsTableHeader;
   const csv = parser.parse(values);
@@ -181,7 +180,7 @@ function exportKoinlyCsv() {
   const parser = new Parser();
   const values = [...(rewards.value?.values || [])].map((v) => {
     return {
-      'Koinly Date': formatDateUTC(v.date * 1000),
+      'Koinly Date': formatDateUTC(v.timestamp * 1000),
       Amount: v.amount,
       Currency: rewards.value?.token,
       TxHash: v.hash,
@@ -198,7 +197,7 @@ function exportJson() {
   const values = [...(rewards.value?.values || [])].map((v) => {
     return {
       ...v,
-      date: formatDateUTC(v.date * 1000),
+      date: formatDateUTC(v.timestamp * 1000),
     };
   });
   const summary = {
@@ -208,7 +207,7 @@ function exportJson() {
     'Wallet address': rewards.value?.address,
     'NominationPool Id': rewards.value?.nominationPoolId || '',
     totalAmount: rewards.value?.summary.amount,
-    totalValue: rewards.value?.summary.value,
+    totalValue: rewards.value?.summary.fiatValue,
     totalValueNow: rewards.value?.summary?.valueNow,
   };
   saveAs(

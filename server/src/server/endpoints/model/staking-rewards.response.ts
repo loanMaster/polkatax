@@ -1,7 +1,7 @@
-import { Transfer } from "../../../model/transfer";
+import { PricedStakingReward } from "./priced-staking-reward";
 
 export interface StakingRewardsResponse {
-  values: Transfer[];
+  values: PricedStakingReward[];
   currentPrice: number;
   priceEndDay: number;
   token: string;

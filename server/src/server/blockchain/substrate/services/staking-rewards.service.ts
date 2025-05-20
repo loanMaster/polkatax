@@ -2,7 +2,6 @@ import { BlockTimeService } from "./block-time.service";
 import { BigNumber } from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
 import { StakingReward } from "../model/staking-reward";
-import { Transfer } from "../../../../model/transfer";
 import { logger } from "../../../logger/logger";
 import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
@@ -15,28 +14,18 @@ export class StakingRewardsService {
 
   private async filterRewards(
     rewards: StakingReward[],
-    chainName: string,
     minDate: number,
     maxDate: number,
-  ): Promise<Transfer[]> {
-    const token = await this.subscanService.fetchNativeToken(chainName);
-
+  ): Promise<StakingReward[]> {
     return rewards
       .filter(
         (r) =>
-          (!maxDate || r.block_timestamp < maxDate / 1000) &&
-          r.block_timestamp >= minDate / 1000,
+          (!maxDate || r.timestamp < maxDate / 1000) &&
+          r.timestamp >= minDate / 1000,
       )
       .map((reward) => ({
-        ...reward,
-        amount:
-          BigNumber(reward.amount)
-            .dividedBy(Math.pow(10, token.token_decimals))
-            .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
-      }))
-      .map((reward) => ({
-        block: reward.block_num,
-        date: reward.block_timestamp,
+        block: reward.block,
+        timestamp: reward.timestamp,
         amount: reward.amount,
         hash: reward.hash,
       }));
@@ -47,7 +36,7 @@ export class StakingRewardsService {
     address: string,
     minDate: number,
     maxDate?: number,
-  ): Promise<Transfer[]> {
+  ): Promise<StakingReward[]> {
     logger.info(
       `Entry fetchStakingRewards for address ${address} and chain ${chainName}`,
     );
@@ -56,7 +45,7 @@ export class StakingRewardsService {
       minDate,
       maxDate,
     );
-    const rewardsSlashes = await (() => {
+    const rewardsSlashes = await (async () => {
       switch (chainName) {
         case "mythos":
           return this.stakingRewardsViaEventsService.fetchStakingRewards(
@@ -95,20 +84,23 @@ export class StakingRewardsService {
             blockMax,
           );
         default:
-          return this.subscanService.fetchAllStakingRewards(
+          const token = await this.subscanService.fetchNativeToken(chainName);
+          const rawRewards = await this.subscanService.fetchAllStakingRewards(
             chainName,
             address,
             blockMin,
             blockMax,
           );
+          return rawRewards.map((reward) => ({
+            ...reward,
+            amount:
+              BigNumber(reward.amount)
+                .dividedBy(Math.pow(10, token.token_decimals))
+                .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
+          }));
       }
     })();
-    const filtered = await this.filterRewards(
-      rewardsSlashes,
-      chainName,
-      minDate,
-      maxDate,
-    );
+    const filtered = await this.filterRewards(rewardsSlashes, minDate, maxDate);
     logger.info(`Exit fetchStakingRewards with ${filtered.length} elements`);
     return filtered;
   }
@@ -119,12 +111,21 @@ export class StakingRewardsService {
     poolId: number,
     minDate: number,
     maxDate?: number,
-  ): Promise<Transfer[]> {
-    const rewardsSlashes = await this.subscanService.fetchAllPoolStakingRewards(
-      chainName,
-      address,
-      poolId,
-    );
-    return this.filterRewards(rewardsSlashes, chainName, minDate, maxDate);
+  ): Promise<StakingReward[]> {
+    const token = await this.subscanService.fetchNativeToken(chainName);
+    const rawRewardsSlashes =
+      await this.subscanService.fetchAllPoolStakingRewards(
+        chainName,
+        address,
+        poolId,
+      );
+    const rewardsSlashes = rawRewardsSlashes.map((reward) => ({
+      ...reward,
+      amount:
+        BigNumber(reward.amount)
+          .dividedBy(Math.pow(10, token.token_decimals))
+          .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
+    }));
+    return this.filterRewards(rewardsSlashes, minDate, maxDate);
   }
 }

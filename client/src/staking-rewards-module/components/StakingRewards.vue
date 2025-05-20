@@ -97,7 +97,7 @@ const rewardsSubscription = rewardsStore.rewards$.subscribe(async (r) => {
   } else if (r.error) {
     $q.loading.hide();
     const error = r.error;
-    const text = await error.text();
+    const text = error.text ? await error.text() : undefined;
     const message =
       r.error.status && (error.status === 429 || error.status === 503)
         ? 'Too many requests. Please try again in some minutes'

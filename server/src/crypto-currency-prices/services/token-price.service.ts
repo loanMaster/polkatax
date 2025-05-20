@@ -1,4 +1,3 @@
-import { findCoingeckoToken } from "../../common/util/find-coingecko-token-id";
 import { CoingeckoRestService } from "../coingecko-api/coingecko.rest-service";
 import { logger } from "../logger/logger";
 
@@ -6,63 +5,59 @@ const MAX_AGE = 6 * 60 * 60 * 1000;
 
 export class TokenPriceService {
   private static quotes: {
-    [tokenId: string]: {
+    [coingeckoId: string]: {
       [currency: string]: { price: number; timestamp: number };
     };
   } = {};
 
   constructor(private coingeckoRestService: CoingeckoRestService) {}
 
-  private hasAllQuotes(tokens: { id: string }[], currency: string) {
-    return tokens.every((token) => {
+  private hasAllQuotes(coingeckoIds: string[], currency: string) {
+    return coingeckoIds.every((id) => {
       return (
-        TokenPriceService.quotes[token.id]?.[currency.toLowerCase()]?.price !==
+        TokenPriceService.quotes[id]?.[currency.toLowerCase()]?.price !==
           undefined &&
         new Date().getTime() -
-          TokenPriceService.quotes[token.id]?.[currency.toLowerCase()]
-            .timestamp <
+          TokenPriceService.quotes[id]?.[currency.toLowerCase()].timestamp <
           MAX_AGE
       );
     });
   }
 
   private getCachedPrices(
-    tokens: { id: string; symbol: string }[],
+    coingeckoIds: string[],
     currency: string,
   ): { [currency: string]: number } {
     const response = {};
-    tokens.forEach((token) => {
-      response[token.id] ??= {};
-      response[token.id][currency.toLowerCase()] =
-        TokenPriceService.quotes[token.id]?.[currency.toLowerCase()].price;
+    coingeckoIds.forEach((id) => {
+      response[id] ??= {};
+      response[id][currency.toLowerCase()] =
+        TokenPriceService.quotes[id]?.[currency.toLowerCase()].price;
     });
     return response;
   }
 
   async fetchCurrentPrices(
-    symbols: string[],
-    chain: string,
+    coingeckoIds: string[],
     currency: string,
   ): Promise<{ [symbol: string]: number }> {
-    const tokens = symbols.map((s) => findCoingeckoToken(s, chain, logger));
-    const refresh = !this.hasAllQuotes(tokens, currency);
+    const refresh = !this.hasAllQuotes(coingeckoIds, currency);
     const response = refresh
       ? await this.coingeckoRestService.fetchPrices(
-          tokens.map((token) => token.id),
+          coingeckoIds,
           currency.toLowerCase(),
         )
-      : this.getCachedPrices(tokens, currency);
+      : this.getCachedPrices(coingeckoIds, currency);
     const final = {};
-    for (const token of tokens) {
+    for (const id of coingeckoIds) {
       if (refresh) {
-        TokenPriceService.quotes[token.id] =
-          TokenPriceService.quotes[token.id] || {};
-        TokenPriceService.quotes[token.id][currency] = {
-          price: response[token.id][currency.toLowerCase()],
+        TokenPriceService.quotes[id] = TokenPriceService.quotes[id] || {};
+        TokenPriceService.quotes[id][currency] = {
+          price: response[id][currency.toLowerCase()],
           timestamp: new Date().getTime(),
         };
       }
-      final[token.symbol] = response[token.id][currency.toLowerCase()];
+      final[id] = response[id][currency.toLowerCase()];
     }
     return final;
   }

@@ -22,19 +22,3 @@ export interface EVMTx {
   txreceipt_status: string;
   functionName: string;
 }
-
-export interface TransferObjects {
-  [hash: string]: TransferObject;
-}
-
-export interface TransferObject {
-  to: string;
-  from: string;
-  hash: string;
-  timestamp: number;
-  block: number;
-  functionName: string;
-  tokens: {
-    [hash: string]: number;
-  };
-}

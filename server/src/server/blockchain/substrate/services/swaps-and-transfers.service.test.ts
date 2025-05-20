@@ -1,170 +1,141 @@
-import { BlockTimeService } from "./block-time.service";
-import { SubscanService } from "../api/subscan.service";
-import { TransferMerger } from "../util/transfer-merger";
-import { TransferClassifier } from "../util/transfer-classifier";
-import { ChainAdjustments } from "../util/chain-adjustments";
-import { expect, jest, describe, beforeEach, test } from "@jest/globals";
-import { SwapsAndTransfersService } from "./swaps-and-transfers.service";
-import { Swap } from "../../../../model/swap";
+import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { Transaction } from "../model/transaction";
-import { Transfers } from "../model/transfer";
+import { Transfer } from "../model/raw-transfer";
+import * as helper from "../../../endpoints/helper/is-evm-address";
+import * as util from "../util/has-chain-evm-support";
+import { SwapsAndTransfersService } from "./swaps-and-transfers.service";
 
+// Mock all imported functions/modules
 jest.mock("../../../logger/logger", () => ({
-  logger: {
-    info: jest.fn(),
-  },
+  logger: { info: jest.fn() },
+}));
+jest.mock("../../../endpoints/helper/is-evm-address", () => ({
+  isEvmAddress: jest.fn(),
+}));
+jest.mock("../util/has-chain-evm-support", () => ({
+  hasChainEvmSupport: jest.fn(),
 }));
 
 describe("SwapsAndTransfersService", () => {
   let service: SwapsAndTransfersService;
-  let mockBlockTimeService: jest.Mocked<BlockTimeService>;
-  let mockSubscanService: jest.Mocked<SubscanService>;
-  let mockTransferMerger: jest.Mocked<TransferMerger>;
-  let mockTransferClassifier: jest.Mocked<TransferClassifier>;
-  let mockChainAdjustments: jest.Mocked<ChainAdjustments>;
+
+  // Mocked dependencies
+  const mockSubscanService = {
+    fetchAllTx: jest.fn<any>(),
+    fetchAllTransfers: jest.fn<any>(),
+    mapToSubstrateAccount: jest.fn<any>(),
+  };
+
+  const mockBlockTimeService = {
+    getMinMaxBlock: jest.fn<any>(),
+  };
 
   beforeEach(() => {
-    mockBlockTimeService = {
-      getMinMaxBlock: jest.fn(),
-    } as any;
-
-    mockSubscanService = {
-      fetchAllTx: jest.fn(),
-      fetchAllTransfers: jest.fn(),
-      mapToSubstrateAccount: jest.fn(),
-      fetchAccounts: jest.fn((adress) => [adress]),
-    } as any;
-
-    mockTransferMerger = {
-      merge: jest.fn(),
-      mergeTranferListToObject: jest.fn(),
-    } as any;
-
-    mockTransferClassifier = {
-      extractPayments: jest.fn(),
-      extractSwaps: jest.fn(),
-    } as any;
-
-    mockChainAdjustments = {
-      handleHydration: jest.fn(),
-    } as any;
-
     service = new SwapsAndTransfersService(
-      mockBlockTimeService,
-      mockSubscanService,
-      mockTransferClassifier,
-      mockTransferMerger,
-      mockChainAdjustments,
+      mockBlockTimeService as any,
+      mockSubscanService as any,
     );
+    jest.clearAllMocks();
   });
 
-  test("should fetch swaps and payments and apply filtering", async () => {
-    const fakeTxs = [
-      { hash: "0x1", block_timestamp: 1700000000, block_num: 100 },
-    ];
-    const fakeTransfers = [
-      {
-        amount: 1,
-        timestamp: 1700000000,
-        block: 100,
-        from: "A",
-        to: "B",
-        functionName: "transfer",
-      },
-    ];
+  const chainName = "test-chain";
+  const address = "0xabc";
+  const startDay = new Date("2023-01-01T00:00:00Z");
+  const endDay = new Date("2023-01-02T00:00:00Z");
 
-    const swaps = [{ hash: "0x1", date: 1700000000 }] as any;
-    const payments = {
-      dot: [
-        {
-          date: 1700000000,
-          amount: 1,
-          hash: "0x1",
-          from: "A",
-          to: "B",
-          block: 100,
-          functionName: "transfer",
-        },
-      ],
-    };
+  it("fetches transfers with evm + substrate when evm supported", async () => {
+    (helper.isEvmAddress as jest.Mock).mockImplementation(
+      (testAdr) => testAdr === address,
+    );
+    (util.hasChainEvmSupport as jest.Mock).mockReturnValue(true);
 
     mockSubscanService.mapToSubstrateAccount.mockResolvedValue(
       "substrate-addr",
     );
     mockBlockTimeService.getMinMaxBlock.mockResolvedValue({
-      blockMin: 10,
-      blockMax: 999,
+      blockMin: 100,
+      blockMax: 200,
     });
-    mockSubscanService.fetchAllTx.mockResolvedValue(fakeTxs as Transaction[]);
-    mockSubscanService.fetchAllTransfers.mockResolvedValue(
-      fakeTransfers as any,
-    );
-    mockTransferClassifier.extractSwaps.mockReturnValue(swaps);
-    mockTransferClassifier.extractPayments.mockReturnValue(payments);
 
-    const result = await service.fetchSwapsAndTransfers(
-      "polkadot",
-      "0xabc",
-      new Date("2023-11-10T00:00:00Z"),
-    );
+    const tx = { timestamp: 1672531400 } as Transaction;
+    const transfer = { timestamp: 1672531400 } as Transfer;
 
-    expect(mockSubscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
-      "polkadot",
-      "0xabc",
-    );
-    expect(mockBlockTimeService.getMinMaxBlock).toHaveBeenCalled();
-    expect(mockTransferClassifier.extractSwaps).toHaveBeenCalled();
-    expect(mockTransferClassifier.extractPayments).toHaveBeenCalled();
-    expect(result.swaps.length).toBe(1);
-    expect(result.payments.dot.length).toBe(1);
+    // first call: substrate
+    mockSubscanService.fetchAllTx.mockResolvedValueOnce([tx]);
+    mockSubscanService.fetchAllTransfers.mockResolvedValueOnce([transfer]);
+    // second call: evm
+    mockSubscanService.fetchAllTx.mockResolvedValueOnce([tx]);
+    mockSubscanService.fetchAllTransfers.mockResolvedValueOnce([transfer]);
+
+    const result = await service.fetchSwapsAndTransfers({
+      chainName,
+      address,
+      startDay,
+      endDay,
+    });
+
+    expect(result.transactions).toEqual([tx, tx]);
+    expect(result.transfersList).toEqual([transfer, transfer]);
+    expect(mockSubscanService.mapToSubstrateAccount).toHaveBeenCalled();
+    expect(mockSubscanService.fetchAllTx).toHaveBeenCalledTimes(2);
+    expect(mockSubscanService.fetchAllTransfers).toHaveBeenCalledTimes(2);
   });
 
-  test("should call hydration adjustment only for hydration chain", async () => {
+  it("skips evm fetch when no evm support", async () => {
+    (helper.isEvmAddress as jest.Mock).mockReturnValue(true);
+    (util.hasChainEvmSupport as jest.Mock).mockReturnValue(false);
+
     mockSubscanService.mapToSubstrateAccount.mockResolvedValue(
       "substrate-addr",
     );
     mockBlockTimeService.getMinMaxBlock.mockResolvedValue({
-      blockMin: 10,
-      blockMax: 999,
+      blockMin: 100,
+      blockMax: 200,
     });
-    mockSubscanService.fetchAllTx.mockResolvedValue([
-      { hash: "x", block_timestamp: 1700000000, block_num: 99 },
-    ] as Transaction[]);
-    mockSubscanService.fetchAllTransfers.mockResolvedValue([]);
-    mockTransferClassifier.extractSwaps.mockReturnValue([
-      { hash: "x", date: 1700000000 },
-    ] as Swap[]);
-    mockTransferClassifier.extractPayments.mockReturnValue({});
 
-    await service.fetchSwapsAndTransfers(
-      "hydration",
-      "0xabc",
-      new Date("2023-11-10"),
-    );
+    const tx = { timestamp: 1672531200 } as Transaction;
+    const transfer = { timestamp: 1672531200 } as Transfer;
 
-    expect(mockChainAdjustments.handleHydration).toHaveBeenCalled();
+    mockSubscanService.fetchAllTx.mockResolvedValue([tx]);
+    mockSubscanService.fetchAllTransfers.mockResolvedValue([transfer]);
+
+    const result = await service.fetchSwapsAndTransfers({
+      chainName,
+      address,
+      startDay,
+      endDay,
+    });
+
+    expect(result.transactions).toEqual([tx]);
+    expect(result.transfersList).toEqual([transfer]);
+    expect(mockSubscanService.fetchAllTx).toHaveBeenCalledTimes(1);
+    expect(mockSubscanService.fetchAllTransfers).toHaveBeenCalledTimes(1);
   });
 
-  test("should return empty arrays when no data available", async () => {
-    mockSubscanService.mapToSubstrateAccount.mockResolvedValue(
-      "substrate-addr",
-    );
+  it("handles substrate-only address", async () => {
+    (helper.isEvmAddress as jest.Mock).mockReturnValue(false);
+
     mockBlockTimeService.getMinMaxBlock.mockResolvedValue({
-      blockMin: 10,
-      blockMax: 999,
+      blockMin: 100,
+      blockMax: 200,
     });
-    mockSubscanService.fetchAllTx.mockResolvedValue([]);
-    mockSubscanService.fetchAllTransfers.mockResolvedValue([]);
-    mockTransferClassifier.extractSwaps.mockReturnValue([]);
-    mockTransferClassifier.extractPayments.mockReturnValue({});
 
-    const result = await service.fetchSwapsAndTransfers(
-      "kusama",
-      "substrate-addr",
-      new Date("2023-01-01"),
-    );
+    const tx = { timestamp: 1672531200 } as Transaction;
+    const transfer = { timestamp: 1672531200 } as Transfer;
 
-    expect(result.swaps).toEqual([]);
-    expect(result.payments).toEqual({});
+    mockSubscanService.fetchAllTx.mockResolvedValue([tx]);
+    mockSubscanService.fetchAllTransfers.mockResolvedValue([transfer]);
+
+    const result = await service.fetchSwapsAndTransfers({
+      chainName,
+      address,
+      startDay,
+      endDay,
+    });
+
+    expect(result.transactions).toEqual([tx]);
+    expect(result.transfersList).toEqual([transfer]);
+    expect(mockSubscanService.fetchAllTx).toHaveBeenCalledTimes(1);
+    expect(mockSubscanService.fetchAllTransfers).toHaveBeenCalledTimes(1);
   });
 });

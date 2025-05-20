@@ -7,8 +7,7 @@ export class CryptoCurrencyPricesService {
   }
 
   fetchCurrentPrices(
-    symbols: string[],
-    chain: string,
+    tokenIds: string[],
     currency: string,
   ): Promise<{ [symbol: string]: number }> {
     const helper = new RequestHelper();
@@ -19,16 +18,16 @@ export class CryptoCurrencyPricesService {
     return helper.req(
       `http://localhost:${this.port}/crypto-current-prices`,
       "POST",
-      { symbols, chain, currency },
+      { tokenIds, currency },
     );
   }
 
   fetchHistoricalPrices(
-    symbol: string,
+    tokenId: string,
     currency: string,
   ): Promise<CurrencyQuotes> {
     return new RequestHelper().req(
-      `http://localhost:${this.port}/crypto-historic-prices/${symbol}?currency=${currency}`,
+      `http://localhost:${this.port}/crypto-historic-prices/${tokenId}?currency=${currency}`,
       "GET",
     );
   }

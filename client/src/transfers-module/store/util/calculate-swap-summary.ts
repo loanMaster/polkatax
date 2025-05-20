@@ -14,33 +14,39 @@ export const calculateSwapSummary = (
   const summaryMap: Record<string, TradingSummary> = {};
 
   for (const swap of filteredSwaps) {
-    for (const [token, tokenInfo] of Object.entries(swap.tokens)) {
-      const type = tokenInfo.type === 'sell' ? 'sold' : 'bought';
-      const current = summaryMap[token] ?? {
-        token,
-        priceNow: swapList.currentPrices[token],
-        sold: { amount: 0, value: 0, valueNow: 0 },
-        bought: { amount: 0, value: 0, valueNow: 0 },
-        total: { amount: 0, value: 0, valueNow: 0 },
+    for (const transfer of swap.transfers) {
+      const type = transfer.amount < 0 ? 'sold' : 'bought';
+      const current = summaryMap[transfer.symbol] ?? {
+        token: transfer.symbol,
+        priceNow: swapList.tokens[transfer.tokenId].latestPrice,
+        sold: { amount: 0, fiatValue: 0, valueNow: 0 },
+        bought: { amount: 0, fiatValue: 0, valueNow: 0 },
+        total: { amount: 0, fiatValue: 0, valueNow: 0 },
       };
 
-      current[type].amount += tokenInfo.amount;
-      current[type].value = sumOrNaN(current[type].value, tokenInfo.value);
+      current[type].amount += transfer.amount;
+      current[type].fiatValue = sumOrNaN(
+        current[type].fiatValue,
+        transfer.fiatValue
+      );
       current[type].valueNow = sumOrNaN(
         current[type].valueNow,
-        tokenInfo.valueNow
+        transfer.valueNow
       );
 
-      summaryMap[token] = current;
+      summaryMap[transfer.symbol] = current;
     }
   }
 
   return Object.values(summaryMap).map((summary) => {
-    summary.total.amount = summary.bought.amount - summary.sold.amount;
-    summary.total.value = sumOrNaN(summary.bought.value, -summary.sold.value!);
+    summary.total.amount = summary.bought.amount + summary.sold.amount;
+    summary.total.fiatValue = sumOrNaN(
+      summary.bought.fiatValue,
+      summary.sold.fiatValue
+    );
     summary.total.valueNow = sumOrNaN(
       summary.bought.valueNow,
-      -summary.sold.valueNow!
+      summary.sold.valueNow
     );
     return summary;
   });

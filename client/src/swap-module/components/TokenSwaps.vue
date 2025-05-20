@@ -59,7 +59,7 @@ const totalSales = computed(() => {
   return formatCurrency(
     swapSummary.value.reduce(
       (acc: number, item: TradingSummary) =>
-        acc + (isNaN(item.sold.valueNow) ? 0 : item.sold.valueNow),
+        acc + (isNaN(item.sold.valueNow!) ? 0 : item.sold.valueNow!),
       0
     ),
     swaps.value?.currency || ''
@@ -69,7 +69,7 @@ const totalBuys = computed(() => {
   return formatCurrency(
     swapSummary.value.reduce(
       (acc: number, item: TradingSummary) =>
-        acc + (isNaN(item.bought.valueNow) ? 0 : item.bought.valueNow),
+        acc + (isNaN(item.bought.valueNow!) ? 0 : item.bought.valueNow!),
       0
     ),
     swaps.value?.currency || ''
@@ -80,9 +80,9 @@ const totalGain = computed(() => {
     swapSummary.value.reduce(
       (acc: number, item: TradingSummary) =>
         acc +
-        (isNaN(item.bought.valueNow)
+        (isNaN(item.bought.valueNow!)
           ? 0
-          : item.bought.valueNow - item.sold.valueNow),
+          : item.bought.valueNow! - item.sold.valueNow!),
       0
     ),
     swaps.value?.currency || ''
@@ -93,7 +93,7 @@ const allValuesKnown = computed(() => {
   return swapSummary.value.every(
     (item: TradingSummary) =>
       item.total.amount === 0 ||
-      (!isNaN(item.bought.valueNow) && !isNaN(item.sold.valueNow))
+      (!isNaN(item.bought.valueNow!) && !isNaN(item.sold.valueNow!))
   );
 });
 </script>

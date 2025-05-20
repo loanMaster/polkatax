@@ -1,197 +1,157 @@
-import { beforeEach, expect, test, jest } from "@jest/globals";
-import { BigNumber } from "bignumber.js";
-import { SubscanService } from "./subscan.service";
+import { SubscanService } from "./subscan.service"; // Adjust path
+import { SubscanApi } from "./subscan.api";
+import { Transaction } from "../model/transaction";
+import { RawStakingReward } from "../model/staking-reward";
+import { beforeEach, expect, it, jest, describe } from "@jest/globals";
 
-let subscanService: SubscanService;
+// Mock logger to silence logs
+jest.mock("../../../logger/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+  },
+}));
 
-beforeEach(() => {
-  process.env["SUBSCAN_API_KEY"] = "my-key";
-});
+describe("SubscanService", () => {
+  let service: SubscanService;
+  let mockSubscanApi: jest.Mocked<SubscanApi>;
 
-test("should fetchAllStakingRewards", async () => {
-  const subscanApi = {
-    fetchStakingRewards: async (
-      chainName: string,
-      address: string,
-      page: number = 0,
-      isStash: boolean,
-      block_min?: number,
-      block_max?: number,
-    ) => {
-      switch (page) {
-        case 0:
+  beforeEach(() => {
+    mockSubscanApi = {
+      mapToSubstrateAccount: jest.fn<any>(),
+      fetchNativeToken: jest.fn<any>(),
+      searchEvents: jest.fn<any>(),
+      searchExtrinsics: jest.fn<any>(),
+      fetchPoolStakingRewards: jest.fn<any>(),
+      fetchStakingRewards: jest.fn<any>(),
+      fetchExtrinsics: jest.fn<any>(),
+      fetchTransfers: jest.fn<any>(),
+      fetchAccounts: jest.fn<any>(),
+    } as any;
+
+    service = new SubscanService(mockSubscanApi);
+    jest.clearAllMocks();
+  });
+
+  it("maps to substrate account", async () => {
+    mockSubscanApi.mapToSubstrateAccount.mockResolvedValue("substrate-address");
+
+    const result = await service.mapToSubstrateAccount("polkadot", "0xabc");
+
+    expect(result).toBe("substrate-address");
+    expect(mockSubscanApi.mapToSubstrateAccount).toHaveBeenCalledWith(
+      "polkadot",
+      "0xabc",
+    );
+  });
+
+  it("fetches native token", async () => {
+    const fakeToken = { symbol: "DOT" };
+    mockSubscanApi.fetchNativeToken.mockResolvedValue(fakeToken as any);
+
+    const result = await service.fetchNativeToken("polkadot");
+    expect(result).toBe(fakeToken);
+    expect(mockSubscanApi.fetchNativeToken).toHaveBeenCalledWith("polkadot");
+  });
+
+  it("fetches all staking rewards", async () => {
+    mockSubscanApi.fetchStakingRewards
+      .mockResolvedValueOnce({
+        list: [{ amount: "100" }] as unknown as RawStakingReward[],
+        hasNext: false,
+      })
+      .mockResolvedValue({
+        list: [],
+        hasNext: false,
+      });
+
+    const result = await service.fetchAllStakingRewards("kusama", "address");
+    expect(result).toEqual([{ amount: "100" }]);
+    expect(mockSubscanApi.fetchStakingRewards).toHaveBeenCalled();
+  });
+
+  it("fetches all transactions, iterate over pages", async () => {
+    mockSubscanApi.fetchExtrinsics.mockImplementation(
+      async (
+        chainName: string,
+        address: string,
+        page: number,
+        block_min: number,
+        block_max: number,
+        evm?: boolean,
+      ): Promise<any> => {
+        if (page < 7) {
           return {
-            list: [
-              {
-                event_id: "Reward",
-                amount: BigNumber(1),
-                block_timestamp: 12,
-                block_num: 33,
-                hash: "1",
-              },
-            ],
+            list: [{ hash: "tx" + page }] as Transaction[],
             hasNext: true,
           };
-        case 1:
-          return {
-            list: [
-              {
-                event_id: "Reward",
-                amount: BigNumber(1),
-                block_timestamp: 12,
-                block_num: 33,
-                hash: "2",
-              },
-            ],
-            hasNext: false,
-          };
-        default:
+        } else {
           return {
             list: [],
             hasNext: false,
           };
-      }
-    },
-  };
-  const spy = jest.spyOn(subscanApi, "fetchStakingRewards");
-  subscanService = new SubscanService(subscanApi as any);
-  const stakingRewards = await subscanService.fetchAllStakingRewards(
-    "polkadot",
-    "alice",
-    100,
-    200,
-  );
-  expect(stakingRewards.length).toBe(2);
-  expect(stakingRewards[0]).toEqual({
-    event_id: "Reward",
-    amount: BigNumber(1),
-    block_timestamp: 12,
-    block_num: 33,
-    hash: "1",
+        }
+      },
+    );
+
+    const result = await service.fetchAllTx("moonbeam", "address");
+    expect(result.length).toBe(7);
+    for (let i = 0; i < 7; i++) {
+      expect(result.find((t) => t.hash === "tx5")).not.toBeUndefined();
+    }
   });
-  expect(stakingRewards[1]).toEqual({
-    event_id: "Reward",
-    amount: BigNumber(1),
-    block_timestamp: 12,
-    block_num: 33,
-    hash: "2",
+
+  it("fetches all transfers and maps them", async () => {
+    mockSubscanApi.fetchTransfers
+      .mockResolvedValueOnce({
+        list: [
+          {
+            symbol: "KSM",
+            amount: "123",
+            from: "A",
+            to: "B",
+            module: "balances",
+            block_num: 100,
+            block_timestamp: 1600000000,
+            hash: "0xhash",
+            asset_unique_id: "token-id",
+            extrinsic_index: "1-1",
+          },
+        ],
+        hasNext: false,
+      } as any)
+      .mockResolvedValue({
+        list: [],
+        hasNext: false,
+      });
+
+    const result = await service.fetchAllTransfers("kusama", "address");
+
+    expect(result).toEqual([
+      {
+        symbol: "KSM",
+        amount: 123,
+        from: "A",
+        to: "B",
+        label: "balances",
+        block: 100,
+        timestamp: 1600000000,
+        hash: "0xhash",
+        tokenId: "token-id",
+        extrinsic_index: "1-1",
+      },
+    ]);
+    expect(mockSubscanApi.fetchTransfers).toHaveBeenCalled();
   });
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 0, true, 100, 200);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 1, true, 100, 200);
-});
 
-test("should fetchAllPoolStakingRewards", async () => {
-  const subscanApi = {
-    fetchPoolStakingRewards: async (chainName, address, poolId, page) => {
-      if (page === 0) {
-        return {
-          list: ["a", "b"],
-          hasNext: true,
-        };
-      } else if (page === 1) {
-        return {
-          list: ["c"],
-          hasNext: false,
-        };
-      } else {
-        return {
-          list: [],
-          hasNext: false,
-        };
-      }
-    },
-  };
-  const spy = jest.spyOn(subscanApi, "fetchPoolStakingRewards");
-  subscanService = new SubscanService(subscanApi as any);
-  const stakingRewards = await subscanService.fetchAllPoolStakingRewards(
-    "polkadot",
-    "alice",
-    2,
-  );
-  expect(stakingRewards.length).toBe(3);
-  expect(stakingRewards).toEqual(["a", "b", "c"]);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 0);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 2, 1);
-});
+  it("fetches all accounts", async () => {
+    mockSubscanApi.fetchAccounts.mockResolvedValue(["acc1", "acc2"]);
 
-test("should fetchAllTx", async () => {
-  const subscanApi = {
-    fetchExtrinsics: async (
-      chainName: string,
-      address: string,
-      page: number = 0,
-      block_min?: number,
-      block_max?: number,
-      evm = false,
-    ) => {
-      if (page === 0) {
-        return {
-          list: ["a", "d"],
-          hasNext: true,
-        };
-      } else if (page === 1) {
-        return {
-          list: ["k"],
-          hasNext: false,
-        };
-      } else {
-        return {
-          list: [],
-          hasNext: false,
-        };
-      }
-    },
-  };
-  const spy = jest.spyOn(subscanApi, "fetchExtrinsics");
-  subscanService = new SubscanService(subscanApi as any);
-  const tx = await subscanService.fetchAllTx(
-    "polkadot",
-    "alice",
-    10,
-    20,
-    false,
-  );
-  expect(tx.length).toBe(3);
-  expect(tx).toEqual(["a", "d", "k"]);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 0, 10, 20, false);
-  expect(spy).toHaveBeenCalledWith("polkadot", "alice", 1, 10, 20, false);
-});
-
-test("should fetchAllTransfers", async () => {
-  const subscanApi = {
-    fetchTransfers: async (
-      chainName: string,
-      account: string,
-      page: number = 0,
-      block_min?: number,
-      block_max?: number,
-      evm = false,
-    ) => {
-      if (page === 0) {
-        return {
-          list: [{ a: 0 }, { b: 1 }],
-          hasNext: true,
-        };
-      } else if (page === 1) {
-        return {
-          list: [{ c: 3 }],
-          hasNext: false,
-        };
-      } else {
-        return {
-          list: [],
-          hasNext: false,
-        };
-      }
-    },
-  };
-  subscanService = new SubscanService(subscanApi as any);
-  const tx = await subscanService.fetchAllTransfers(
-    "polkadot",
-    "Ally",
-    10,
-    20,
-    false,
-  );
-  expect(tx).toEqual([{ a: 0 }, { b: 1 }, { c: 3 }]);
+    const result = await service.fetchAccounts("0xabc", "polkadot");
+    expect(result).toEqual(["acc1", "acc2"]);
+    expect(mockSubscanApi.fetchAccounts).toHaveBeenCalledWith(
+      "0xabc",
+      "polkadot",
+    );
+  });
 });

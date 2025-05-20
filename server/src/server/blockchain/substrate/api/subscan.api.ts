@@ -1,12 +1,16 @@
 import { MetaData } from "../model/meta-data";
 import { Token } from "../model/token";
 import { Block } from "../model/block";
-import { StakingReward } from "../model/staking-reward";
+import { RawStakingReward } from "../model/staking-reward";
 import { BigNumber } from "bignumber.js";
 import { Transaction } from "../model/transaction";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
 import { SubscanEvent } from "../model/subscan-event";
+import {
+  RawEvmTransferDto,
+  RawSubstrateTransferDto,
+} from "../model/raw-transfer";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -102,8 +106,8 @@ export class SubscanApi {
           account: entry.account_display.address,
           block_timestamp: entry.block_timestamp,
           block_num: entry.block_num,
-          functionName: entry.call_module_function,
-          callModule: entry.call_module,
+          label:
+            (entry.call_module || "") + (entry.call_module_function || "."),
         };
       }),
       hasNext: (responseBody.data?.extrinsics ?? []).length >= 100,
@@ -169,13 +173,15 @@ export class SubscanApi {
     return response.data.blocks;
   }
 
-  private mapStakingRewards(rawResponseList: any[] | undefined) {
+  private mapStakingRewards(
+    rawResponseList: any[] | undefined,
+  ): RawStakingReward[] {
     return (rawResponseList || []).map((entry) => {
       return {
         event_id: entry.event_id,
         amount: BigNumber(entry.amount),
-        block_timestamp: entry.block_timestamp,
-        block_num: entry.extrinsic_index.split("-")[0],
+        timestamp: entry.block_timestamp,
+        block: entry.extrinsic_index.split("-")[0],
         hash: entry.extrinsic_hash,
       };
     });
@@ -187,7 +193,7 @@ export class SubscanApi {
     pool_id: number,
     row: number = 100,
     page: number = 0,
-  ): Promise<{ list: StakingReward[]; hasNext: boolean }> {
+  ): Promise<{ list: RawStakingReward[]; hasNext: boolean }> {
     const responseBody = await this.requestHelper.req(
       `https://${chainName}.api.subscan.io/api/scan/nomination_pool/rewards`,
       `post`,
@@ -211,7 +217,7 @@ export class SubscanApi {
     isStash: boolean,
     block_min?: number,
     block_max?: number,
-  ): Promise<{ list: StakingReward[]; hasNext: boolean }> {
+  ): Promise<{ list: RawStakingReward[]; hasNext: boolean }> {
     const responseBody = await this.requestHelper.req(
       `https://${chainName}.api.subscan.io/api/scan/account/reward_slash`,
       `post`,
@@ -241,13 +247,7 @@ export class SubscanApi {
         row: 100,
       },
     );
-    return (
-      json?.data?.list && json?.data?.list.length > 0
-        ? json.data.list.map((entry) => ({
-            address: entry.address.toLowerCase(),
-          }))
-        : [{ address: address.toLowerCase() }]
-    ).map((entry) => entry.address.toLowerCase());
+    return (json?.data?.list ?? []).map((entry) => entry.address);
   }
 
   async fetchExtrinsics(
@@ -290,15 +290,18 @@ export class SubscanApi {
             functionName: entry.method,
             callModule: entry.contract_name,
             extrinsic_hash: entry.hash,
+            value: entry.value,
           };
         }
         return {
           hash: entry.extrinsic_hash,
-          account: entry.account_display.address,
-          block_timestamp: entry.block_timestamp,
+          from: entry.account_display.address,
+          to: entry.to,
+          timestamp: entry.block_timestamp,
           block_num: entry.block_num,
-          functionName: entry.call_module_function,
-          callModule: entry.call_module,
+          label: entry.call_module ?? "" + entry.call_module_function ?? "",
+          amount: entry.value ? Number(entry.value) : 0,
+          extrinsic_index: entry.extrinsic_index,
         };
       }),
       hasNext:
@@ -314,7 +317,10 @@ export class SubscanApi {
     block_min?: number,
     block_max?: number,
     evm = false,
-  ): Promise<{ list: any[]; hasNext: boolean }> {
+  ): Promise<{
+    list: (RawSubstrateTransferDto & RawEvmTransferDto)[];
+    hasNext: boolean;
+  }> {
     const endpoint = evm
       ? "api/scan/evm/token/transfer"
       : "api/v2/scan/transfers";

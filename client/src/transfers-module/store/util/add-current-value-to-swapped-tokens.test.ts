@@ -1,78 +1,58 @@
-import { expect, test, describe } from '@jest/globals';
-import { SwapDto } from '../../model/payments-response.dto';
+import { expect, it, describe } from '@jest/globals';
+import { Swap } from '../../../swap-module/model/swaps';
 import { addCurrentValueToSwappedTokens } from './add-current-value-to-swapped-tokens';
 
 describe('addCurrentValueToSwappedTokens', () => {
-  test('should correctly add valueNow based on currentPrices for each token', () => {
-    const swaps: SwapDto[] = [
+  it('adds valueNow based on tokenInfo.latestPrice', () => {
+    const swaps: Swap[] = [
       {
-        tokens: {
-          tokenA: { amount: 10 },
-          tokenB: { amount: 20 },
-        },
-      },
-      {
-        tokens: {
-          tokenA: { amount: 5 },
-          tokenC: { amount: 15 },
-        },
-      },
-    ] as unknown as SwapDto[];
+        transfers: [
+          { tokenId: 'tokenA', amount: 2 },
+          { tokenId: 'tokenB', amount: 3 },
+        ],
+      } as any,
+    ];
 
-    const currentPrices = {
-      tokenA: 2,
-      tokenB: 3,
-      // tokenC does not have a price
+    const tokenInfo = {
+      tokenA: { latestPrice: 10 },
+      tokenB: { latestPrice: 5 },
     };
 
-    const result = addCurrentValueToSwappedTokens(swaps, currentPrices);
+    const result = addCurrentValueToSwappedTokens(swaps, tokenInfo);
 
-    expect(result[0].tokens.tokenA.valueNow).toBe(20);
-    expect(result[0].tokens.tokenB.valueNow).toBe(60);
-    expect(result[1].tokens.tokenA.valueNow).toBe(10);
-    expect(result[1].tokens.tokenC.valueNow).toBeUndefined(); // No price for tokenC
+    expect(result[0].transfers[0].valueNow).toBe(20); // 2 * 10
+    expect(result[0].transfers[1].valueNow).toBe(15); // 3 * 5
   });
 
-  test('should leave valueNow as undefined if no price is available for the token', () => {
-    const swaps: SwapDto[] = [
+  it('sets valueNow to undefined if latestPrice is missing', () => {
+    const swaps: Swap[] = [
       {
-        tokens: {
-          tokenX: { amount: 50 },
-        },
-      },
-    ] as unknown as SwapDto[];
+        transfers: [{ tokenId: 'tokenC', amount: 1 }],
+      } as any,
+    ];
 
-    const currentPrices = {};
-
-    const result = addCurrentValueToSwappedTokens(swaps, currentPrices);
-
-    expect(result[0].tokens.tokenX.valueNow).toBeUndefined();
-  });
-
-  test('should handle empty swaps array gracefully', () => {
-    const swaps: SwapDto[] = [];
-    const currentPrices = {
-      tokenA: 1,
+    const tokenInfo = {
+      tokenC: {}, // no latestPrice
     };
 
-    const result = addCurrentValueToSwappedTokens(swaps, currentPrices);
+    const result = addCurrentValueToSwappedTokens(swaps, tokenInfo);
 
-    expect(result).toEqual([]);
+    expect(result[0].transfers[0].valueNow).toBeUndefined();
   });
 
-  test('should handle swaps with no tokens', () => {
-    const swaps: SwapDto[] = [
+  it('sets valueNow to undefined if token is not found in tokenInfo', () => {
+    const swaps: Swap[] = [
       {
-        tokens: {},
-      },
-    ] as unknown as SwapDto[];
+        transfers: [{ tokenId: 'tokenX', amount: 5 }],
+      } as any,
+    ];
 
-    const currentPrices = {
-      tokenA: 1,
+    const tokenInfo = {
+      tokenY: { latestPrice: 100 },
     };
 
-    const result = addCurrentValueToSwappedTokens(swaps, currentPrices);
+    const result = addCurrentValueToSwappedTokens(swaps, tokenInfo);
 
-    expect(result[0].tokens).toEqual({});
+    expect(result[0].transfers[0].valueNow).toBeUndefined();
   });
 });

@@ -1,32 +1,39 @@
 export interface PaymentsResponseDto {
-  currentPrices: { [token: string]: number };
   swaps: SwapDto[];
-  transfers: {
-    [symbol: string]: { values: TransferDto[]; currentPrice: number };
-  };
+  transfers: TransferDto[];
+  tokens: TokenInfo;
 }
 
 export interface TransferDto {
+  symbol: string;
   amount: number;
-  date: number;
+  timestamp: number;
   block: number;
-  value?: number;
+  fiatValue?: number;
   price?: number;
   hash?: string;
+  tokenId: string;
+  label?: string;
 }
+
+export type TokenInfo = Record<
+  string,
+  { symbol: string; coingeckoId?: string; latestPrice?: number }
+>;
 
 export interface SwapDto {
   hash: string;
   block: number;
-  date: number;
-  functionName: string;
+  timestamp: number;
+  label: string;
   contract: string;
-  tokens: {
-    [token: string]: {
-      amount: number;
-      type: 'sell' | 'buy';
-      price?: number;
-      value?: number;
-    };
-  };
+  transfers: {
+    symbol: string;
+    amount: number;
+    price?: number;
+    fiatValue?: number;
+    tokenId: string;
+    from: string;
+    to: string;
+  }[];
 }

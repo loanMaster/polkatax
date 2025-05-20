@@ -42,12 +42,11 @@ export class TokenPriceConversionService {
   }
 
   public async fetchQuotesForTokens(
-    tokens: string[],
-    chain: string,
+    tokenIds: string[],
     currency: string,
   ): Promise<{ [token: string]: CurrencyQuotes }> {
     logger.info(
-      `Entry fetchQuotesForTokens ${tokens.join(", ")} on ${chain} in ${currency}`,
+      `Entry fetchQuotesForTokens ${tokenIds.join(", ")} in ${currency}`,
     );
     const quotesCurrency =
       preferredQuoteCurrencyValues.indexOf(currency.toLowerCase()) > -1
@@ -56,20 +55,19 @@ export class TokenPriceConversionService {
     const result = {};
     const latestPrices =
       await this.cryptoCurrencyPricesService.fetchCurrentPrices(
-        tokens,
-        chain,
+        tokenIds,
         currency,
       );
-    for (let i = 0; i < tokens.length; i++) {
+    for (let i = 0; i < tokenIds.length; i++) {
       try {
-        result[tokens[i]] =
+        result[tokenIds[i]] =
           await this.cryptoCurrencyPricesService.fetchHistoricalPrices(
-            tokens[i],
+            tokenIds[i],
             quotesCurrency as PreferredQuoteCurrency,
           );
-        result[tokens[i]].quotes.latest = latestPrices[tokens[i]];
+        result[tokenIds[i]].quotes.latest = latestPrices[tokenIds[i]];
       } catch (e) {
-        logger.error("Failed to fetch quotes for token " + tokens[i]);
+        logger.error("Failed to fetch quotes for token " + tokenIds[i]);
         logger.error(e);
       }
     }

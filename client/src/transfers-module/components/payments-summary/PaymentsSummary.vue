@@ -26,7 +26,7 @@
     <tr>
       <td class="text-left q-pa-sm">Value at time of transaction(s):</td>
       <td class="text-right q-pa-sm">
-        {{ formatCurrency(paymentsCurrentToken?.summary?.value || 0) }}
+        {{ formatCurrency(paymentsCurrentToken?.summary?.fiatValue || 0) }}
       </td>
     </tr>
     <tr>

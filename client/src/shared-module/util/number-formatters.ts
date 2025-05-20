@@ -17,7 +17,7 @@ export const valueFormatter = new Intl.NumberFormat(
   }
 );
 
-export const formatValue = (value: number) => {
+export const formatValue = (value: number | undefined) => {
   if (value === undefined || isNaN(value)) {
     return '-';
   }

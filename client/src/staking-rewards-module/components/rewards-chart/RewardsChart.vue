@@ -54,7 +54,7 @@ const rewardDataTable = computed(() => {
       props.currency
         ? [
             new Date(isoDate + ':00:00:00'),
-            rewards.value?.dailyValues[isoDate]?.value || 0,
+            rewards.value?.dailyValues[isoDate]?.fiatValue || 0,
             rewards.value?.dailyValues[isoDate]?.valueNow || 0,
           ]
         : [
