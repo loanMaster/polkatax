@@ -143,10 +143,9 @@ export class SubscanApi {
       {},
     );
     const data = response.data;
-    const nativeTokenSymbol = Object.keys(data.detail).find(
-      (symbol) => data.detail[symbol].asset_type === `native`,
-    );
-    return data.detail[nativeTokenSymbol];
+    return Object.values(data.detail).find(
+      (value: Token & { asset_type: string }) => value.asset_type === `native`,
+    ) as Token;
   }
 
   async fetchBlock(chainName: string, blockNum: number): Promise<Block> {

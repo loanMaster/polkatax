@@ -20,7 +20,7 @@ export class StakingRewardsService {
     return rewards
       .filter(
         (r) =>
-          (!maxDate || r.timestamp < maxDate / 1000) &&
+          (!maxDate || r.timestamp <= maxDate / 1000) &&
           r.timestamp >= minDate / 1000,
       )
       .map((reward) => ({
