@@ -39,6 +39,30 @@ jobs:
         working-directory: client
         run: npm run test
 
+  browser-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: client
+        run: npx playwright install --with-deps
+
+      - name: Start App and Run Tests
+        working-directory: client
+        run: npm run integration-tests 
+
   deploy-to-fly:
     if: github.ref == 'refs/heads/main'
     needs: test
