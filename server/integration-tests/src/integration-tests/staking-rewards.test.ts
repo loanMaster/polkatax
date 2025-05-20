@@ -24,6 +24,7 @@ describe("staking rewards via reward_slash endpoint", () => {
   ];
 
   beforeEach(async () => {
+    process.env['SUBSCAN_API_KEY'] = 'bla'
     fastiyInstances.push(
       ...[
         await polkataxServer.init(),
@@ -63,7 +64,7 @@ describe("staking rewards via reward_slash endpoint", () => {
     server = setupServer(...defaultHandlers, rewardsAndSlashdMock);
     await server.listen();
     const response = await fetch(
-      `http://127.0.0.1:3001/api/staking-rewards/polkadot/my-address?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
+      `http://127.0.0.1:3001/api/staking-rewards/polkadot/2Fd1UGzT8yuhksiKy98TpDg794dEELvNFqenJjRHFvwfuU83?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
     );
     const responseBody = await response.json();
     expect(responseBody).toEqual({
@@ -132,7 +133,7 @@ describe("staking rewards via reward_slash endpoint", () => {
     server = setupServer(...defaultHandlers, rewardsAndSlashedMock);
     await server.listen();
     const response = await fetch(
-      `http://127.0.0.1:3001/api/staking-rewards/polkadot/my-address?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
+      `http://127.0.0.1:3001/api/staking-rewards/polkadot/2Fd1UGzT8yuhksiKy98TpDg794dEELvNFqenJjRHFvwfuU83?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
     );
     const responseBody = await response.json();
     expect(responseBody).toEqual({
@@ -200,7 +201,7 @@ describe("staking rewards via reward_slash endpoint", () => {
     server = setupServer(...defaultHandlers, rewardsAndSlashedMock);
     await server.listen();
     const response = await fetch(
-      `http://127.0.0.1:3001/api/staking-rewards/polkadot/my-address?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
+      `http://127.0.0.1:3001/api/staking-rewards/polkadot/2Fd1UGzT8yuhksiKy98TpDg794dEELvNFqenJjRHFvwfuU83?startdate=${timeStamp}&enddate=${timeStamp}&currency=USD`,
     );
     const responseBody = await response.json();
     expect(responseBody.values.length).toBe(170);
