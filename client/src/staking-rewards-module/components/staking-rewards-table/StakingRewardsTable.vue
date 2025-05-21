@@ -17,21 +17,18 @@
           >
         </div>
         <q-space />
-        <q-btn color="primary" class="q-mr-sm" @click="exportCsv"
+        <q-btn color="primary" class="q-mr-sm" @click="exportRewardsAsCsv"
           >Export CSV
         </q-btn>
-        <q-btn color="primary" class="q-mr-sm" @click="exportKoinlyCsv"
+        <q-btn color="primary" class="q-mr-sm" @click="exportRewardsAsKoinlyCsv"
           >Koinly-friendly CSV
         </q-btn>
-        <q-btn color="primary" @click="exportJson">Export JSON</q-btn>
       </template>
     </q-table>
   </div>
 </template>
 <script setup lang="ts">
 import { computed, onUnmounted, Ref, ref } from 'vue';
-import { saveAs } from 'file-saver';
-import { Parser } from '@json2csv/plainjs';
 import { Reward, Rewards } from '../../model/rewards';
 import { useStakingRewardsStore } from '../../store/staking-rewards.store';
 import {
@@ -41,19 +38,9 @@ import {
 import {
   formatTimeFrame,
   formatDate,
-  formatDateUTC,
 } from '../../../shared-module/util/date-utils';
-
-interface RewardsTableHeader extends Reward {
-  'Reward token': string;
-  Chain: string;
-  Currency: string;
-  'Wallet address': string;
-  totalAmount: number;
-  totalValue: number;
-  totalValueNow: number;
-  utcDate: string;
-}
+import { exportDefaultCsv } from '../../service/export-default-csv';
+import { exportKoinlyCsv } from '../../service/export-koinly-csv';
 
 const rewardsStore = useStakingRewardsStore();
 const rewards: Ref<Rewards | undefined> = ref(undefined);
@@ -150,73 +137,12 @@ const initialPagination = ref({
   rowsPerPage: 10,
 });
 
-function exportCsv() {
-  const parser = new Parser();
-  const values = [...(rewards.value?.values || [])].map((v) => {
-    return {
-      ...v,
-      utcDate: formatDateUTC(v.timestamp * 1000),
-    };
-  });
-  values[0] = {
-    'Reward token': rewards.value?.token,
-    Chain: rewards.value?.chain,
-    Currency: rewards.value?.currency,
-    'Wallet address': rewards.value?.address,
-    'NominationPool Id': rewards.value?.nominationPoolId || '',
-    ...values[0],
-    totalAmount: rewards.value?.summary.amount,
-    totalValue: rewards.value?.summary.fiatValue,
-    totalValueNow: rewards.value?.summary?.valueNow,
-  } as RewardsTableHeader;
-  const csv = parser.parse(values);
-  saveAs(
-    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    'staking-rewards.csv'
-  );
+function exportRewardsAsCsv() {
+  exportDefaultCsv(rewards.value!);
 }
 
-function exportKoinlyCsv() {
-  const parser = new Parser();
-  const values = [...(rewards.value?.values || [])].map((v) => {
-    return {
-      'Koinly Date': formatDateUTC(v.timestamp * 1000),
-      Amount: v.amount,
-      Currency: rewards.value?.token,
-      TxHash: v.hash,
-    };
-  });
-  const csv = parser.parse(values);
-  saveAs(
-    new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    'staking-rewards.csv'
-  );
+function exportRewardsAsKoinlyCsv() {
+  exportKoinlyCsv(rewards.value!);
 }
-
-function exportJson() {
-  const values = [...(rewards.value?.values || [])].map((v) => {
-    return {
-      ...v,
-      date: formatDateUTC(v.timestamp * 1000),
-    };
-  });
-  const summary = {
-    'Reward token': rewards.value?.token,
-    Chain: rewards.value?.chain,
-    Currency: rewards.value?.currency,
-    'Wallet address': rewards.value?.address,
-    'NominationPool Id': rewards.value?.nominationPoolId || '',
-    totalAmount: rewards.value?.summary.amount,
-    totalValue: rewards.value?.summary.fiatValue,
-    totalValueNow: rewards.value?.summary?.valueNow,
-  };
-  saveAs(
-    new Blob([JSON.stringify({ summary, values: values })], {
-      type: 'text/plain;charset=utf-8',
-    }),
-    'staking-rewards.json'
-  );
-}
-
 const amountFormatter = computed(() => tokenAmountFormatter(tokenDigits.value));
 </script>
