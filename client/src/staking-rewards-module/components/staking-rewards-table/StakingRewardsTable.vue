@@ -17,6 +17,9 @@
           >
         </div>
         <q-space />
+        <q-btn color="primary" class="q-mr-sm" @click="exportRewardsAsPdf"
+          >Export Pdf
+        </q-btn>
         <q-btn color="primary" class="q-mr-sm" @click="exportRewardsAsCsv"
           >Export CSV
         </q-btn>
@@ -143,6 +146,12 @@ function exportRewardsAsCsv() {
 
 function exportRewardsAsKoinlyCsv() {
   exportKoinlyCsv(rewards.value!);
+}
+
+async function exportRewardsAsPdf() {
+  // loading exportPdf on demand due to module size.
+  const { exportPdf } = await import('../../service/export-pdf');
+  exportPdf(rewards.value!);
 }
 const amountFormatter = computed(() => tokenAmountFormatter(tokenDigits.value));
 </script>
