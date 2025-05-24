@@ -54,6 +54,13 @@ npm run lint-fix
 npm run build
 ```
 
+### Run integration tests with playwright
+
+```bash
+npm i -g playwright
+npx playwright install chromium --with-deps
+npm run integration-tests
+```
 
 ## The server
 

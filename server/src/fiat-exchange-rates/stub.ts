@@ -231,4 +231,5 @@ export const startStub = async () => {
       }
     },
   );
+  return fastify;
 };

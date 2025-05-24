@@ -22,6 +22,7 @@
       <q-btn
         color="primary"
         label="Submit"
+        data-testid="submit"
         @click="fetchRewards"
         :disable="isDisabled"
       />

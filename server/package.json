@@ -16,7 +16,7 @@
     "start-with-stubs": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates-stub\"",
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test": "jest",
-    "e2e-test": "npx playwright test --list --output \"\"",
+    "integration-tests": "jest integration-tests",
     "format": "prettier --write . --ignore-path ../.gitignore",
     "copy-env-to-dist": "if [ -f .env ]; then cp .env ./dist; fi"
   },
@@ -40,7 +40,6 @@
   "devDependencies": {
     "@jest/globals": "^29.6.2",
     "@jest/types": "^29.6.3",
-    "@playwright/test": "^1.52.0",
     "@types/bignumber.js": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.1.5",
